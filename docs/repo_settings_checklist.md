@@ -10,8 +10,8 @@ doesn't create the remote or push — see the note in `PLAN_V_5_1_2.md`).
 - [ ] **Topics**: `distributed-acoustic-sensing`, `seismology`,
       `earthquake-detection`, `fiber-optic-sensing`, `phased-array`, `das`,
       `python`, `multi-agent`
-- [ ] **Social preview image**: `docs/figures/fig1_pendiente_es_fisica.png`
-      (Settings → General → Social preview)
+- [ ] **Social preview image**: `docs/social_preview.png` (1280x640,
+      GitHub's exact requested size — Settings → General → Social preview)
 - [ ] **Default branch**: `main`
 - [ ] **Branch protection on `main`**: require the `CI` check to pass
       before merging (once there's at least one PR to test it against)
