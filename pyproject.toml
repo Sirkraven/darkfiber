@@ -43,7 +43,22 @@ figs = ["matplotlib>=3.8"]
 dev = [
     "pytest>=8.0",
     "ruff>=0.6",
-    "mypy>=1.10",
+    # Pinned exactly, not >=: numpy>=2.3's bundled .pyi stubs use PEP 695
+    # `type` statements, which mypy refuses to parse when python_version
+    # (below) is <3.12 — even inside third-party stub files, not just our
+    # own code (numpy/__init__.pyi:737: "Type statement is only supported
+    # in Python 3.12 and greater"). mypy 2.3.0 is the current latest and
+    # still has this limitation, so upgrading mypy doesn't fix it. This is
+    # exactly the local-green/CI-red drift bug: an unpinned `numpy>=1.26`
+    # resolves to whatever's newest at install time, and Python 3.10 caps
+    # at 2.2.6 (numpy dropped 3.10 wheels after that) while 3.11/3.12 don't
+    # — so the same floating constraint silently installs a broken-for-mypy
+    # numpy on some interpreters and not others. Pinning both here makes
+    # `pip install -e ".[dev]"` resolve identically on 3.10/3.11/3.12,
+    # locally and in CI. Bump deliberately (and re-run the full matrix)
+    # once mypy stops gating stub-only syntax on python_version.
+    "numpy==2.2.6",
+    "mypy==2.3.0",
     "pre-commit>=3.7",
 ]
 
