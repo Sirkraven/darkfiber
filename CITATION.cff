@@ -6,6 +6,7 @@ date-released: "2026-07-14"
 type: software
 license: AGPL-3.0-or-later
 repository-code: "https://github.com/Sirkraven/darkfiber"
+doi: 10.5281/zenodo.21383276
 authors:
   - family-names: "Yucare Rios"
     given-names: "Alejandro"

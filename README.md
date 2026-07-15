@@ -3,6 +3,7 @@
 # darkfiber
 
 [![CI](https://github.com/Sirkraven/darkfiber/actions/workflows/ci.yml/badge.svg)](https://github.com/Sirkraven/darkfiber/actions/workflows/ci.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21383276.svg)](https://doi.org/10.5281/zenodo.21383276)
 [![License: AGPL v3+](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
