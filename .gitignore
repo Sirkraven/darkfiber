@@ -1,0 +1,43 @@
+# Data — never in the repo
+*.h5
+*.hdf5
+*.npz
+*.npy
+*.sgy
+*.segy
+
+# Ledgers/catalogs — local paths, local state, never in the repo
+*.db
+*.sqlite
+*.sqlite3
+
+# Regenerable outputs (root-anchored: docs/figures/ holds curated,
+# committed assets and must NOT be caught by this)
+/figures/
+/scoreboard.md
+*.jsonl
+!validacion_real/*.jsonl
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Envs
+.venv/
+venv/
+env/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

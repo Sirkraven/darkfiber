@@ -1,0 +1,202 @@
+Matriz analizada: 291 canales × 65999 muestras (1320.0 s) | sub-tramo canales [15, 305]
+Nivel 0: 29 evento(s) candidato(s) en 989 ms | silencio filtrado: 63.06%
+
+  Evento evt_0000_543  [10.9s–55.3s]  canales 20–304
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 14.5% de los canales disparados dentro de 3.5s (extensión del evento: 97.9% del arreglo).
+     · Slant-stack: pico de semblanza 0.010 en v_app = 8,000 m/s (canal 0 → N); 10 canales coherentes con el beam.
+     · Trayectoria del centroide: 17.6 m/s (km↓), R²=0.26, duración 44.5s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0001_2926  [58.5s–176.9s]  canales 30–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 13.0% de los canales disparados dentro de 3.5s (extensión del evento: 94.8% del arreglo).
+     · Slant-stack: pico de semblanza 0.010 en v_app = 2,793 m/s (canal N → 0); 9 canales coherentes con el beam.
+     · Trayectoria del centroide: 70.2 m/s (km↓), R²=0.00, duración 118.3s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0002_9001  [180.0s–206.7s]  canales 61–304
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 44.8% de los canales disparados dentro de 3.5s (extensión del evento: 83.8% del arreglo).
+     · Slant-stack: pico de semblanza 0.011 en v_app = 5,202 m/s (canal N → 0); 10 canales coherentes con el beam.
+     · Trayectoria del centroide: 15.7 m/s (km↓), R²=0.06, duración 26.7s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0003_10497  [209.9s–217.9s]  canales 48–301
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 42.9% de los canales disparados dentro de 3.5s (extensión del evento: 87.3% del arreglo).
+     · Slant-stack: pico de semblanza 0.009 en v_app = 4,727 m/s (canal 0 → N); 10 canales coherentes con el beam.
+     · Trayectoria del centroide: 119.6 m/s (km↓), R²=0.28, duración 7.9s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0004_11113_1  [222.3s–232.3s]  canales 113–304
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 63.2% de los canales disparados dentro de 3.5s (extensión del evento: 66.0% del arreglo).
+     · Slant-stack: pico de semblanza 0.016 en v_app = 2,930 m/s (canal N → 0); 17 canales coherentes con el beam.
+     · Trayectoria del centroide: 110.2 m/s (km↓), R²=0.55, duración 10.0s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0005_11786_0  [235.7s–260.2s]  canales 40–188
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 43.5% de los canales disparados dentro de 3.5s (extensión del evento: 51.2% del arreglo).
+     · Slant-stack: pico de semblanza 0.009 en v_app = 1,573 m/s (canal N → 0); 3 canales coherentes con el beam.
+     · Trayectoria del centroide: 0.1 m/s (km↑), R²=0.00, duración 24.5s.
+     · Veredicto: energía sin estructura espacial coherente. Suprimido como falso positivo local.
+
+  Evento evt_0005_11786_1  [235.8s–253.7s]  canales 276–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 47.6% de los canales disparados dentro de 3.5s (extensión del evento: 10.3% del arreglo).
+     · Slant-stack: pico de semblanza 0.094 en v_app = 1,651 m/s (canal N → 0); 8 canales coherentes con el beam.
+     · Trayectoria del centroide: 14.5 m/s (km↑), R²=0.33, duración 17.9s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0006_13164  [263.3s–349.4s]  canales 29–305
+  → FUENTE_MOVIL_TRAFICO
+     · Coincidencia: 12.0% de los canales disparados dentro de 3.5s (extensión del evento: 95.2% del arreglo).
+     · Slant-stack: pico de semblanza 0.014 en v_app = 2,663 m/s (canal 0 → N); 18 canales coherentes con el beam.
+     · Trayectoria del centroide: 13.8 m/s (km↑), R²=0.81, duración 86.1s.
+     · Veredicto: FUENTE MÓVIL (tráfico). Velocidad en rango vehicular y trayectoria lineal sostenida a lo largo de la fibra.
+
+  Evento evt_0007_17623  [352.5s–354.5s]  canales 46–116
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 21.4% de los canales disparados dentro de 3.5s (extensión del evento: 24.4% del arreglo).
+     · Solo 3 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0008_17888  [357.8s–400.7s]  canales 26–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 34.5% de los canales disparados dentro de 3.5s (extensión del evento: 96.2% del arreglo).
+     · Slant-stack: pico de semblanza 0.011 en v_app = 7,270 m/s (canal 0 → N); 15 canales coherentes con el beam.
+     · Trayectoria del centroide: 9.5 m/s (km↑), R²=0.00, duración 42.9s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0009_20203_0  [404.1s–405.4s]  canales 135–149
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 21.4% de los canales disparados dentro de 3.5s (extensión del evento: 5.2% del arreglo).
+     · Solo 2 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0010_20465  [409.3s–477.6s]  canales 15–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 15.2% de los canales disparados dentro de 3.5s (extensión del evento: 100.0% del arreglo).
+     · Slant-stack: pico de semblanza 0.012 en v_app = 7,270 m/s (canal 0 → N); 18 canales coherentes con el beam.
+     · Trayectoria del centroide: 7.1 m/s (km↑), R²=0.00, duración 68.2s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0011_24071  [481.4s–495.3s]  canales 80–304
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 38.5% de los canales disparados dentro de 3.5s (extensión del evento: 77.3% del arreglo).
+     · Slant-stack: pico de semblanza 0.010 en v_app = 5,724 m/s (canal N → 0); 11 canales coherentes con el beam.
+     · Trayectoria del centroide: 35.3 m/s (km↑), R²=0.03, duración 13.9s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0012_24996  [499.9s–554.2s]  canales 20–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 22.6% de los canales disparados dentro de 3.5s (extensión del evento: 98.3% del arreglo).
+     · Slant-stack: pico de semblanza 0.008 en v_app = 8,000 m/s (canal 0 → N); 10 canales coherentes con el beam.
+     · Trayectoria del centroide: 32.0 m/s (km↑), R²=0.06, duración 54.3s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0013_27868  [557.4s–577.7s]  canales 68–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 28.6% de los canales disparados dentro de 3.5s (extensión del evento: 81.8% del arreglo).
+     · Slant-stack: pico de semblanza 0.010 en v_app = 1,816 m/s (canal 0 → N); 13 canales coherentes con el beam.
+     · Trayectoria del centroide: 69.5 m/s (km↓), R²=0.22, duración 20.3s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0014_29330  [586.6s–602.6s]  canales 113–304
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 50.0% de los canales disparados dentro de 3.5s (extensión del evento: 66.0% del arreglo).
+     · Slant-stack: pico de semblanza 0.018 en v_app = 3,224 m/s (canal N → 0); 14 canales coherentes con el beam.
+     · Trayectoria del centroide: 154.7 m/s (km↑), R²=0.06, duración 16.0s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0015_30283  [605.7s–656.2s]  canales 19–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 14.6% de los canales disparados dentro de 3.5s (extensión del evento: 98.6% del arreglo).
+     · Slant-stack: pico de semblanza 0.008 en v_app = 1,651 m/s (canal 0 → N); 12 canales coherentes con el beam.
+     · Trayectoria del centroide: 5.3 m/s (km↓), R²=0.00, duración 50.5s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0016_33027  [660.5s–668.8s]  canales 19–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 53.3% de los canales disparados dentro de 3.5s (extensión del evento: 98.6% del arreglo).
+     · Slant-stack: pico de semblanza 0.008 en v_app = 3,224 m/s (canal N → 0); 17 canales coherentes con el beam.
+     · Trayectoria del centroide: 157.4 m/s (km↑), R²=0.43, duración 8.2s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0017_33745  [674.9s–683.6s]  canales 101–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 63.2% de los canales disparados dentro de 3.5s (extensión del evento: 70.4% del arreglo).
+     · Slant-stack: pico de semblanza 0.012 en v_app = 1,500 m/s (canal N → 0); 11 canales coherentes con el beam.
+     · Trayectoria del centroide: 355.0 m/s (km↑), R²=0.06, duración 8.7s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0018_34349  [687.0s–696.2s]  canales 126–303
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 56.2% de los canales disparados dentro de 3.5s (extensión del evento: 61.2% del arreglo).
+     · Slant-stack: pico de semblanza 0.013 en v_app = 1,816 m/s (canal 0 → N); 12 canales coherentes con el beam.
+     · Trayectoria del centroide: 51.2 m/s (km↓), R²=0.08, duración 9.2s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0019_34981  [699.6s–846.2s]  canales 30–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 11.0% de los canales disparados dentro de 3.5s (extensión del evento: 94.8% del arreglo).
+     · Slant-stack: pico de semblanza 0.006 en v_app = 1,500 m/s (canal N → 0); 6 canales coherentes con el beam.
+     · Trayectoria del centroide: 7.7 m/s (km↑), R²=0.42, duración 146.5s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0020_42472  [849.4s–861.6s]  canales 58–283
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 28.6% de los canales disparados dentro de 3.5s (extensión del evento: 77.7% del arreglo).
+     · Slant-stack: pico de semblanza 0.009 en v_app = 6,931 m/s (canal 0 → N); 9 canales coherentes con el beam.
+     · Trayectoria del centroide: 74.2 m/s (km↑), R²=0.63, duración 12.1s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0021_43229  [864.6s–921.9s]  canales 15–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 23.1% de los canales disparados dentro de 3.5s (extensión del evento: 100.0% del arreglo).
+     · Slant-stack: pico de semblanza 0.007 en v_app = 1,573 m/s (canal 0 → N); 12 canales coherentes con el beam.
+     · Trayectoria del centroide: 48.7 m/s (km↑), R²=0.70, duración 57.3s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0022_46293  [925.9s–1042.2s]  canales 16–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 11.9% de los canales disparados dentro de 3.5s (extensión del evento: 99.7% del arreglo).
+     · Slant-stack: pico de semblanza 0.006 en v_app = 8,000 m/s (canal N → 0); 7 canales coherentes con el beam.
+     · Trayectoria del centroide: 5.7 m/s (km↓), R²=0.58, duración 116.4s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0023_52339  [1046.8s–1150.3s]  canales 21–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 45.6% de los canales disparados dentro de 3.5s (extensión del evento: 97.9% del arreglo).
+     · Slant-stack: pico de semblanza 0.014 en v_app = 4,296 m/s (canal 0 → N); 45 canales coherentes con el beam.
+     · Trayectoria del centroide: 3.0 m/s (km↓), R²=0.00, duración 103.5s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0024_57727  [1154.5s–1210.5s]  canales 36–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 13.1% de los canales disparados dentro de 3.5s (extensión del evento: 92.8% del arreglo).
+     · Slant-stack: pico de semblanza 0.008 en v_app = 8,000 m/s (canal 0 → N); 11 canales coherentes con el beam.
+     · Trayectoria del centroide: 4.4 m/s (km↑), R²=0.00, duración 56.0s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0025_60793  [1215.9s–1217.6s]  canales 246–302
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 21.4% de los canales disparados dentro de 3.5s (extensión del evento: 19.6% del arreglo).
+     · Solo 3 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0026_61036  [1220.7s–1304.2s]  canales 30–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 20.0% de los canales disparados dentro de 3.5s (extensión del evento: 94.8% del arreglo).
+     · Slant-stack: pico de semblanza 0.010 en v_app = 1,816 m/s (canal 0 → N); 18 canales coherentes con el beam.
+     · Trayectoria del centroide: 16.3 m/s (km↓), R²=0.31, duración 83.5s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0027_65448  [1309.0s–1317.1s]  canales 101–305
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 73.3% de los canales disparados dentro de 3.5s (extensión del evento: 70.4% del arreglo).
+     · Slant-stack: pico de semblanza 0.010 en v_app = 2,199 m/s (canal N → 0); 12 canales coherentes con el beam.
+     · Trayectoria del centroide: 20.6 m/s (km↑), R²=0.00, duración 8.1s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+Resultados guardados en resultados_pawnee_subrange.jsonl
+Sugerencia: corré esto sobre cada uno de tus 12 sismos confirmados y verificá que la clase sea SISMO_CONFIRMADO con v_app en rango — esa es la validación final sobre datos reales.

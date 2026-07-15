@@ -1,0 +1,320 @@
+Matriz analizada: 626 canales × 89999 muestras (900.0 s) | sub-tramo canales [0, 625]
+Nivel 0: 52 evento(s) candidato(s) en 2806 ms | silencio filtrado: 46.91%
+
+  Evento evt_0000_880_0  [9.4s–22.6s]  canales 54–177
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 60.5% de los canales disparados dentro de 3.5s (extensión del evento: 19.8% del arreglo).
+     · Slant-stack: pico de semblanza 0.017 en v_app = 1,731 m/s (canal N → 0); 40 canales coherentes con el beam.
+     · Trayectoria del centroide: 3.9 m/s (km↑), R²=0.00, duración 13.2s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0000_880_1  [8.8s–20.9s]  canales 324–359
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 65.0% de los canales disparados dentro de 3.5s (extensión del evento: 5.8% del arreglo).
+     · Solo 2 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0000_880_2  [8.9s–22.6s]  canales 470–515
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 59.1% de los canales disparados dentro de 3.5s (extensión del evento: 7.3% del arreglo).
+     · Slant-stack: pico de semblanza 0.073 en v_app = 3,382 m/s (canal 0 → N); 20 canales coherentes con el beam.
+     · Trayectoria del centroide: 3.7 m/s (km↓), R²=0.00, duración 13.7s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0001_2703_0  [38.3s–38.7s]  canales 7–11
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 16.1% de los canales disparados dentro de 3.5s (extensión del evento: 0.8% del arreglo).
+     · Solo 2 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0001_2703_1  [31.1s–39.6s]  canales 113–122
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 29.0% de los canales disparados dentro de 3.5s (extensión del evento: 1.6% del arreglo).
+     · Slant-stack: pico de semblanza 0.348 en v_app = 4,959 m/s (canal 0 → N); 10 canales coherentes con el beam.
+     · Trayectoria del centroide: 0.6 m/s (km↑), R²=0.00, duración 8.5s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0001_2703_2  [31.7s–38.5s]  canales 309–359
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 19.4% de los canales disparados dentro de 3.5s (extensión del evento: 8.1% del arreglo).
+     · Solo 2 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0001_2703_3  [27.0s–41.9s]  canales 472–623
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 32.3% de los canales disparados dentro de 3.5s (extensión del evento: 24.3% del arreglo).
+     · Slant-stack: pico de semblanza 0.029 en v_app = 1,500 m/s (canal N → 0); 26 canales coherentes con el beam.
+     · Trayectoria del centroide: 98.9 m/s (km↑), R²=0.59, duración 14.9s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0002_4548  [45.5s–46.1s]  canales 472–472
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 3.2% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0003_4954_0  [49.5s–55.0s]  canales 98–114
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 22.6% de los canales disparados dentro de 3.5s (extensión del evento: 2.7% del arreglo).
+     · Slant-stack: pico de semblanza 0.209 en v_app = 2,930 m/s (canal N → 0); 17 canales coherentes con el beam.
+     · Trayectoria del centroide: 9.1 m/s (km↑), R²=0.16, duración 5.4s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0003_4954_1  [49.6s–56.3s]  canales 472–530
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 22.6% de los canales disparados dentro de 3.5s (extensión del evento: 9.4% del arreglo).
+     · Slant-stack: pico de semblanza 0.040 en v_app = 1,651 m/s (canal N → 0); 19 canales coherentes con el beam.
+     · Trayectoria del centroide: 118.4 m/s (km↓), R²=0.00, duración 6.7s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0004_6038_0  [61.9s–66.6s]  canales 113–128
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 29.0% de los canales disparados dentro de 3.5s (extensión del evento: 2.6% del arreglo).
+     · Slant-stack: pico de semblanza 0.334 en v_app = 1,905 m/s (canal N → 0); 15 canales coherentes con el beam.
+     · Trayectoria del centroide: 33.6 m/s (km↓), R²=0.71, duración 4.8s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0004_6038_1  [60.4s–66.6s]  canales 472–515
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 32.3% de los canales disparados dentro de 3.5s (extensión del evento: 7.0% del arreglo).
+     · Slant-stack: pico de semblanza 0.078 en v_app = 1,500 m/s (canal N → 0); 40 canales coherentes con el beam.
+     · Trayectoria del centroide: 76.9 m/s (km↑), R²=0.95, duración 6.2s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0005_7531_0  [78.2s–101.2s]  canales 68–183
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 19.4% de los canales disparados dentro de 3.5s (extensión del evento: 18.5% del arreglo).
+     · Slant-stack: pico de semblanza 0.011 en v_app = 1,500 m/s (canal 0 → N); 6 canales coherentes con el beam.
+     · Trayectoria del centroide: 28.1 m/s (km↓), R²=0.05, duración 23.0s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0005_7531_1  [75.3s–104.0s]  canales 297–624
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 19.4% de los canales disparados dentro de 3.5s (extensión del evento: 52.4% del arreglo).
+     · Slant-stack: pico de semblanza 0.003 en v_app = 2,663 m/s (canal N → 0); 1 canales coherentes con el beam.
+     · Trayectoria del centroide: 5.4 m/s (km↓), R²=0.06, duración 28.7s.
+     · Veredicto: energía sin estructura espacial coherente. Suprimido como falso positivo local.
+
+  Evento evt_0006_11356_0  [115.0s–120.7s]  canales 12–54
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 6.5% de los canales disparados dentro de 3.5s (extensión del evento: 6.9% del arreglo).
+     · Solo 2 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0006_11356_1  [123.0s–123.5s]  canales 324–324
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 3.2% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0006_11356_2  [117.0s–117.8s]  canales 489–489
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 3.2% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0006_11356_3  [113.6s–114.1s]  canales 574–574
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 3.2% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0007_13114_0  [131.1s–155.0s]  canales 14–183
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 35.5% de los canales disparados dentro de 3.5s (extensión del evento: 27.2% del arreglo).
+     · Slant-stack: pico de semblanza 0.014 en v_app = 1,573 m/s (canal 0 → N); 24 canales coherentes con el beam.
+     · Trayectoria del centroide: 30.9 m/s (km↑), R²=0.00, duración 23.8s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0007_13114_1  [131.2s–156.4s]  canales 326–515
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 35.5% de los canales disparados dentro de 3.5s (extensión del evento: 30.4% del arreglo).
+     · Slant-stack: pico de semblanza 0.010 en v_app = 3,224 m/s (canal 0 → N); 13 canales coherentes con el beam.
+     · Trayectoria del centroide: 4.8 m/s (km↑), R²=0.04, duración 25.2s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0008_16022_0  [164.7s–168.2s]  canales 86–88
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 19.4% de los canales disparados dentro de 3.5s (extensión del evento: 0.5% del arreglo).
+     · Solo 3 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0008_16022_1  [160.2s–170.8s]  canales 183–185
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 19.4% de los canales disparados dentro de 3.5s (extensión del evento: 0.5% del arreglo).
+     · Solo 2 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0008_16022_2  [162.8s–168.0s]  canales 493–541
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 19.4% de los canales disparados dentro de 3.5s (extensión del evento: 7.8% del arreglo).
+     · Solo 3 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0009_17462_0  [175.0s–180.7s]  canales 1–1
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 22.6% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0009_17462_1  [175.2s–176.5s]  canales 99–114
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 19.4% de los canales disparados dentro de 3.5s (extensión del evento: 2.6% del arreglo).
+     · Solo 3 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0009_17462_2  [174.6s–181.2s]  canales 514–564
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 22.6% de los canales disparados dentro de 3.5s (extensión del evento: 8.1% del arreglo).
+     · Slant-stack: pico de semblanza 0.049 en v_app = 1,500 m/s (canal 0 → N); 16 canales coherentes con el beam.
+     · Trayectoria del centroide: 134.8 m/s (km↓), R²=0.31, duración 6.6s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0010_18444_0  [184.4s–262.6s]  canales 0–357
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 64.5% de los canales disparados dentro de 3.5s (extensión del evento: 57.2% del arreglo).
+     · Slant-stack: pico de semblanza 0.003 en v_app = 1,731 m/s (canal N → 0); 1 canales coherentes con el beam.
+     · Trayectoria del centroide: 65.1 m/s (km↓), R²=0.00, duración 78.1s.
+     · Veredicto: energía sin estructura espacial coherente. Suprimido como falso positivo local.
+
+  Evento evt_0010_18444_1  [184.5s–262.6s]  canales 473–625
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 64.5% de los canales disparados dentro de 3.5s (extensión del evento: 24.4% del arreglo).
+     · Slant-stack: pico de semblanza 0.007 en v_app = 1,651 m/s (canal 0 → N); 1 canales coherentes con el beam.
+     · Trayectoria del centroide: 4.6 m/s (km↓), R²=0.31, duración 78.1s.
+     · Veredicto: energía sin estructura espacial coherente. Suprimido como falso positivo local.
+
+  Evento evt_0011_26568  [265.7s–329.3s]  canales 6–622
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 51.6% de los canales disparados dentro de 3.5s (extensión del evento: 98.6% del arreglo).
+     · Slant-stack: pico de semblanza 0.005 en v_app = 8,000 m/s (canal N → 0); 31 canales coherentes con el beam.
+     · Trayectoria del centroide: 1.8 m/s (km↑), R²=0.00, duración 63.6s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0012_33249_0  [336.6s–337.3s]  canales 99–99
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 9.7% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0012_33249_1  [336.9s–338.0s]  canales 242–242
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 12.9% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0012_33249_2  [337.2s–338.6s]  canales 357–357
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 16.1% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0012_33249_3  [332.5s–339.9s]  canales 490–555
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 16.1% de los canales disparados dentro de 3.5s (extensión del evento: 10.5% del arreglo).
+     · Slant-stack: pico de semblanza 0.013 en v_app = 1,500 m/s (canal 0 → N); 5 canales coherentes con el beam.
+     · Trayectoria del centroide: 35.9 m/s (km↓), R²=0.27, duración 7.4s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0013_34323_0  [343.2s–383.9s]  canales 4–242
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 19.4% de los canales disparados dentro de 3.5s (extensión del evento: 38.2% del arreglo).
+     · Slant-stack: pico de semblanza 0.008 en v_app = 3,722 m/s (canal 0 → N); 17 canales coherentes con el beam.
+     · Trayectoria del centroide: 22.9 m/s (km↓), R²=0.22, duración 40.7s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0013_34323_1  [345.2s–383.6s]  canales 357–588
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 22.6% de los canales disparados dentro de 3.5s (extensión del evento: 37.1% del arreglo).
+     · Slant-stack: pico de semblanza 0.006 en v_app = 4,095 m/s (canal N → 0); 13 canales coherentes con el beam.
+     · Trayectoria del centroide: 15.0 m/s (km↓), R²=0.00, duración 38.3s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0014_38737_0  [391.3s–392.7s]  canales 99–99
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 3.2% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0014_38737_1  [392.9s–393.4s]  canales 240–240
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 3.2% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0014_38737_2  [387.4s–394.5s]  canales 493–622
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 12.9% de los canales disparados dentro de 3.5s (extensión del evento: 20.8% del arreglo).
+     · Solo 3 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0015_39822  [398.2s–449.0s]  canales 4–612
+  → SISMO_CONFIRMADO
+     · Coincidencia: 58.8% de los canales disparados dentro de 3.5s (extensión del evento: 97.3% del arreglo).
+     · Slant-stack: pico de semblanza 0.292 en v_app = 8,000 m/s (canal N → 0); 579 canales coherentes con el beam.
+     · Veredicto: SISMO CONFIRMADO por física de propagación (velocidad aparente en rango sísmico [1,500–8,000] m/s + disparo masivo cuasi-simultáneo).
+
+  Evento evt_0016_45230  [452.3s–698.5s]  canales 6–623
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 20.9% de los canales disparados dentro de 3.5s (extensión del evento: 98.7% del arreglo).
+     · Slant-stack: pico de semblanza 0.002 en v_app = 7,270 m/s (canal 0 → N); 1 canales coherentes con el beam.
+     · Trayectoria del centroide: 10.6 m/s (km↓), R²=0.00, duración 246.2s.
+     · Veredicto: energía sin estructura espacial coherente. Suprimido como falso positivo local.
+
+  Evento evt_0017_70200_0  [705.6s–706.0s]  canales 55–55
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 6.5% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0017_70200_1  [703.0s–705.1s]  canales 183–254
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 9.7% de los canales disparados dentro de 3.5s (extensión del evento: 11.5% del arreglo).
+     · Solo 2 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0017_70200_2  [702.1s–702.5s]  canales 365–365
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 6.5% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0017_70200_3  [702.0s–707.2s]  canales 511–511
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 12.9% de los canales disparados dentro de 3.5s (extensión del evento: 0.2% del arreglo).
+     · Solo 1 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0018_71019_0  [712.4s–749.4s]  canales 12–250
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 32.3% de los canales disparados dentro de 3.5s (extensión del evento: 38.2% del arreglo).
+     · Slant-stack: pico de semblanza 0.013 en v_app = 6,298 m/s (canal 0 → N); 64 canales coherentes con el beam.
+     · Trayectoria del centroide: 8.7 m/s (km↑), R²=0.00, duración 37.1s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0018_71019_1  [712.2s–742.4s]  canales 347–396
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 32.3% de los canales disparados dentro de 3.5s (extensión del evento: 8.0% del arreglo).
+     · Slant-stack: pico de semblanza 0.018 en v_app = 1,500 m/s (canal 0 → N); 1 canales coherentes con el beam.
+     · Trayectoria del centroide: 1.2 m/s (km↑), R²=0.00, duración 30.1s.
+     · Veredicto: energía sin estructura espacial coherente. Suprimido como falso positivo local.
+
+  Evento evt_0018_71019_2  [710.2s–750.9s]  canales 492–574
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 32.3% de los canales disparados dentro de 3.5s (extensión del evento: 13.3% del arreglo).
+     · Slant-stack: pico de semblanza 0.015 en v_app = 2,096 m/s (canal 0 → N); 8 canales coherentes con el beam.
+     · Trayectoria del centroide: 1.3 m/s (km↑), R²=0.05, duración 40.7s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0019_75398_0  [757.5s–787.0s]  canales 75–149
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 25.8% de los canales disparados dentro de 3.5s (extensión del evento: 12.0% del arreglo).
+     · Slant-stack: pico de semblanza 0.050 en v_app = 5,457 m/s (canal 0 → N); 26 canales coherentes con el beam.
+     · Trayectoria del centroide: 9.5 m/s (km↑), R²=0.54, duración 29.4s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+  Evento evt_0019_75398_1  [754.0s–789.5s]  canales 250–614
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 25.8% de los canales disparados dentro de 3.5s (extensión del evento: 58.3% del arreglo).
+     · Slant-stack: pico de semblanza 0.003 en v_app = 1,999 m/s (canal 0 → N); 2 canales coherentes con el beam.
+     · Trayectoria del centroide: 18.3 m/s (km↑), R²=0.00, duración 35.5s.
+     · Veredicto: energía sin estructura espacial coherente. Suprimido como falso positivo local.
+
+  Evento evt_0020_79284_0  [795.0s–900.0s]  canales 0–122
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 20.0% de los canales disparados dentro de 3.5s (extensión del evento: 19.6% del arreglo).
+     · Slant-stack: pico de semblanza 0.008 en v_app = 2,420 m/s (canal 0 → N); 3 canales coherentes con el beam.
+     · Trayectoria del centroide: 0.2 m/s (km↓), R²=0.06, duración 105.0s.
+     · Veredicto: energía sin estructura espacial coherente. Suprimido como falso positivo local.
+
+  Evento evt_0020_79284_1  [801.9s–898.6s]  canales 223–250
+  → INCOHERENTE_LOCAL_SUPRIMIDO
+     · Coincidencia: 22.6% de los canales disparados dentro de 3.5s (extensión del evento: 4.5% del arreglo).
+     · Solo 3 canal(es) disparado(s): sin coherencia espacial. Un evento físico real no puede existir en un único punto de la fibra.
+
+  Evento evt_0020_79284_2  [792.8s–900.0s]  canales 357–625
+  → COHERENTE_DESCONOCIDO
+     · Coincidencia: 16.7% de los canales disparados dentro de 3.5s (extensión del evento: 43.0% del arreglo).
+     · Slant-stack: pico de semblanza 0.005 en v_app = 1,816 m/s (canal 0 → N); 4 canales coherentes con el beam.
+     · Trayectoria del centroide: 9.1 m/s (km↑), R²=0.50, duración 107.1s.
+     · Veredicto: coherente pero fuera de las bandas físicas conocidas. Se envía al catálogo de firmas para identificación.
+
+Resultados guardados en resultados_eastfoothills.jsonl
+Sugerencia: corré esto sobre cada uno de tus 12 sismos confirmados y verificá que la clase sea SISMO_CONFIRMADO con v_app en rango — esa es la validación final sobre datos reales.

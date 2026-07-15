@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "darkfiber: a physics-first coherence engine for Distributed Acoustic Sensing"
+version: 1.0.0
+date-released: "2026-07-14"
+type: software
+license: MIT
+repository-code: "https://github.com/Sirkraven/darkfiber"
+authors:
+  - family-names: "Yucare Rios"
+    given-names: "Alejandro"
+    alias: "Sirkraven"
+keywords:
+  - distributed-acoustic-sensing
+  - seismology
+  - earthquake-detection
+  - fiber-optic-sensing
+  - phased-array
+  - das
+abstract: >
+  darkfiber classifies events recorded on Distributed Acoustic Sensing (DAS)
+  fiber-optic arrays by measuring the physics of how they propagate across
+  the array (slant-stack semblance, coincidence, trajectory regression)
+  rather than treating each channel as an independent classification
+  problem. Validated on both synthetic scenarios with known ground truth
+  and real earthquake recordings (Stanford DAS array, QuakeFlow DAS
+  dataset), with a public ledger tying every real-data verdict to its
+  USGS-published origin.

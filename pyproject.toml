@@ -1,0 +1,93 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "darkfiber"
+version = "1.0.0"
+description = "Physics-first coherence engine for Distributed Acoustic Sensing (DAS): the slope in the channel-time plane is the physics."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Alejandro Yucare Rios", email = "Sirkraven@users.noreply.github.com" },
+]
+keywords = [
+    "distributed-acoustic-sensing",
+    "seismology",
+    "earthquake-detection",
+    "fiber-optic-sensing",
+    "phased-array",
+    "das",
+    "multi-agent",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pydantic>=2.5",
+]
+
+[project.optional-dependencies]
+h5 = ["h5py>=3.10"]
+figs = ["matplotlib>=3.8"]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "pre-commit>=3.7",
+]
+
+[project.urls]
+Homepage = "https://github.com/Sirkraven/darkfiber"
+Repository = "https://github.com/Sirkraven/darkfiber"
+Issues = "https://github.com/Sirkraven/darkfiber/issues"
+
+[project.scripts]
+darkfiber-validate = "darkfiber.run_validation:main_cli"
+darkfiber-stanford = "darkfiber.run_on_stanford:main"
+darkfiber-quakeflow = "darkfiber.run_on_quakeflow:main"
+darkfiber-calibrate = "darkfiber.calibrate:main"
+darkfiber-aperture = "darkfiber.characterize_aperture:main_cli"
+darkfiber-interferometry = "darkfiber.interferometry:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/darkfiber"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]  # docstrings/explanations en español pueden superar 100 cols
+
+[tool.ruff.lint.isort]
+known-first-party = ["darkfiber"]
+
+[tool.mypy]
+python_version = "3.10"
+packages = ["darkfiber"]
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+disallow_untyped_defs = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
