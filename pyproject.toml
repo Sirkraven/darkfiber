@@ -59,6 +59,7 @@ darkfiber-quakeflow = "darkfiber.run_on_quakeflow:main"
 darkfiber-calibrate = "darkfiber.calibrate:main"
 darkfiber-aperture = "darkfiber.characterize_aperture:main_cli"
 darkfiber-interferometry = "darkfiber.interferometry:main"
+darkfiber-convert-sgy = "darkfiber.convert_stanford_sgy:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/darkfiber"]

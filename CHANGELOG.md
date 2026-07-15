@@ -61,6 +61,22 @@ the calibration engine, packaged for publication.
   with the smallest time gap could select a one-channel spurious pick over
   the real, array-wide event. Now selects by channel count among the
   overlapping candidates.
+- **Found in the pre-publish clean-room test** (fresh clone, fresh venv, no
+  prior knowledge of the project): the exact `Quickstart` command crashed on
+  a clean Windows machine with `UnicodeEncodeError`, because the default
+  console codepage (cp1252) can't encode the arrows every CLI prints. Every
+  CLI entry point now calls `ensure_utf8_stdio()` first (`_cli_utf8.py`) —
+  the demo commands work out of the box, no `PYTHONIOENCODING` workaround
+  required.
+- Also found in the same test: `run_validation.py` and
+  `characterize_aperture.py` wrote their JSON summary into `figures/`
+  *before* that directory was guaranteed to exist (it was only created
+  inside the `--figs` figure-generation code path, and even then, after
+  the JSON write). A completely fresh checkout without a pre-existing
+  `figures/` directory crashed with `FileNotFoundError` — every previous
+  test run in this project's history happened to reuse a directory created
+  by an earlier run, which is exactly why a clean-room test with a fresh
+  clone matters.
 
 ### Validated (real data, not synthetic)
 

@@ -34,6 +34,7 @@ import sys
 
 import numpy as np
 
+from ._cli_utf8 import ensure_utf8_stdio
 from .contracts import ArrayGeometry, TriggerEvent
 from .synth import bandpass
 
@@ -435,6 +436,7 @@ def _make_fig(lags, gather, detail, ref, dx, v_true, v_meas, r2, out_dir):
 
 def main() -> None:
     """CLI de interferometry.py: ver el docstring del módulo."""
+    ensure_utf8_stdio()
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )

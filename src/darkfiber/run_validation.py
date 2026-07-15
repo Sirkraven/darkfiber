@@ -23,6 +23,7 @@ import time
 
 import numpy as np
 
+from ._cli_utf8 import ensure_utf8_stdio
 from .coherence import CoherenceAgent
 from .contracts import ArrayGeometry, CoherenceConfig, EventClass, Tier0Config
 from .selftest import inject_and_verify, recall_gauge
@@ -321,6 +322,11 @@ def main(make_figs: bool):
     gauge = recall_gauge(st_results)
     print(f"\n  GAUGE 'recall sintético': {gauge * 100:.0f}% ({len(st_results)} inyecciones)")
 
+    # figures/ solo se creaba dentro de make_figures(), y solo con --figs — un
+    # checkout limpio sin esa carpeta rompía este write incluso cuando se pasaba
+    # --figs, porque este bloque corre ANTES de la llamada a make_figures() más
+    # abajo. Encontrado en la prueba de clean-room (ver CHANGELOG.md).
+    os.makedirs("figures", exist_ok=True)
     with open("figures/validation_summary.json", "w", encoding="utf-8") as fh:
         json.dump(
             {
@@ -443,6 +449,7 @@ def make_figures(keep):
 
 def main_cli() -> None:
     """Entry point for the `darkfiber-validate` console script."""
+    ensure_utf8_stdio()
     ap = argparse.ArgumentParser()
     ap.add_argument("--figs", action="store_true")
     main(ap.parse_args().figs)

@@ -37,6 +37,7 @@ from pathlib import Path
 
 import numpy as np
 
+from ._cli_utf8 import ensure_utf8_stdio
 from .coherence import CoherenceAgent
 from .contracts import ArrayGeometry, CoherenceConfig, Tier0Config
 from .synth import bandpass
@@ -109,6 +110,7 @@ def sanitize(data: np.ndarray) -> np.ndarray:
 
 def main() -> None:
     """CLI de run_on_stanford.py: ver el docstring del módulo."""
+    ensure_utf8_stdio()
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )

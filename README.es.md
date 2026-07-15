@@ -21,8 +21,27 @@ canal que adivine.
 ## Quickstart
 
 ```bash
+git clone https://github.com/Sirkraven/darkfiber.git
+cd darkfiber
 pip install -e ".[figs]"
 python -m darkfiber.run_validation --figs   # 5 escenarios sintéticos, 12/12 checks, ~15s
+```
+
+Cada módulo se puede correr como `python -m darkfiber.<módulo>` o con su
+console script instalado (`darkfiber-<nombre>` — ver la tabla de
+[Módulos](#módulos)). Por ejemplo, la otra demo sintética, con su propio
+chequeo contra verdad-terreno:
+
+```bash
+python -m darkfiber.interferometry --demo --figs
+```
+
+**Para correr los tests** (no se instalan con el comando de arriba — hace
+falta el extra `dev`):
+
+```bash
+pip install -e ".[dev,h5,figs]"
+pytest
 ```
 
 ## Resultados — datos reales, no solo sintéticos
@@ -111,22 +130,25 @@ arreglo crudo (canales × tiempo)
 
 ## Módulos
 
-| Archivo | Qué hace |
-|---|---|
-| `contracts.py` | Contratos Pydantic v2: configs, `TriggerEvent`, `CoherenceResult` con `explanations` auditables |
-| `triage.py` | **Nivel 0**: STA/LTA vectorizado exacto (cumsum, LTA retardado) sobre toda la matriz |
-| `coherence.py` | **Nivel 2**: slant-stack/semblanza, coincidencia, rastreo de fuentes móviles, beam apilado, picking P/S |
-| `batching.py` | **Nivel 1**: `AsyncMicroBatcher` para inferencia ONNX en lotes (max 64 / 20 ms) |
-| `catalog.py` | Catálogo vivo de firmas (SQLite): desconocidos recurrentes → clase nombrada sin reentrenar; también el ledger P2 y los perfiles/propuestas de arreglo P3 |
-| `selftest.py` | Inyección sintética sobre buffers reales/vivos + gauge de recall |
-| `synth.py` | Constructores de escenarios sintéticos físicamente correctos |
-| `run_validation.py` | Reproduce cada número de la tabla de arriba (`--figs` genera las figuras) |
-| `run_on_stanford.py` | Adaptador CLI para H5/NPZ reales de Stanford |
-| `convert_stanford_sgy.py` | SEG-Y real de Stanford (PubDAS / `FiberOpticEarthquakes`) → NPZ |
-| `run_on_quakeflow.py` | Arnés de validación contra QuakeFlow DAS, respaldado por el ledger |
-| `characterize_aperture.py` | El límite apertura/distancia, caracterizado con dos barridos sintéticos |
-| `calibrate.py` | Propone ajustes de umbral con evidencia; nunca aplica en silencio |
-| `interferometry.py` | Interferometría de fuente virtual desde el ruido de tráfico descartado — `--demo` valida contra verdad-terreno conocida |
+| Archivo | Console script | Qué hace |
+|---|---|---|
+| `contracts.py` | — | Contratos Pydantic v2: configs, `TriggerEvent`, `CoherenceResult` con `explanations` auditables |
+| `triage.py` | — | **Nivel 0**: STA/LTA vectorizado exacto (cumsum, LTA retardado) sobre toda la matriz |
+| `coherence.py` | — | **Nivel 2**: slant-stack/semblanza, coincidencia, rastreo de fuentes móviles, beam apilado, picking P/S |
+| `batching.py` | — | **Nivel 1**: `AsyncMicroBatcher` para inferencia ONNX en lotes (max 64 / 20 ms) |
+| `catalog.py` | — | Catálogo vivo de firmas (SQLite): desconocidos recurrentes → clase nombrada sin reentrenar; también el ledger P2 y los perfiles/propuestas de arreglo P3 |
+| `selftest.py` | — | Inyección sintética sobre buffers reales/vivos + gauge de recall |
+| `synth.py` | — | Constructores de escenarios sintéticos físicamente correctos |
+| `run_validation.py` | `darkfiber-validate` | Reproduce cada número de la tabla de arriba (`--figs` genera las figuras) |
+| `run_on_stanford.py` | `darkfiber-stanford` | Adaptador CLI para H5/NPZ reales de Stanford |
+| `convert_stanford_sgy.py` | `darkfiber-convert-sgy` | SEG-Y real de Stanford (PubDAS / `FiberOpticEarthquakes`) → NPZ |
+| `run_on_quakeflow.py` | `darkfiber-quakeflow` | Arnés de validación contra QuakeFlow DAS, respaldado por el ledger |
+| `characterize_aperture.py` | `darkfiber-aperture` | El límite apertura/distancia, caracterizado con dos barridos sintéticos |
+| `calibrate.py` | `darkfiber-calibrate` | Propone ajustes de umbral con evidencia; nunca aplica en silencio |
+| `interferometry.py` | `darkfiber-interferometry` | Interferometría de fuente virtual desde el ruido de tráfico descartado — `--demo` valida contra verdad-terreno conocida |
+
+`contracts.py`/`triage.py`/`coherence.py`/`batching.py`/`catalog.py`/`selftest.py`/`synth.py`
+son módulos de biblioteca, no CLIs independientes — se importan, no se corren.
 
 ## Datos
 

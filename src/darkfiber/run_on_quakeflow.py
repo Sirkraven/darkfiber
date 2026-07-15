@@ -30,6 +30,7 @@ import time
 import h5py
 import numpy as np
 
+from ._cli_utf8 import ensure_utf8_stdio
 from .catalog import SignatureCatalog
 from .coherence import CoherenceAgent
 from .contracts import (
@@ -368,6 +369,7 @@ def make_detectability_scatter(
 
 def main() -> None:
     """CLI de run_on_quakeflow.py: ver el docstring del módulo."""
+    ensure_utf8_stdio()
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )

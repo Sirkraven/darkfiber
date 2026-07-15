@@ -21,8 +21,27 @@ classifier to guess.
 ## Quickstart
 
 ```bash
+git clone https://github.com/Sirkraven/darkfiber.git
+cd darkfiber
 pip install -e ".[figs]"
 python -m darkfiber.run_validation --figs   # 5 synthetic scenarios, 12/12 checks, ~15s
+```
+
+Every module is runnable either as `python -m darkfiber.<module>` or via
+its installed console script (`darkfiber-<name>` — see the
+[Modules](#modules) table). For example, the other synthetic demo with a
+known-ground-truth check of its own:
+
+```bash
+python -m darkfiber.interferometry --demo --figs
+```
+
+**Running the test suite** (not installed by the command above — needs the
+`dev` extra):
+
+```bash
+pip install -e ".[dev,h5,figs]"
+pytest
 ```
 
 ## Results — real data, not just synthetic
@@ -109,22 +128,25 @@ raw array (channels × time)
 
 ## Modules
 
-| File | What it does |
-|---|---|
-| `contracts.py` | Pydantic v2 contracts: configs, `TriggerEvent`, `CoherenceResult` with auditable `explanations` |
-| `triage.py` | **Tier 0**: exact vectorized STA/LTA (cumsum, delayed LTA) over the whole matrix |
-| `coherence.py` | **Tier 2**: slant-stack/semblance, coincidence, moving-source tracking, stacked beam, P/S picking |
-| `batching.py` | **Tier 1**: `AsyncMicroBatcher` for batched ONNX inference (max 64 / 20 ms) |
-| `catalog.py` | Live signature catalog (SQLite): recurring unknowns → promoted to a named class without retraining; also the P2 ledger and P3 array profiles/proposals |
-| `selftest.py` | Synthetic injection over live/real buffers + recall gauge |
-| `synth.py` | Physically-correct synthetic scenario builders |
-| `run_validation.py` | Reproduces every number in the table above (`--figs` for figures) |
-| `run_on_stanford.py` | CLI adapter for real Stanford H5/NPZ |
-| `convert_stanford_sgy.py` | Real Stanford SEG-Y (PubDAS / `FiberOpticEarthquakes`) → NPZ |
-| `run_on_quakeflow.py` | Validation harness against QuakeFlow DAS, ledger-backed |
-| `characterize_aperture.py` | The aperture/distance limit, characterized with two synthetic sweeps |
-| `calibrate.py` | Proposes threshold adjustments with evidence; never applies silently |
-| `interferometry.py` | Virtual-source interferometry from discarded traffic noise — `--demo` validates against known ground truth |
+| File | Console script | What it does |
+|---|---|---|
+| `contracts.py` | — | Pydantic v2 contracts: configs, `TriggerEvent`, `CoherenceResult` with auditable `explanations` |
+| `triage.py` | — | **Tier 0**: exact vectorized STA/LTA (cumsum, delayed LTA) over the whole matrix |
+| `coherence.py` | — | **Tier 2**: slant-stack/semblance, coincidence, moving-source tracking, stacked beam, P/S picking |
+| `batching.py` | — | **Tier 1**: `AsyncMicroBatcher` for batched ONNX inference (max 64 / 20 ms) |
+| `catalog.py` | — | Live signature catalog (SQLite): recurring unknowns → promoted to a named class without retraining; also the P2 ledger and P3 array profiles/proposals |
+| `selftest.py` | — | Synthetic injection over live/real buffers + recall gauge |
+| `synth.py` | — | Physically-correct synthetic scenario builders |
+| `run_validation.py` | `darkfiber-validate` | Reproduces every number in the table above (`--figs` for figures) |
+| `run_on_stanford.py` | `darkfiber-stanford` | CLI adapter for real Stanford H5/NPZ |
+| `convert_stanford_sgy.py` | `darkfiber-convert-sgy` | Real Stanford SEG-Y (PubDAS / `FiberOpticEarthquakes`) → NPZ |
+| `run_on_quakeflow.py` | `darkfiber-quakeflow` | Validation harness against QuakeFlow DAS, ledger-backed |
+| `characterize_aperture.py` | `darkfiber-aperture` | The aperture/distance limit, characterized with two synthetic sweeps |
+| `calibrate.py` | `darkfiber-calibrate` | Proposes threshold adjustments with evidence; never applies silently |
+| `interferometry.py` | `darkfiber-interferometry` | Virtual-source interferometry from discarded traffic noise — `--demo` validates against known ground truth |
+
+`contracts.py`/`triage.py`/`coherence.py`/`batching.py`/`catalog.py`/`selftest.py`/`synth.py`
+are library modules, not standalone CLIs — import them, don't run them.
 
 ## Data
 

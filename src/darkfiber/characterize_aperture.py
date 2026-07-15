@@ -25,10 +25,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 
 import numpy as np
 
+from ._cli_utf8 import ensure_utf8_stdio
 from .coherence import fit_onset_velocity, slant_stack_semblance, v_app_max_resoluble
 from .contracts import ArrayGeometry, CoherenceConfig, Tier0Config, TriggerEvent
 from .synth import add_emergent_regional, add_plane_wave, make_noise, ricker
@@ -211,8 +213,6 @@ def sweep2_coherence():
 
 def make_figures(res1, res2, out_dir="figures"):
     """Genera fig5 (límite por geometría + límite por coherencia)."""
-    import os
-
     import matplotlib
 
     matplotlib.use("Agg")
@@ -310,6 +310,9 @@ def main(make_figs: bool):
     dt = time.perf_counter() - t0
     print(f"\nTiempo total: {dt:.1f} s")
 
+    # Mismo bug que en run_validation.py: este write corre antes de que
+    # make_figures() cree figures/, incluso con --figs. Ver CHANGELOG.md.
+    os.makedirs("figures", exist_ok=True)
     with open("figures/limite_apertura.json", "w", encoding="utf-8") as fh:
         json.dump(
             {
@@ -330,6 +333,7 @@ def main(make_figs: bool):
 
 def main_cli() -> None:
     """Entry point for the `darkfiber-aperture` console script."""
+    ensure_utf8_stdio()
     ap = argparse.ArgumentParser()
     ap.add_argument("--figs", action="store_true")
     main(ap.parse_args().figs)

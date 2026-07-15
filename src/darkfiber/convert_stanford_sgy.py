@@ -24,6 +24,8 @@ from pathlib import Path
 
 import numpy as np
 
+from ._cli_utf8 import ensure_utf8_stdio
+
 TXT_HEADER, BIN_HEADER, TRACE_HEADER = 3200, 400, 240
 
 
@@ -67,6 +69,7 @@ def read_segy(path: Path) -> tuple[np.ndarray, float]:
 
 def main() -> None:
     """CLI de convert_stanford_sgy.py: ver el docstring del módulo."""
+    ensure_utf8_stdio()
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("folder", help="Carpeta con los .sgy (p.ej. .../data/Pawnee)")
     ap.add_argument("--out", default="pawnee_real.npz")

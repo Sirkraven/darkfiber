@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 
+from ._cli_utf8 import ensure_utf8_stdio
 from .catalog import SignatureCatalog
 from .contracts import CoherenceConfig
 
@@ -78,6 +79,7 @@ def evaluate_candidate(rows: list[dict], candidate: float) -> list[dict]:
 
 def main() -> None:
     """CLI de calibrate.py: ver el docstring del módulo."""
+    ensure_utf8_stdio()
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
