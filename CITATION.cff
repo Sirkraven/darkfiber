@@ -4,7 +4,7 @@ title: "darkfiber: a physics-first coherence engine for Distributed Acoustic Sen
 version: 1.0.0
 date-released: "2026-07-14"
 type: software
-license: MIT
+license: AGPL-3.0-or-later
 repository-code: "https://github.com/Sirkraven/darkfiber"
 authors:
   - family-names: "Yucare Rios"

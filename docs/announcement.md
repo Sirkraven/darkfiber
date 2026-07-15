@@ -29,7 +29,7 @@ published anywhere by default.
 > (`POSIBLE_REGIONAL_EMERGENTE`) rather than a swept-under-the-rug edge
 > case — write-up in the ADRs.
 >
-> Repo: https://github.com/Sirkraven/darkfiber (MIT license). README has
+> Repo: https://github.com/Sirkraven/darkfiber (AGPL-3.0-or-later license). README has
 > an honesty section up front about what's actually validated (4 real
 > events is a small sample) and what isn't yet (recall is reported as a
 > scalar from 5 synthetic injections; should be a curve with confidence
@@ -43,7 +43,7 @@ published anywhere by default.
 > Open-sourced darkfiber: a physics-first coherence engine for DAS
 > (Distributed Acoustic Sensing). Classifies earthquakes/traffic/noise by
 > measuring propagation across the array, not per-channel classification.
-> Validated on real earthquakes (Stanford, Ridgecrest), MIT licensed, repo
+> Validated on real earthquakes (Stanford, Ridgecrest), AGPL-3.0 licensed, repo
 > includes the real bug we found and fixed along the way.
 > https://github.com/Sirkraven/darkfiber
 

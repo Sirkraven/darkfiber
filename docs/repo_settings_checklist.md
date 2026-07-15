@@ -19,7 +19,7 @@ doesn't create the remote or push — see the note in `PLAN_V_5_1_2.md`).
 - [ ] **Discussions**: optional — consider enabling if you want a place
       for "does this work on my array" questions that aren't quite bug
       reports
-- [ ] **License detection**: GitHub should auto-detect MIT from `LICENSE`
+- [ ] **License detection**: GitHub should auto-detect AGPL-3.0 from `LICENSE`
       — verify it shows up in the sidebar
 - [ ] **About → Releases**: verify `CITATION.cff` renders the "Cite this
       repository" button in the sidebar (GitHub auto-detects it)

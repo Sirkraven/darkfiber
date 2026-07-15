@@ -3,7 +3,7 @@
 # darkfiber
 
 [![CI](https://github.com/Sirkraven/darkfiber/actions/workflows/ci.yml/badge.svg)](https://github.com/Sirkraven/darkfiber/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: AGPL v3+](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
 **Un motor de coherencia física para Distributed Acoustic Sensing (DAS).**
@@ -156,4 +156,8 @@ las decisiones detrás del diseño.
 
 ## Licencia
 
-MIT — ver [`LICENSE`](LICENSE).
+AGPL-3.0-or-later — ver [`LICENSE`](LICENSE). Es una licencia copyleft de
+uso en red: si corrés una versión modificada de este software como
+servicio de red, tenés que poner el código fuente modificado a
+disposición de los usuarios de ese servicio (AGPL §13). Ver el texto
+completo de la licencia para los términos exactos.
