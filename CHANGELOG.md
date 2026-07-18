@@ -4,6 +4,123 @@ All notable changes to this project are documented here. Bugs found and
 closed are listed alongside features — they're evidence of rigor, not
 something to hide.
 
+## [Unreleased] - "Bloque A" (A1-A10), internal
+
+Follow-up validation pass after 1.0.0/v5.2, on `dev`. Re-examined every
+real-data confirmation the pipeline had produced, using two new
+independent guards, and found that **none of them survive**: the project's
+real-world track record goes from "1 confirmed local earthquake" to
+"0 confirmed, all real detections correctly downgraded to honest
+uncertainty." That is the intended failure mode of a system built not to
+over-claim, and it's the headline result of this block. Full write-up:
+`validacion_real/NOTES.md`; final scoreboard: `validacion_real/scoreboard.md`.
+
+### Corrected
+
+- **The 1.0.0 East Foothills M4.1 `SISMO_CONFIRMADO` claim (below, in the
+  `[1.0.0]` section) does not hold and is retracted.** Two independent
+  problems, found in sequence:
+  1. **Fusion artifact (A5).** The originally reported block
+     (`[398.2s, 449.0s]`, 50.8 s wide, said to start 2.8 s *before* the
+     USGS origin) was a merged block spanning multiple physically distinct
+     arrivals — the same failure mode A5's density re-segmentation was
+     built to catch on Ridgecrest. Re-segmented under the current
+     pipeline, the real dense core (`evt_0016_41033`, `[410.3s, 423.8s]`,
+     13.5 s) starts **9.3 s *after*** the origin — consistent with real
+     P/S travel time at ~46 km, not "before the earthquake happened."
+  2. **Boundary solution, not a measurement (A9/A10).** That real core's
+     apparent velocity (`-1,500 m/s`) is exactly `seismic_v_min_mps`, the
+     edge of the search grid — semblance rises monotonically into the
+     boundary with no interior peak, the same non-measurement pattern
+     that had already invalidated the Ridgecrest M5.8 "detection." The
+     independent Theil-Sen onset-velocity estimate (163,200 m/s, R²=0.00)
+     disagrees with the semblance value by 200%, so the cross-estimator
+     concordance gate (A10) rejects the confirmation too — two
+     independent guards, same verdict.
+
+  Current verdict for this event: `POSIBLE_REGIONAL_EMERGENTE`
+  (`HONEST_REGIONAL`), `dt_detect_s=9.3`, `snr_observado=15.9`. See
+  `validacion_real/NOTES.md`, Caso 2, and ADRs 0009-0011.
+
+### Added
+
+- **`characterize_aperture.py` extended; new `snr_curve.py` (A1)**: measures
+  detection recall as a function of SNR against each array's *real*
+  background noise (not synthetic-generic), replacing the old fixed-4-point
+  self-test that had been silently measuring the wrong thing (found on
+  Arcata: 0% recall reported at nominal SNR≈4.7-5.9 turned out to be a
+  short-window bug in the SNR extraction itself, not insufficient signal).
+  See ADR 0007.
+- **Density re-segmentation of merged blocks (A5)**: a Tier0 block that
+  exceeds `max_merged_block_s` is re-examined for internal high-density
+  sub-blocks instead of being scored as one event. Fixes event fusion on
+  Ridgecrest (hundreds of real seismic files, some minutes apart, were
+  being merged into single mega-blocks) and, retrospectively, on the
+  East Foothills M4.1 file above.
+- **Causal, asymmetric ledger matching (A6)**: the QuakeFlow validation
+  harness's window for matching a Tier0 candidate against a catalogued
+  origin is now `[origin, origin + causal_margin_s]`, not a symmetric
+  tolerance window — a real detection cannot start before the earthquake
+  that caused it. See ADR 0008.
+- **`MISS_BELOW_FLOOR` outcome, split from `MISS_SUPPRESSED` (A6)**: a
+  real cataloged event with zero Tier0 candidates in the causal window
+  (consistent with being below the detection floor) is now distinguished
+  from a real event where Tier0 *did* fire and the candidate was lost or
+  suppressed (a genuine classification bug). Previously both fell into
+  one undifferentiated `MISS_SUPPRESSED` bucket. See ADR 0009.
+- **Per-array Tier0 calibration, evidence-gated (A7-A8)**: `calibrate.py`
+  gained a second mode (`--dir` + `--param tier0_threshold`) that proposes
+  a per-array STA/LTA threshold from real noise-floor evidence, refuses to
+  propose anything that would break an existing confirmed HIT, and (A8)
+  sweeps a threshold grid against both real files and a synthetic check
+  before proposing — Ridgecrest's `array_profiles` threshold (8.0, up
+  from the 4.0 global default) is the one calibration that survived this
+  bar; Arcata and Monterey Bay's sweeps found no improving candidate and
+  kept the default.
+- **Boundary-solution guard (A9)**: if a semblance-vs-velocity curve's
+  argmax sits on the edge of the search grid rather than at an interior
+  peak, that's flagged as `boundary_pinned=True` and can no longer, by
+  itself, produce `SISMO_CONFIRMADO` — a monotonically-rising curve
+  pinned to a grid edge means the true optimum is outside the swept
+  range, not that 8000 m/s (or whatever the edge is) is the answer. Found
+  on the real Ridgecrest M5.8 and, retroactively, the East Foothills M4.1.
+  See ADR 0010.
+- **Cross-estimator concordance gate (A10)**: `SISMO_CONFIRMADO` now also
+  requires the independent Theil-Sen onset-velocity estimate to agree with
+  the semblance-based velocity within tolerance. Catches the case the
+  boundary guard alone cannot: an *interior* semblance peak that is still
+  wrong (verified in `run_validation.py` scenario I, a synthetic
+  "distant/fast" event whose semblance peak sits one step inside the grid
+  boundary — `boundary_pinned=False` — but whose onset velocity disagrees
+  by 194%). See ADR 0011.
+
+### Fixed
+
+- The pre-A9 QuakeFlow scoreboard classified `HIT` rows purely on
+  `SISMO_CONFIRMADO` without re-running them through the boundary guard
+  (their stored `metrics_json` predates the `boundary_pinned` field). The
+  harness now flags any such row explicitly instead of silently reporting
+  a HIT that was never checked against the new guard.
+
+### Validated (real data, not synthetic) — supersedes the `[1.0.0]` section below
+
+- Pawnee M5.8 teleseism → `COHERENTE_DESCONOCIDO`, unchanged (Bloque A
+  didn't touch this file; the emergent-surface-wave read was already
+  correct).
+- East Foothills M4.1 → `POSIBLE_REGIONAL_EMERGENTE` (was `SISMO_CONFIRMADO`
+  in 1.0.0 — see "Corrected" above).
+- Ridgecrest M2.67 → `COHERENTE_DESCONOCIDO`, unchanged.
+- Ridgecrest M5.8 → `POSIBLE_REGIONAL_EMERGENTE`, unchanged verdict, but
+  now additionally passes through the A9/A10 guards (it was the real
+  event that motivated building them) instead of relying on the
+  taxonomy fix alone.
+- **Net result across all real, ground-truth-matched events validated to
+  date (N=16, `validacion_real/scoreboard.md`): 0/16 `HIT`.** 8/16
+  `HONEST_UNKNOWN`, 2/16 `HONEST_REGIONAL`, 6/16 `MISS_BELOW_FLOOR`, 0/16
+  `MISS_SUPPRESSED`. Plus 27/27 `CORRECT_REJECTION` on files without a
+  catalogued event, 0/27 `FALSE_ALARM`. Sample size is small and the
+  Wilson 95% CIs are correspondingly wide — reported as-is, not dressed up.
+
 ## [1.0.0] - 2026-07-14
 
 Public release. Internally this was "v5.2": the taxonomy fix, the
@@ -86,6 +203,10 @@ the calibration engine, packaged for publication.
   doesn't force it into one.
 - East Foothills M4.1 (2017, Stanford array) → `SISMO_CONFIRMADO`, 2.8 s
   before the USGS-published origin time, on the correct beam.
+  **⚠️ Retracted — see `[Unreleased]` above.** This was a fusion artifact
+  (the "2.8 s before" block was merged with unrelated prior activity) and
+  a boundary-solution non-measurement; re-examined in Bloque A (A5/A9/A10),
+  current verdict is `POSIBLE_REGIONAL_EMERGENTE`.
 - Ridgecrest M2.67 (2020, via QuakeFlow DAS) → `COHERENTE_DESCONOCIDO`
   (weak signal, correctly not over-confirmed).
 - Ridgecrest M5.8 (2020, via QuakeFlow DAS) → `POSIBLE_REGIONAL_EMERGENTE`
