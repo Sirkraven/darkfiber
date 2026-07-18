@@ -75,6 +75,7 @@ darkfiber-calibrate = "darkfiber.calibrate:main"
 darkfiber-aperture = "darkfiber.characterize_aperture:main_cli"
 darkfiber-interferometry = "darkfiber.interferometry:main"
 darkfiber-convert-sgy = "darkfiber.convert_stanford_sgy:main"
+darkfiber-snr-curve = "darkfiber.snr_curve:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/darkfiber"]

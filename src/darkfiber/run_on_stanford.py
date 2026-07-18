@@ -38,7 +38,7 @@ from pathlib import Path
 import numpy as np
 
 from ._cli_utf8 import ensure_utf8_stdio
-from .coherence import CoherenceAgent
+from .coherence import CoherenceAgent, slant_stack_semblance, slowness_grid
 from .contracts import ArrayGeometry, CoherenceConfig, Tier0Config
 from .synth import bandpass
 from .triage import extract_events, reduction_stats, sta_lta_ratio, trigger_raster
@@ -48,7 +48,7 @@ def load_matrix(args) -> np.ndarray:
     """Devuelve la matriz (canales × muestras) en float32."""
     if args.h5:
         try:
-            import h5py  # noqa: WPS433 (import local: dependencia opcional)
+            import h5py  # import local: dependencia opcional
         except ImportError:
             sys.exit("Falta h5py: pip install h5py")
         with h5py.File(args.h5, "r") as fh:
@@ -135,6 +135,14 @@ def main() -> None:
     ap.add_argument("--no-filter", action="store_true", help="No aplicar bandpass 1–24 Hz")
     ap.add_argument("--threshold", type=float, default=4.0, help="Umbral STA/LTA de Nivel 0")
     ap.add_argument("--out", default="resultados_coherencia.jsonl", help="Salida JSONL")
+    ap.add_argument(
+        "--dump-curve",
+        action="store_true",
+        help="A10: imprime la curva de semblanza COMPLETA (v_app, semblanza) por "
+        "cada evento, no solo el argmax -- necesario para auditar a mano si un "
+        "pico es interior real o una solución de borde (boundary_pinned). "
+        "También la deja en el JSONL de salida (campo 'semblance_curve').",
+    )
     args = ap.parse_args()
 
     data = load_matrix(args)
@@ -179,13 +187,45 @@ def main() -> None:
                 f"[{evt.t_start_s + (args.t0 or 0):.1f}s–{evt.t_end_s + (args.t0 or 0):.1f}s]  "
                 f"canales {evt.ch_min + c0}–{evt.ch_max + c0}"
             )
-            print(f"  → {res.classification.value}")
+            print(f"  → {res.classification.value}  (boundary_pinned={res.boundary_pinned})")
             for ex in res.explanations:
                 print(f"     · {ex}")
+            if res.v_app_onset_mps is not None:
+                print(
+                    f"     · v_app_onset (Theil-Sen) = {res.v_app_onset_mps:,.1f} m/s, "
+                    f"R²={res.onset_fit_r2:.3f}"
+                )
+
+            curve_pts = None
+            if args.dump_curve:
+                # A10: réplica EXACTA del cómputo interno de analyze() (misma
+                # ventana, misma grilla, mismo use_envelope) para que la curva
+                # impresa acá sea la MISMA que decidió el veredicto de arriba,
+                # no una recomputación con supuestos distintos.
+                win, x, margin, _ = agent._extract_window(data, evt)
+                grid = slowness_grid(agent.cfg)
+                sem, _ = slant_stack_semblance(
+                    win, x, geom.fs_hz, grid, margin, agent.cfg.use_envelope
+                )
+                v_axis = 1.0 / grid
+                order = np.argsort(v_axis)
+                curve_pts = [
+                    {"v_app_mps": float(v_axis[i]), "semblance": float(sem[i])} for i in order
+                ]
+                k_max = int(np.argmax(sem))
+                print(
+                    f"     · Curva de semblanza completa ({len(grid)} pasos, "
+                    f"pico en v_app={v_axis[k_max]:,.1f} m/s, sem={sem[k_max]:.4f}):"
+                )
+                for pt in curve_pts:
+                    print(f"         v={pt['v_app_mps']:12,.1f} m/s   sem={pt['semblance']:.4f}")
+
             rec = res.model_dump(mode="json")
             rec["file"] = args.h5 or args.npz
             rec["channel_offset"] = c0
             rec["time_offset_s"] = args.t0 or 0
+            if curve_pts is not None:
+                rec["semblance_curve"] = curve_pts
             fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
     print(f"\nResultados guardados en {out_path}")
