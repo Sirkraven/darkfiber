@@ -23,7 +23,7 @@ solo guarda los resultados livianos (JSONL + consola) de cada corrida.
   de 86s (la demo sintética necesitó 240s para converger). Comportamiento
   honesto, no un fallo.
 
-## Caso 2 — East Foothills M4.1 (sismo local), 2017-10-10 ✅
+## Caso 2 — East Foothills M4.1 (sismo local), 2017-10-10 ❌ NO CONFIRMA (A10, resuelto)
 
 - **Fuente:** PubDAS (Globus, `Campus Stanford-1/Datos/2017/10/10/`), 3 archivos
   SEG-Y de 5 min cada uno (626 canales, **100 Hz** — la tasa de muestreo varió
@@ -37,12 +37,81 @@ solo guarda los resultados livianos (JSONL + consola) de cada corrida.
      Coincidencia 58.8% (97.3% del arreglo) | semblanza 0.292 | v_app=8000 m/s
      579/626 canales coherentes con el beam
   ```
-- **Por qué es una prueba fuerte:** el origen real (USGS) cae en el segundo 401
-  de la grabación. El veredicto del motor cubre el segundo 398.2–449.0 — arranca
-  2.8s *antes* del origen real y lo contiene entero. Cruce contra una fuente
-  independiente (USGS), no contra el propio dataset. Semblanza 0.292 es un
-  orden de magnitud más alta que el caso telesísmico (~0.01), consistente con
-  la física esperada: sismo local con moveout limpio vs. telesismo emergente.
+- **Por qué se pensaba que era una prueba fuerte:** el origen real (USGS) cae en
+  el segundo 401 de la grabación. El veredicto del motor cubre el segundo
+  398.2–449.0 — arranca 2.8s *antes* del origen real y lo contiene entero.
+  Cruce contra una fuente independiente (USGS), no contra el propio dataset.
+  Semblanza 0.292 es un orden de magnitud más alta que el caso telesísmico
+  (~0.01), consistente con la física esperada: sismo local con moveout limpio
+  vs. telesismo emergente.
+
+- **⚠️ Encontrado en A9, revisando el mismo patrón que invalidó el HIT del M5.8
+  de Ridgecrest**: `apparent_velocity_mps=-8000.0` es EXACTAMENTE
+  `seismic_v_max_mps` — el borde superior de la grilla de búsqueda
+  (`np.geomspace(1500, 8000, 36)`), no un valor interior cualquiera cercano a
+  8000. El M5.8 tenía el mismo patrón exacto en el otro extremo (v=-1500.0 =
+  `seismic_v_min_mps`) y resultó ser una solución de borde: la semblanza subía
+  monótonamente hasta pegarse al límite del grillado, sin pico interior — el
+  óptimo real estaba fuera del rango barrido. Acá NO se puede confirmar ni
+  descartar de la misma forma: `resultados_eastfoothills.jsonl` (P0, previo a
+  A9) solo guardó el argmax (`apparent_velocity_mps`, `semblance`), no la
+  curva de semblanza completa, y el `.npz` crudo (`eastfoothills_real.npz`)
+  no está en este entorno (vive en la máquina de Alejandro, como ya avisaba
+  la honestidad de arriba: "la corrida sobre los 12 sismos reales de Stanford
+  queda en tu máquina"). El bloque detectado (398.2–449.0s, **50.8 segundos**
+  de ancho) es además sospechosamente parecido en escala a los bloques
+  contaminados por fusión que motivaron A5 — este resultado es de ANTES de
+  esa auditoría, así que tampoco se puede descartar contaminación por fusión
+  de eventos independiente del problema de borde.
+  **Bloque A NO dio este HIT por sólido.** Quedó pendiente re-correr
+  `eastfoothills_real.npz` con el pipeline actual en la máquina donde está
+  el archivo.
+
+- **✅ RESUELTO EN A10.** Los 3 SEG-Y originales aparecieron en
+  `C:\Users\yukre\Downloads\` (hash verificado contra el .npz reconstruido:
+  `dbdc936e...`, `6363e7c5...`, `1355cb8d...`), reconvertidos con
+  `convert_stanford_sgy.py` a `D:\darkfiber\data\stanford\eastfoothills_real.npz`
+  (626 canales × 89,999 muestras, 900.0s @ 100Hz — mismo alcance que el
+  original: origen USGS en el segundo 401 exacto). Re-corrido con
+  `run_on_stanford.py --dump-curve` bajo el pipeline actual (A5
+  re-segmentación + A9 guarda de borde + A10 concordancia cruzada):
+
+  ```
+  Evento evt_0016_41033  [410.3s–423.8s]  canales 4–612
+  → POSIBLE_REGIONAL_EMERGENTE  (boundary_pinned=True)
+     Coincidencia 61.1% (97.3% del arreglo) | semblanza 0.217 en v_app=-1500 m/s
+     v_app_onset (Theil-Sen) = 163,200 m/s (R²=0.00) -- discrepa 200% de la semblanza
+  ```
+
+  Dos hallazgos, no uno:
+  1. **A5 limpió el bloque fusionado.** El viejo bloque de P0
+     (`[398.2s,449.0s]`, 50.8s, arrancaba 2.8s ANTES del origen) se
+     re-segmentó en piezas más chicas. El núcleo denso real —
+     `evt_0016_41033`, `[410.3s,423.8s]`, 13.5s — arranca **9.3s DESPUÉS**
+     del origen, consistente con tiempo de viaje P/S real a ~46km de
+     distancia (P≈7.7s, S≈13.1s a velocidades crustales típicas). El "2.8s
+     antes" de la redacción original era un artefacto de fusión: el bloque
+     viejo incluía ~12s de actividad previa al núcleo real, contaminación
+     de la misma familia que motivó A5 en Ridgecrest.
+  2. **El núcleo real es un artefacto de borde, igual que el M5.8.** La
+     curva de semblanza completa (72 pasos) sube monótonamente desde 0.172
+     (en -8000 m/s) hasta 0.217 exactamente en -1500 m/s = `seismic_v_min_mps`
+     — sin pico interior. El ajuste de onsets (Theil-Sen, independiente)
+     da 163,200 m/s con R²=0.00 ("moveout plano") — discrepa 200% de la
+     semblanza. Ambas guardas nuevas (A9 borde, A10 concordancia) rechazan
+     la confirmación de forma independiente y redundante.
+
+  **Cero eventos `SISMO_CONFIRMADO` en las 900 segundos completas del
+  archivo** (verificado: `grep "→ SISMO_CONFIRMADO"` sobre la salida
+  completa de `--dump-curve`, cero resultados). Ledger actualizado
+  (`stanford1_campus` invalidado con motivo, nueva fila:
+  `POSIBLE_REGIONAL_EMERGENTE`/`HONEST_REGIONAL`, `dt_detect_s=9.3`,
+  `snr_observado=15.9`). El sistema prefirió abstenerse (regional) antes
+  que alucinar una confirmación — el mismo comportamiento que ya se había
+  validado para el M5.8, ahora también para el único otro HIT que quedaba
+  en el ledger. **Con esto, el Bloque A cierra con 0 sismos locales
+  confirmados de forma sólida** — ver CHANGELOG A10 para la matriz final
+  y la lectura completa.
 
 ## Caso 3 — Ridgecrest North (Hugging Face `AI4EPS/quakeflow_das`), dos magnitudes
 
