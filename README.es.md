@@ -25,7 +25,7 @@ canal que adivine.
 git clone https://github.com/Sirkraven/darkfiber.git
 cd darkfiber
 pip install -e ".[figs]"
-python -m darkfiber.run_validation --figs   # 5 escenarios sintéticos, 12/12 checks, ~15s
+python -m darkfiber.run_validation --figs   # 9 escenarios sintéticos, 29/29 checks, ~11s
 ```
 
 Cada módulo se puede correr como `python -m darkfiber.<módulo>` o con su
@@ -45,66 +45,88 @@ pip install -e ".[dev,h5,figs]"
 pytest
 ```
 
-## Resultados — datos reales, no solo sintéticos
+## Caja de honestidad — leé esto antes de confiar en un número de abajo
 
-Cada veredicto sobre datos reales de abajo está cruzado contra una fuente
-independiente (tiempo de origen del USGS, o la verdad-terreno embebida en
-el dataset [QuakeFlow DAS](https://huggingface.co/datasets/AI4EPS/quakeflow_das))
-— no solo contra los propios escenarios sintéticos de este repositorio.
+**Resultado principal: 0 sismos confirmados sobre 16 eventos reales con
+verdad-terreno — y esa es la evidencia real de que el sistema funciona.**
+Dos confirmaciones aparentes de pasadas de validación anteriores (un M4.1
+y un M5.8, ambos reales, ambos grandes) fueron retractadas después por dos
+guardas internas independientes — un chequeo de que un pico
+semblanza-vs-velocidad no está simplemente pegado al borde de la grilla de
+búsqueda (una no-medición), y la exigencia de que un segundo estimador de
+velocidad, estructuralmente distinto, concuerde con el primero. Relato
+completo, incluyendo exactamente cómo se atrapó cada uno: [el writeup
+técnico](docs/writeup.md) §6 (borrador, en revisión del autor), o la
+versión corta en [`CHANGELOG.md`](CHANGELOG.md) `[Unreleased]`.
 
-| Evento | Arreglo | Magnitud | Veredicto | Outcome |
-|---|---|---|---|---|
-| East Foothills, 2017-10-10 | Stanford-1 Campus | M4.1 | `SISMO_CONFIRMADO` | **HIT** — 2.8s antes del origen USGS |
-| Pawnee, OK (telesismo), 2016-09-03 | Stanford-1 Campus | M5.8 | `COHERENTE_DESCONOCIDO` | correctamente no sobre-confirmado — la llegada emergente de un telesismo no es un moveout local |
-| Ridgecrest, 2020-06-24 | Ridgecrest North | M2.67 | `COHERENTE_DESCONOCIDO` | señal débil, correctamente no sobre-confirmado |
-| Ridgecrest, 2020-06-24 | Ridgecrest North | M5.8 | `POSIBLE_REGIONAL_EMERGENTE` | correctamente escalado, no suprimido — [fue un bug real](CHANGELOG.md), corregido en 1.0.0 |
+**Qué está realmente validado:** 43 grabaciones DAS reales en 4
+instalaciones (Stanford, Ridgecrest North, Arcata, Monterey Bay) — 16 con
+un sismo real catalogado contra el cual medir (verdad-terreno
+USGS/SCEDC), 27 sin evento catalogado como chequeo de falsa alarma (27/27
+correctamente rechazados, 0 falsas alarmas) — más un caso telesísmico
+cualitativo (Pawnee) validado por separado. Matriz completa en
+"Resultados" más abajo; [`validacion_real/scoreboard.md`](validacion_real/scoreboard.md)
+es la versión viva y regenerable, y [`validacion_real/NOTES.md`](validacion_real/NOTES.md)
+es el relato completo.
 
-Detalle completo, incluyendo cómo se encontró y verificó cada uno:
-[`validacion_real/NOTES.md`](validacion_real/NOTES.md). Scoreboard vivo
-(se regenera desde el ledger): [`validacion_real/scoreboard.md`](validacion_real/scoreboard.md).
-
-Validación sintética (verdad-terreno conocida,
-`python -m darkfiber.run_validation --figs`): **12/12 checks**, incluyendo
-un escenario armado específicamente para reproducir el bug regional-emergente
-de arriba (`E_regional_emergente`) para que no pueda regresionar en silencio.
-
-## Caja de honestidad — leé esto antes de confiar en un número de arriba
-
-**Qué está realmente validado:** 4 eventos reales en 2 arreglos
-(Stanford-1 Campus, Ridgecrest North), cada uno cruzado contra una fuente
-de verdad-terreno independiente. Es una muestra chica. La infraestructura
-para hacerla crecer (`run_on_quakeflow.py`, el ledger, el scoreboard) ya
-soporta decenas de eventos en los tres arreglos que QuakeFlow DAS pone a
-disposición (Arcata, Monterey Bay, Ridgecrest) — el límite hoy es el
-tamaño de la muestra, no la herramienta.
+**Sesgo de selección — mayormente pagado, no eliminado.** De los 16
+eventos reales con verdad-terreno, 13 (los 3 de Arcata, y 10 de los 12 de
+Ridgecrest North) son una muestra ciega pre-registrada, sorteada antes de
+ver ningún resultado y comprometida a correrse tal cual salga
+([`sample_plan.md`](sample_plan.md)). Los 3 restantes (East Foothills
+M4.1, y los 2 eventos elegidos a mano de Ridgecrest North — M2.67 y el
+M5.8 discutido arriba) son anteriores a esa disciplina y se eligieron a
+mano como candidatos plausibles — señalado como tal, no mezclado en
+silencio. Pawnee (el caso telesísmico cualitativo) también se eligió a
+mano y queda fuera de los 16 por completo, como ya se aclaró arriba.
 
 **Límite conocido — apertura vs. distancia:** un sismo real y fuerte puede
 ser simultáneamente "demasiado lejano/emergente para que este arreglo mida
 una velocidad" y "no un falso positivo". [`docs/adr/0002`](docs/adr/0002-regional-emergent-class.md)
 y [`characterize_aperture.py`](src/darkfiber/characterize_aperture.py)
-documentan esto con dos barridos sintéticos; para una apertura de ~9 km
-(Ridgecrest North), la medición de velocidad por semblanza se degrada bien
-antes de lo que predeciría el límite geométrico ingenuo de muestreo. No
-extrapoles el comportamiento de sismo-confirmado de este sistema a
-arreglos mucho más cortos que los validados acá sin volver a correr esa
-caracterización.
+documentan esto con dos barridos sintéticos. La detectabilidad misma
+(SNR50) se mide por instalación, no se asume desde la geometría: arcata
+5.9 vs. monterey_bay 1.6, un factor de 3.7× — ver
+[el writeup](docs/writeup.md) §5.2 y
+[`docs/adr/0007`](docs/adr/0007-recall-as-curve-not-scalar.md).
 
-**Deuda consciente — sesgo de selección:** los 4 eventos reales de arriba
-no fueron una muestra aleatoria ciega. Cada uno se encontró buscando en
-USGS/QuakeFlow un candidato plausible (magnitud, distancia, disponibilidad
-de datos), lo cual sesga hacia eventos con más chance de dar un resultado
-limpio. El caso regional-emergente M5.8 es el contraejemplo que mantuvo
-esto honesto — NO fue el resultado que la búsqueda buscaba — pero la tasa
-base de "qué tan seguido acierta este sistema sobre un evento real sin
-seleccionar" todavía no se conoce. Hacer crecer el ledger con un lote sin
-filtrar (no elegido a mano por dar buena historia) es el próximo paso
-real, no un detalle de pulido.
+**La muestra es chica.** N=16 eventos reales con verdad-terreno da
+intervalos de Wilson 95% anchos en cada tasa de abajo — reportados como se
+midieron, sin suavizar.
 
-**El recall hoy es un escalar, debería ser una curva.** `recall_gauge()`
-reporta la tasa de detección sobre 5 inyecciones sintéticas. Ver
-[`docs/adr/0007`](docs/adr/0007-recall-as-curve-not-scalar.md) sobre por
-qué una curva recall-vs-SNR con intervalos de confianza es el objetivo
-correcto, y por qué no hay que sobre-interpretar un escalar de 5 muestras.
+## Resultados — datos reales, no solo sintéticos
+
+Cada veredicto sobre datos reales está cruzado contra una fuente
+independiente (tiempo de origen del USGS/SCEDC, o la verdad-terreno
+embebida en el dataset [QuakeFlow DAS](https://huggingface.co/datasets/AI4EPS/quakeflow_das))
+— no solo contra los propios escenarios sintéticos de este repositorio.
+
+**Matriz final (N=16 eventos reales con verdad-terreno, IC 95% Wilson):**
+
+| Outcome | n/N | Tasa | IC 95% |
+|---|---|---|---|
+| `SISMO_CONFIRMADO` (HIT) | 0/16 | 0.0% | [0.0%, 19.4%] |
+| `COHERENTE_DESCONOCIDO` (HONEST_UNKNOWN) | 8/16 | 50.0% | [28.0%, 72.0%] |
+| `POSIBLE_REGIONAL_EMERGENTE` (HONEST_REGIONAL) | 2/16 | 12.5% | [3.5%, 36.0%] |
+| MISS_SUPPRESSED (el motor lo vio y lo descartó mal) | 0/16 | 0.0% | [0.0%, 19.4%] |
+| MISS_BELOW_FLOOR (bajo el piso de detección medido de ese arreglo) | 6/16 | 37.5% | [18.5%, 61.4%] |
+
+Además, sobre los 27 archivos sin evento catalogado: **27/27
+correctamente rechazados, 0 falsas alarmas.**
+
+Detalle completo, incluyendo cómo se encontró y verificó cada evento
+real — y, para dos de ellos, cómo se retractaron al fallar una guarda
+independiente: [el writeup técnico](docs/writeup.md) (borrador) o
+[`validacion_real/NOTES.md`](validacion_real/NOTES.md) (notas de trabajo
+completas). Scoreboard vivo (se regenera desde el ledger, desglose por
+arreglo): [`validacion_real/scoreboard.md`](validacion_real/scoreboard.md).
+
+Validación sintética (verdad-terreno conocida,
+`python -m darkfiber.run_validation --figs`): **29/29 checks** en 9
+escenarios, incluyendo algunos armados específicamente para reproducir el
+bug regional-emergente, la no-medición de borde de grilla, y la
+discrepancia entre estimadores de arriba, para que ninguno pueda
+regresionar en silencio.
 
 ## Arquitectura
 
@@ -147,6 +169,7 @@ arreglo crudo (canales × tiempo)
 | `characterize_aperture.py` | `darkfiber-aperture` | El límite apertura/distancia, caracterizado con dos barridos sintéticos |
 | `calibrate.py` | `darkfiber-calibrate` | Propone ajustes de umbral con evidencia; nunca aplica en silencio |
 | `interferometry.py` | `darkfiber-interferometry` | Interferometría de fuente virtual desde el ruido de tráfico descartado — `--demo` valida contra verdad-terreno conocida |
+| `snr_curve.py` | `darkfiber-snr-curve` | Curva recall-vs-SNR contra el ruido de fondo real propio de cada arreglo, con IC de Wilson y SNR50 |
 
 `contracts.py`/`triage.py`/`coherence.py`/`batching.py`/`catalog.py`/`selftest.py`/`synth.py`
 son módulos de biblioteca, no CLIs independientes — se importan, no se corren.

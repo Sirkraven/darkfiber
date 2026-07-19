@@ -247,3 +247,48 @@ orphan figures: all 11 files under `figures/` are cited in `writeup.md`,
 and every citation resolves to a file that exists on disk (verified by
 listing `figures/` and grepping `writeup.md`'s `fig*.png` references
 against it — both sets identical).
+
+## PLAN_CIERRE_Y_LANZAMIENTO, FASE F1 — additional sourced numbers
+
+Added to `writeup.md` §4 per F1 items 1 and 2 (monterey_bay units caveat
+and the `synth_recall=0.0` hypothesis check). Sources:
+
+- `array_profiles.noise_stats_json.rms_mean` for monterey_bay: 60,105.93
+  vs. ridgecrest_north 0.1623, arcata 0.0189 (`SELECT array_id,
+  noise_stats_json FROM array_profiles`, active ledger). "5-6 orders of
+  magnitude" is `log10(60105.93/0.1623) ≈ 5.6` and
+  `log10(60105.93/0.0189) ≈ 6.5` — stated range covers both.
+- `array_profiles.fs` for monterey_bay: 199.99542246805265 (same query).
+- `array_profiles.synth_recall` for monterey_bay: 0.0 (same query).
+- `snr_curve_monterey_bay.json`, field `curve`: SNR=3.0 → `hits: 18, n:
+  20`; SNR=8.0 → `hits: 18, n: 20` (the recovered file, §5.2 above).
+- `run_array_selftest`'s battery size: `SELFTEST_SNR_STEPS = (3.0, 8.0,
+  20.0)`, `SELFTEST_TRIALS_PER_STEP = 3` (`run_on_quakeflow.py`) → 3×3=9
+  trials total, cited as such.
+- The "hard to reconcile... ~1-in-a-billion" claim: binomial
+  P(0 successes in 9 trials | true p=0.9) = 0.1^9 = 1e-9. Order-of-magnitude
+  statement, not a formal test — worded as such in the prose ("roughly").
+- `snr_to_amplitude()` formula (`amp = target_snr * RMS(noise) /
+  RMS(wavelet)`) and its scale-invariance: `src/darkfiber/synth.py`,
+  function docstring, verified by reading the implementation.
+- 3.7× SNR50 spread: 5.9 / 1.6 = 3.6875 (both values already sourced
+  above, §5.2).
+
+## PLAN_CIERRE_Y_LANZAMIENTO, FASE F1 — README v1.0 residue audit
+
+`README.md`/`README.es.md` (git blame: last touched at the 1.0.0 release,
+`479c39d`/`d766721`, before Bloque A) still stated, verbatim: the
+retracted East Foothills `SISMO_CONFIRMADO` HIT claim as current; a
+4-row results table missing arcata/monterey_bay entirely; "12/12 checks"
+for `run_validation.py` (current: 29/29, re-run and confirmed this pass,
+9 scenarios A-I); a honesty box claiming "4 real events across 2 arrays"
+as the full validated set (current: 43 files / 16 ground-truth-matched /
+4 arrays, `sample_plan.md`); and a "recall is a scalar" limitation that
+A1 already resolved (`snr_curve.py`). All rewritten against the same
+sources as `writeup.md` (scoreboard.md's matrix, the array table above,
+pytest/run_validation counts re-confirmed same session). Honesty box
+moved to before the Results section per F1 item 5's instruction that it
+"go first." `docs/announcement.md` and `docs/release_notes_v1.0.0.md`
+checked: neither is referenced anywhere else in the current repo tree
+(`grep -rl` for both filenames returns nothing outside themselves) — left
+untouched as historical record, per instruction.

@@ -102,6 +102,29 @@ over-claim, and it's the headline result of this block. Full write-up:
   harness now flags any such row explicitly instead of silently reporting
   a HIT that was never checked against the new guard.
 
+### Recovered
+
+- **monterey_bay's SNR50 (1.6) and full recall-vs-SNR curve, lost from the
+  active `array_profiles` row by a later, unrelated upsert.** Traced to an
+  archived pre-A5 ledger snapshot (`updated`=2026-07-15T23:54:33 UTC, same
+  measurement) where the value still existed with clean provenance;
+  restored to the active ledger via `SignatureCatalog.upsert_array_profile()`
+  (the real COALESCE code path, not a raw SQL write), leaving every other
+  field of the row untouched, after taking a full backup of the active
+  ledger first. Not a re-measurement — Bloque A stayed frozen throughout.
+  `array_profile_history` had zero rows for `monterey_bay`, which rules
+  out an intentional archive-then-clear via `archive_array_profile()` (A7)
+  as the explanation; whatever wrote the later row most likely predates
+  the current COALESCE-safe `upsert_array_profile`. Full account:
+  `docs/writeup_data.md`, "Open gates — resolution log."
+- **Debt registered, not yet fixed**: nothing currently tests that an
+  `array_profiles` upsert cannot silently drop `recall_curve_json`/`snr50`
+  without going through `archive_array_profile()` first — the loss above
+  went undetected until the writeup's traceability pass caught it by hand.
+  A regression test for "an upsert never nullifies a previously-measured
+  field without an `array_profile_history` row explaining why" belongs in
+  the v1.2 backlog.
+
 ### Validated (real data, not synthetic) — supersedes the `[1.0.0]` section below
 
 - Pawnee M5.8 teleseism → `COHERENTE_DESCONOCIDO`, unchanged (Bloque A

@@ -137,6 +137,47 @@ Real-data validation drew on two sources:
   | arcata | 15 | 3,020 | 100.0 | 5.10 | 15,411 |
   | monterey_bay | 15 | 2,845 | ~200.0 | 5.2 | 14,789 |
 
+**A caveat on monterey_bay, stated rather than silently normalized away:**
+its measured background noise RMS (`array_profiles.noise_stats_json.rms_mean
+≈ 60,106`) is roughly 5-6 orders of magnitude above the other three arrays
+(0.02-0.16), and its sampling rate is `fs≈199.995 Hz` rather than a clean
+200.0 Hz — both taken verbatim from the ledger, not transcription errors.
+The likely explanation is that this particular QuakeFlow source file is in
+different physical units than the other three arrays (e.g. raw
+digitizer counts rather than microstrain-rate), not a measurement error on
+our side. This does **not** undermine the SNR50/recall results above:
+`snr_to_amplitude()`, the project's one operative SNR definition, scales
+an injected wavelet by the *local* noise RMS
+(`amp = target_snr · RMS(noise) / RMS(wavelet)`), so it is scale-invariant
+by construction — a SNR50 of 1.6 means the same thing on monterey_bay's
+scale as arcata's 5.9 means on arcata's. What it does mean: no comparison
+of *absolute* amplitude, semblance offset, or raw-unit thresholds across
+arrays should be drawn from this dataset, and confirming the actual
+physical units of the monterey_bay source file is open, declared work
+(backlog), not resolved here.
+
+A second, related number needs the same care rather than a tidy story:
+`array_profiles.synth_recall = 0.0` for monterey_bay — a legacy,
+low-power self-test metric (`run_array_selftest`, 3 SNR steps × 3 trials
+= 9 injections total) computed separately from the properly-powered
+recall curve above (7 steps × 20 trials = 140 injections, the same
+`snr_to_amplitude` definition). Zero successes in 9 trials is hard to
+reconcile with the recall curve's own measurement at the same SNR values
+(SNR=3: 18/20 hits; SNR=8: 18/20 hits) — if the true recall there is
+really ~90%, 0/9 has roughly a 1-in-a-billion probability by chance,
+which argues against reading it as ordinary sampling noise. It is
+tempting to blame the same unit anomaly above, but that story does not
+actually hold up: `run_array_selftest` injects via the same
+scale-invariant `snr_to_amplitude()`, so a raw-unit mismatch should not,
+by the mechanism we can see, zero out its recall while leaving the
+curve's recall intact. We are not asserting a cause here — flagging a
+real, well-evidenced discrepancy between two self-test code paths on the
+same array, with the actual mechanism unresolved, rather than connecting
+it to the unit anomaly without evidence that the connection is real. Both
+are backlog items (`docs/writeup_data.md`), not investigated further in
+this documentation pass since doing so would mean running new code
+against Bloque A, which stays frozen.
+
 The QuakeFlow validation ledger totals **43 events across these four
 array/installation entries** (arcata 15, monterey_bay 15,
 ridgecrest_north 12, Stanford/East Foothills 1), all with distinct source
@@ -198,11 +239,12 @@ with Wilson 95% confidence intervals at each step (n=20 trials/step):
 
 (`figures/fig6_recall_snr_ridgecrest_north.png`,
 `figures/fig6_recall_snr_monterey_bay.png`,
-`figures/fig6_recall_snr_arcata.png`.) These differ by nearly a factor of
-4 across installations with broadly comparable channel counts and spacing
-— detectability is not a fixed property of "how many channels" or "how
-long is the array," it is a property of the specific installation's real
-noise floor, and has to be measured per-installation rather than assumed.
+`figures/fig6_recall_snr_arcata.png`.) Arcata's 5.9 vs. monterey_bay's
+1.6 is a 3.7× spread (5.9 / 1.6 = 3.6875) across installations with
+broadly comparable channel counts and spacing — detectability is not a
+fixed property of "how many channels" or "how long is the array," it is
+a property of the specific installation's real noise floor, and has to
+be measured per-installation rather than assumed.
 Per-array threshold calibration (`calibrate.py`, evidence-gated: a
 threshold sweep must not break an existing confirmed HIT to be proposed)
 found one improving change — ridgecrest_north's Tier0 threshold (4.0 →
@@ -311,10 +353,10 @@ apertures and velocities, up until the velocity approaches the
 geometric ceiling for that aperture, where error grows sharply.
 
 **Detectability is per-installation, not a geometric constant** — §5.2's
-factor-of-~4 spread in SNR50 across three arrays with broadly similar
-channel counts means "will this array see a given event" cannot be
-answered from geometry alone; it requires measuring against that
-installation's real noise.
+3.7× spread in SNR50 (arcata 5.9 vs. monterey_bay 1.6) across three
+arrays with broadly similar channel counts means "will this array see a
+given event" cannot be answered from geometry alone; it requires
+measuring against that installation's real noise.
 
 **The sample is small.** N=16 ground-truth-matched real events yields
 wide Wilson intervals (e.g. HONEST_UNKNOWN's true rate could plausibly be
@@ -333,12 +375,19 @@ surfaced, not as a settled result.
 
 ## 8. Future work
 
-**Virtual-source interferometry from discarded traffic.** Vehicle traffic
-is currently discarded as noise (`FUENTE_MOVIL_TRAFICO`) once its
-trajectory is measured — but a moving source crossing a fiber array is
-also a candidate calibrated seismic source for noise-correlation-function
-(NCF) interferometry (`interferometry.py`,
-`darkfiber-interferometry` console script). The synthetic validation of
+**Virtual-source interferometry from discarded traffic — passive
+subsurface monitoring, not induced seismicity.** To be explicit about
+what this is not: nothing here proposes generating or triggering
+earthquakes to calibrate anything. Vehicle traffic is already crossing
+the array and is currently discarded as noise (`FUENTE_MOVIL_TRAFICO`)
+once its trajectory is measured; the idea is purely passive — using a
+source that already exists to recover the empirical Green's function
+between channel pairs via noise-correlation-function (NCF)
+interferometry, the standard passive-seismology technique for monitoring
+how the subsurface itself changes over time (velocity structure,
+damage, saturation) without any active source at all
+(`interferometry.py`, `darkfiber-interferometry` console script). The
+synthetic validation of
 this path passes fully (`tests/test_interferometry.py`,
 `test_interferometry_demo_passes_all_four_checks`, 4/4);
 `figures/fig4_interferometria.png` shows the resulting virtual-source

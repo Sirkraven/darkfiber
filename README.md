@@ -25,7 +25,7 @@ classifier to guess.
 git clone https://github.com/Sirkraven/darkfiber.git
 cd darkfiber
 pip install -e ".[figs]"
-python -m darkfiber.run_validation --figs   # 5 synthetic scenarios, 12/12 checks, ~15s
+python -m darkfiber.run_validation --figs   # 9 synthetic scenarios, 29/29 checks, ~11s
 ```
 
 Every module is runnable either as `python -m darkfiber.<module>` or via
@@ -45,64 +45,86 @@ pip install -e ".[dev,h5,figs]"
 pytest
 ```
 
-## Results — real data, not just synthetic
+## Honesty box — read this before trusting a number below
 
-Every real-data verdict below is cross-checked against an independent
-source (USGS origin time, or the ground truth embedded in the
-[QuakeFlow DAS](https://huggingface.co/datasets/AI4EPS/quakeflow_das)
-dataset) — not just against this repository's own synthetic scenarios.
+**Headline result: 0 confirmed earthquakes out of 16 real, ground-truth-matched
+events — and that is the actual evidence this system works.** Two apparent
+confirmations from earlier validation passes (a M4.1 and a M5.8, both real,
+both large) were subsequently retracted by two independent internal
+guards — a check that a semblance-vs-velocity peak isn't just sitting on
+the edge of the search grid (a non-measurement), and a requirement that a
+second, structurally different velocity estimator agree with the first.
+Full account, including exactly how each was caught: [the technical
+writeup](docs/writeup.md) §6 (draft, under author review), or the short
+version in [`CHANGELOG.md`](CHANGELOG.md) `[Unreleased]`.
 
-| Event | Array | Magnitude | Verdict | Outcome |
-|---|---|---|---|---|
-| East Foothills, 2017-10-10 | Stanford-1 Campus | M4.1 | `SISMO_CONFIRMADO` | **HIT** — 2.8s before the USGS origin time |
-| Pawnee, OK (teleseism), 2016-09-03 | Stanford-1 Campus | M5.8 | `COHERENTE_DESCONOCIDO` | correctly *not* over-confirmed — a teleseism's emergent arrival isn't a local moveout |
-| Ridgecrest, 2020-06-24 | Ridgecrest North | M2.67 | `COHERENTE_DESCONOCIDO` | weak signal, correctly not over-confirmed |
-| Ridgecrest, 2020-06-24 | Ridgecrest North | M5.8 | `POSIBLE_REGIONAL_EMERGENTE` | correctly escalated, not suppressed — [was a real bug](CHANGELOG.md), fixed in 1.0.0 |
+**What's actually validated:** 43 real DAS recordings across 4 array
+installations (Stanford, Ridgecrest North, Arcata, Monterey Bay) — 16
+carrying a cataloged real earthquake scored against USGS/SCEDC ground
+truth, 27 with no cataloged event as a false-alarm check (27/27 correctly
+rejected, 0 false alarms) — plus a qualitative teleseism case (Pawnee)
+validated separately. Full matrix in "Results" below;
+[`validacion_real/scoreboard.md`](validacion_real/scoreboard.md) is the
+live, regenerable version and [`validacion_real/NOTES.md`](validacion_real/NOTES.md)
+is the full narrative.
 
-Full write-up, including how each of these was found and cross-checked:
-[`validacion_real/NOTES.md`](validacion_real/NOTES.md). Live scoreboard
-(regenerates from the ledger): [`validacion_real/scoreboard.md`](validacion_real/scoreboard.md).
-
-Synthetic validation (known ground truth, `python -m darkfiber.run_validation --figs`):
-**12/12 checks**, including a scenario built specifically to reproduce the
-regional-emergent bug above (`E_regional_emergente`) so it can't regress
-silently.
-
-## Honesty box — read this before trusting a number above
-
-**What's actually validated:** 4 real events across 2 arrays (Stanford-1
-Campus, Ridgecrest North), each cross-checked against an independent
-ground-truth source. That is a small sample. The infrastructure to grow it
-(`run_on_quakeflow.py`, the ledger, the scoreboard) supports dozens of
-events across the three arrays QuakeFlow DAS makes available (Arcata,
-Monterey Bay, Ridgecrest) — the sample size, not the tooling, is today's
-limit.
+**Selection bias — mostly paid down, not eliminated.** Of the 16
+ground-truth-matched real events, 13 (Arcata's 3, and 10 of Ridgecrest
+North's 12) are a pre-registered blind sample, drawn before any result
+was seen and committed to run as-is regardless of outcome
+([`sample_plan.md`](sample_plan.md)). The remaining 3 (East Foothills
+M4.1, and the 2 hand-picked Ridgecrest North events — M2.67 and the M5.8
+discussed above) predate that discipline and were hand-picked as
+plausible candidates — flagged as such, not blended in silently. Pawnee
+(the qualitative teleseism case) was also hand-picked and is outside the
+16 entirely, as noted above.
 
 **Known limit — aperture vs. distance:** a real, strong earthquake can be
 simultaneously "too far/emergent for this array to measure a velocity" and
 "not a false positive". [`docs/adr/0002`](docs/adr/0002-regional-emergent-class.md)
 and [`characterize_aperture.py`](src/darkfiber/characterize_aperture.py)
-document this with two synthetic sweeps; for a ~9 km aperture (Ridgecrest
-North), semblance-based velocity measurement degrades well before the
-naive geometric sampling limit would predict. Don't extrapolate this
-system's confirmed-earthquake behavior to arrays much shorter than the
-ones validated here without re-running that characterization.
+document this with two synthetic sweeps. Detectability itself (SNR50) is
+measured per installation, not assumed from geometry: arcata 5.9 vs.
+monterey_bay 1.6, a 3.7× spread — see
+[the writeup](docs/writeup.md) §5.2 and
+[`docs/adr/0007`](docs/adr/0007-recall-as-curve-not-scalar.md).
 
-**Conscious debt — selection bias:** the 4 real events above were not a
-blind random sample. Each was found by searching USGS/QuakeFlow for a
-plausible candidate (magnitude, distance, data availability), which biases
-toward events likely to produce a clean result. The regional-emergent M5.8
-case is the counter-example that kept this honest — it was *not* the
-result the search was aiming for — but the base rate of "how often does
-this system get it right on an unselected real event" is not yet known.
-Growing the ledger with an unfiltered batch (not hand-picked for a good
-story) is the next real step, not a polish item.
+**The sample is small.** N=16 ground-truth-matched real events gives wide
+Wilson 95% confidence intervals on every rate below — reported as
+measured, not smoothed over.
 
-**Recall is a scalar today, should be a curve.** `recall_gauge()` reports
-detection rate from 5 synthetic injections. See
-[`docs/adr/0007`](docs/adr/0007-recall-as-curve-not-scalar.md) for why a
-recall-vs-SNR curve with confidence intervals is the right target and why
-a 5-sample scalar shouldn't be over-read.
+## Results — real data, not just synthetic
+
+Every real-data verdict is cross-checked against an independent source
+(USGS/SCEDC origin time, or the ground truth embedded in the
+[QuakeFlow DAS](https://huggingface.co/datasets/AI4EPS/quakeflow_das)
+dataset) — not just against this repository's own synthetic scenarios.
+
+**Final matrix (N=16 ground-truth-matched real events, Wilson 95% CI):**
+
+| Outcome | n/N | Rate | 95% CI |
+|---|---|---|---|
+| `SISMO_CONFIRMADO` (HIT) | 0/16 | 0.0% | [0.0%, 19.4%] |
+| `COHERENTE_DESCONOCIDO` (HONEST_UNKNOWN) | 8/16 | 50.0% | [28.0%, 72.0%] |
+| `POSIBLE_REGIONAL_EMERGENTE` (HONEST_REGIONAL) | 2/16 | 12.5% | [3.5%, 36.0%] |
+| MISS_SUPPRESSED (engine saw it, discarded it wrongly) | 0/16 | 0.0% | [0.0%, 19.4%] |
+| MISS_BELOW_FLOOR (below this array's measured detection floor) | 6/16 | 37.5% | [18.5%, 61.4%] |
+
+Plus, on the 27 files with no cataloged event: **27/27 correctly rejected,
+0 false alarms.**
+
+Full write-up, including how each real event was found, cross-checked,
+and — for two of them — retracted once it failed an independent guard:
+[the technical writeup](docs/writeup.md) (draft) or
+[`validacion_real/NOTES.md`](validacion_real/NOTES.md) (full working
+notes). Live scoreboard (regenerates from the ledger, per-array
+breakdown): [`validacion_real/scoreboard.md`](validacion_real/scoreboard.md).
+
+Synthetic validation (known ground truth, `python -m darkfiber.run_validation --figs`):
+**29/29 checks** across 9 scenarios, including ones built specifically to
+reproduce the regional-emergent bug, the grid-boundary non-measurement,
+and the cross-estimator disagreement above, so none of them can regress
+silently.
 
 ## Architecture
 
@@ -145,6 +167,7 @@ raw array (channels × time)
 | `characterize_aperture.py` | `darkfiber-aperture` | The aperture/distance limit, characterized with two synthetic sweeps |
 | `calibrate.py` | `darkfiber-calibrate` | Proposes threshold adjustments with evidence; never applies silently |
 | `interferometry.py` | `darkfiber-interferometry` | Virtual-source interferometry from discarded traffic noise — `--demo` validates against known ground truth |
+| `snr_curve.py` | `darkfiber-snr-curve` | Recall-vs-SNR curve against an array's own real background noise, with Wilson CIs and SNR50 |
 
 `contracts.py`/`triage.py`/`coherence.py`/`batching.py`/`catalog.py`/`selftest.py`/`synth.py`
 are library modules, not standalone CLIs — import them, don't run them.
