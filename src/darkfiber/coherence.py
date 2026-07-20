@@ -61,6 +61,43 @@ def slowness_grid(cfg: CoherenceConfig) -> np.ndarray:
     return np.concatenate([-p[::-1], p])
 
 
+def _velocity_peak_is_boundary(sem: np.ndarray, k: int, n_velocity_steps: int) -> bool:
+    """A9: True si el argmax de semblanza (índice `k`) NO es un pico
+    interior genuino dentro de su propia RAMA de dirección.
+
+    `slowness_grid` concatena dos rangos [-p_max..-p_min, p_min..p_max]
+    (dirección negativa: índices [0, n_velocity_steps-1]; positiva:
+    [n_velocity_steps, 2*n_velocity_steps-1]). Las dos ramas son
+    DISCONTINUAS entre sí en velocidad física -- saltan el hueco alrededor
+    de v≈±∞ (p≈0) -- así que un pico en el extremo de SU rama es un
+    límite real de la búsqueda, aunque el índice matemáticamente
+    "vecino" exista en el array (pertenece a la otra dirección, no es
+    comparable físicamente).
+
+    Encontrado en A8/A9 sobre el M5.8 real de Ridgecrest: la semblanza
+    subía monótonamente de 0.296 (en -8000 m/s) a 0.503 exactamente en
+    -1500 m/s = seismic_v_min_mps, el borde de la rama negativa, sin
+    ningún pico interior -- el clasificador lo leyó como "velocidad
+    medida 1500 m/s" cuando en realidad el óptimo real está fuera del
+    rango barrido (moveout aún más lento, esencialmente instantáneo:
+    consistente con un arribo regional/emergente, no con un sismo local
+    de moveout resoluble).
+
+    También cuenta como no resuelto un pico interior que no es
+    ESTRICTAMENTE mayor que ambos vecinos (empate/meseta): el argmax
+    garantiza `sem[k] >= vecinos`, así que la única forma de fallar la
+    igualdad estricta es una meseta, que tampoco es una medición
+    resuelta.
+    """
+    if k < n_velocity_steps:
+        branch_lo, branch_hi = 0, n_velocity_steps - 1
+    else:
+        branch_lo, branch_hi = n_velocity_steps, 2 * n_velocity_steps - 1
+    if k in (branch_lo, branch_hi):
+        return True
+    return not (sem[k] > sem[k - 1] and sem[k] > sem[k + 1])
+
+
 def slant_stack_semblance(
     window: np.ndarray,
     x_m: np.ndarray,
@@ -478,11 +515,65 @@ class CoherenceAgent:
             f"({direction}); {n_coh} canales coherentes con el beam."
         )
 
+        # A9: guarda de solución de borde -- un argmax que no es un pico
+        # interior estricto de su rama no es una velocidad RESUELTA, así
+        # que no puede sostener SISMO_CONFIRMADO (ver
+        # _velocity_peak_is_boundary). El evento sigue el árbol de
+        # decisión existente con esta info sumada, no se descarta.
+        boundary_pinned = _velocity_peak_is_boundary(sem, k, cfg.n_velocity_steps)
+        if boundary_pinned:
+            expl.append(
+                "Máximo en borde de búsqueda: no-medición. El pico de semblanza no es "
+                "interior a la grilla de velocidades -- el óptimo real puede estar fuera "
+                "del rango barrido (moveout aún más lento/rápido, o esencialmente "
+                "instantáneo). La velocidad aparente reportada NO sostiene SISMO_CONFIRMADO."
+            )
+
+        # A10, regla permanente: ninguna confirmación sísmica se sostiene en
+        # un solo estimador de velocidad. v_onset (Theil-Sen sobre cruces
+        # STA/LTA, independiente del slant-stack) tiene que CORROBORAR -- no
+        # solo existir -- dentro de onset_agreement_tol_frac. Encontrado en
+        # A9: el M5.8 real tenía v_onset=-10,282 m/s vs v_semblanza=-1,500
+        # m/s (>200% de diferencia) -- la guarda de borde ya lo atrapaba,
+        # pero la concordancia es una segunda capa independiente que no
+        # depende de que el pico caiga exactamente en el borde de la grilla.
+        #
+        # NO se exige un R² mínimo del ajuste de onsets (a diferencia de un
+        # primer intento en A10): Theil-Sen es un estimador ROBUSTO
+        # (mediana repetida de pendientes por pares) específicamente porque
+        # tolera picks ruidosos canal a canal sin que la PENDIENTE se rompa
+        # -- un R² bajo mide dispersión alrededor de la recta, no si la
+        # pendiente es confiable. Verificado sobre ruido real de Ridgecrest
+        # (A10): inyecciones sintéticas con v_onset a 1% de v_semblanza (y
+        # de la verdad-terreno) con R²=0.03 -- exigir R² alto ahí tiraba
+        # abajo confirmaciones sanas por el motivo equivocado. El criterio
+        # real es la CONCORDANCIA de velocidad, no la forma de la recta.
+        onset_agrees = False
+        if v_onset is not None and r2_onset is not None and v_best != 0:
+            rel_diff = abs(v_onset - v_best) / ((abs(v_onset) + abs(v_best)) / 2.0)
+            onset_agrees = rel_diff <= cfg.onset_agreement_tol_frac
+            expl.append(
+                f"Corroboración cruzada: v_app_onset (Theil-Sen) = {v_onset:,.0f} m/s "
+                f"(R²={r2_onset:.2f}, informativo -- no se exige un piso: Theil-Sen es "
+                f"robusto a picks ruidosos, un R² bajo no invalida la pendiente) vs "
+                f"v_app_semblanza = {v_best:,.0f} m/s -- diferencia relativa {rel_diff * 100:.0f}% "
+                f"({'CONCUERDA' if onset_agrees else 'DISCREPA'}, tolerancia "
+                f"{cfg.onset_agreement_tol_frac * 100:.0f}%)."
+            )
+        else:
+            expl.append(
+                "Corroboración cruzada: sin ajuste de onsets disponible (menos de "
+                f"{cfg.onset_fit_min_channels} canales con cruce STA/LTA) -- sin segundo "
+                "estimador, no hay corroboración posible."
+            )
+
         is_seismic = (
             f_c >= cfg.seismic_min_coincidence
             and span_frac >= cfg.seismic_min_span_frac
+            and not boundary_pinned
             and s_best >= cfg.seismic_min_semblance
             and cfg.seismic_v_min_mps <= abs(v_best) <= cfg.seismic_v_max_mps
+            and onset_agrees
         )
         if is_seismic:
             phases = None
@@ -514,6 +605,7 @@ class CoherenceAgent:
                 phases=phases,
                 v_app_onset_mps=v_onset,
                 onset_fit_r2=r2_onset,
+                boundary_pinned=boundary_pinned,
                 explanations=expl,
             )
 
@@ -546,6 +638,7 @@ class CoherenceAgent:
                 track_r2=r2,
                 v_app_onset_mps=v_onset,
                 onset_fit_r2=r2_onset,
+                boundary_pinned=boundary_pinned,
                 explanations=expl,
             )
 
@@ -565,18 +658,15 @@ class CoherenceAgent:
                 f"{v_max_geo:,.0f} m/s con k=3 muestras). Escalar para verificación "
                 f"externa (USGS/red regional)."
             )
-            if v_onset is not None:
-                if abs(v_onset) > 20_000:
-                    expl.append(
-                        f"Ajuste de onsets: pendiente ≈0 (v_app_onset={v_onset:,.0f} m/s, "
-                        f"R²={r2_onset:.2f}) — moveout plano: incidencia casi vertical u "
-                        f"origen fuera de la resolución de esta apertura."
-                    )
-                else:
-                    expl.append(
-                        f"Ajuste de onsets (Theil-Sen sobre primeros cruces STA/LTA): "
-                        f"v_app≈{v_onset:,.0f} m/s (R²={r2_onset:.2f})."
-                    )
+            # Nota física adicional además de la corroboración cruzada ya
+            # citada arriba (siempre): pendiente ≈0 tiene una lectura propia
+            # (moveout plano) que la línea genérica de corroboración no dice.
+            if v_onset is not None and abs(v_onset) > 20_000:
+                expl.append(
+                    f"Pendiente de onsets ≈0 (v_app_onset={v_onset:,.0f} m/s) — moveout "
+                    f"plano: incidencia casi vertical u origen fuera de la resolución de "
+                    f"esta apertura."
+                )
             return CoherenceResult(
                 event_id=evt.event_id,
                 classification=EventClass.REGIONAL_EMERGENT,
@@ -590,6 +680,7 @@ class CoherenceAgent:
                 v_app_onset_mps=v_onset,
                 onset_fit_r2=r2_onset,
                 suppressed_false_positive=False,
+                boundary_pinned=boundary_pinned,
                 explanations=expl,
             )
 
@@ -617,6 +708,7 @@ class CoherenceAgent:
                 v_app_onset_mps=v_onset,
                 onset_fit_r2=r2_onset,
                 suppressed_false_positive=True,
+                boundary_pinned=boundary_pinned,
                 explanations=expl,
             )
 
@@ -636,5 +728,6 @@ class CoherenceAgent:
             track_r2=r2,
             v_app_onset_mps=v_onset,
             onset_fit_r2=r2_onset,
+            boundary_pinned=boundary_pinned,
             explanations=expl,
         )

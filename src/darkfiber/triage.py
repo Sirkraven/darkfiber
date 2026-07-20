@@ -32,9 +32,10 @@ def _trailing_mean(p: np.ndarray, w: int) -> np.ndarray:
     return out
 
 
-def sta_lta_ratio(data: np.ndarray, geom: ArrayGeometry, cfg: Tier0Config) -> np.ndarray:
-    """Razón STA/LTA por canal y muestra. data: (n_ch, n_t) float32."""
-    fs = geom.fs_hz
+def _sta_lta_ratio_block(data: np.ndarray, fs: float, cfg: Tier0Config) -> np.ndarray:
+    """Cuerpo real de sta_lta_ratio, sobre UN bloque de canales. Ver esa
+    función para la garantía de calentamiento y la nota sobre por qué
+    bloquear por canal no cambia el resultado."""
     sta_n = max(1, int(cfg.sta_s * fs))
     lta_n = max(sta_n + 1, int(cfg.lta_s * fs))
     gap_n = int(cfg.gap_s * fs)
@@ -63,9 +64,111 @@ def sta_lta_ratio(data: np.ndarray, geom: ArrayGeometry, cfg: Tier0Config) -> np
     return ratio.astype(np.float32)
 
 
+_BLOCK_MEMORY_BUDGET_BYTES = 256 * 1024 * 1024  # pico aprox. por array float64 intermedio
+
+
+def sta_lta_ratio(
+    data: np.ndarray, geom: ArrayGeometry, cfg: Tier0Config, channel_block: int | None = None
+) -> np.ndarray:
+    """Razón STA/LTA por canal y muestra. data: (n_ch, n_t) float32.
+
+    GARANTÍA (probada en run_validation.py, escenario de calentamiento):
+    para toda muestra t < cfg.warmup_s (en tiempo real, `lta_s+gap_s+sta_s`),
+    ratio[..., t] == 1.0 exactamente, y como Tier0Config.threshold exige
+    gt=1, ningún disparo puede originarse ahí — el LTA no tuvo tiempo de
+    madurar y cualquier disparo sería una medición sin base de comparación
+    real, no una detección. Encontrado en A2 (Monterey Bay): un archivo
+    recortado que arranca casi en el evento de interés hace que la PRIMERA
+    muestra visible después del calentamiento coincida con esa energía real
+    — el buffer corto no le da al Tier0 la posibilidad de ver antes, no es
+    un artefacto numérico de la ventana. Downstream (run_on_quakeflow,
+    scoreboard) debe tratar con sospecha cualquier evento cuyo t_start_s
+    caiga muy cerca de warmup_s (ver check de anomalía de dt_detect_s
+    repetido en write_scoreboard).
+
+    `channel_block`: procesa los canales de a bloques de este tamaño en vez
+    de la matriz completa de una sola pasada. El Tier0 es matemáticamente
+    independiente por canal (`_trailing_mean` no mezcla filas, y la
+    normalización por máximo absoluto es invariante de escala dentro de
+    cada canal) — bloquear no es una aproximación, da el mismo resultado
+    (hasta redondeo de punto flotante) con un pico de memoria muchísimo
+    menor. Default None: se calcula automáticamente para que el cumsum
+    float64 de cada bloque no supere ~256 MB. Encontrado en A2: Arcata
+    (7,550 canales) agotaba la RAM de esta máquina procesando todo de una
+    vez (¡861 MiB de un solo array intermedio, y hay varios vivos a la vez!).
+    """
+    n_ch, n_t = data.shape
+    if channel_block is None:
+        channel_block = max(1, min(n_ch, int(_BLOCK_MEMORY_BUDGET_BYTES / max(1, n_t * 8))))
+    if channel_block >= n_ch:
+        return _sta_lta_ratio_block(data, geom.fs_hz, cfg)
+
+    out = np.empty((n_ch, n_t), dtype=np.float32)
+    for c0 in range(0, n_ch, channel_block):
+        c1 = min(n_ch, c0 + channel_block)
+        out[c0:c1] = _sta_lta_ratio_block(data[c0:c1], geom.fs_hz, cfg)
+    return out
+
+
 def trigger_raster(ratio: np.ndarray, cfg: Tier0Config) -> np.ndarray:
     """Raster binario canales×tiempo (True = canal disparado)."""
     return ratio > cfg.threshold
+
+
+def _merge_runs(mask: np.ndarray, merge_n: int) -> list[tuple[int, int]]:
+    """Funde en segmentos los tramos contiguos True de `mask`, fusionando
+    huecos False de hasta `merge_n` muestras.
+
+    `k - prev` es la DISTANCIA entre índices consecutivos activos; el hueco
+    real de muestras False entre ellos es `k - prev - 1` (dos muestras
+    inmediatamente adyacentes, k - prev == 1, tienen hueco CERO). Con
+    merge_n=0 (pasada dispersa) esto importa: `k - prev > 0` partía en
+    átomos de una sola muestra una racha perfectamente contigua.
+    """
+    idx = np.flatnonzero(mask)
+    if idx.size == 0:
+        return []
+    segs = []
+    start = idx[0]
+    prev = idx[0]
+    for k in idx[1:]:
+        if k - prev - 1 > merge_n:
+            segs.append((start, prev))
+            start = k
+        prev = k
+    segs.append((start, prev))
+    return segs
+
+
+def _density_resegment(
+    raster: np.ndarray, a: int, b: int, merge_n: int, dense_min: int
+) -> list[tuple[int, int]]:
+    """Re-segmenta temporalmente un bloque [a,b] YA fusionado que resultó
+    demasiado largo (A5), buscando dentro de él tramos de alta densidad de
+    coincidencia (`n_canales_disparados(t) >= dense_min`) separados por
+    tramos de baja densidad. Es el análogo TEMPORAL de split_gap_channels:
+    éste corta por huecos en el eje ESPACIAL dentro de una ventana fija de
+    tiempo; ésta corta por huecos en la densidad de coincidencia dentro de
+    un bloque ya fusionado en el eje temporal.
+
+    Devuelve los límites de CADA tramo denso encontrado, aunque sea uno
+    solo -- un bloque de 45 s con un único sismo de 3 s en un extremo y
+    chatter ambiental disperso llenando el resto SIGUE siendo "un solo
+    tramo denso" (nada que partir en dos), pero ese tramo denso es angosto:
+    hay que recortar el bloque a sus límites, no devolver el bloque entero
+    sin tocar (encontrado al validar el escenario F: devolver (a,b) sin
+    cambios cuando `len(dense_segs) == 1` dejaba pasar intacto un bloque
+    entero de 44.9 s en vez de recortarlo a los ~3 s reales del sismo).
+    Solo si NO hay ningún tramo denso (caso límite: el bloque entero es
+    disperso pese a superar max_merged_block_s) se devuelve (a, b) sin
+    cambios, como red de seguridad."""
+    sub = raster[:, a : b + 1]
+    n_active = sub.sum(axis=0)
+    dense = n_active >= dense_min
+    dense_segs = _merge_runs(dense, merge_n)
+    if not dense_segs:
+        return [(a, b)]
+    return [(a + lo, a + hi) for lo, hi in dense_segs]
 
 
 def extract_events(
@@ -74,26 +177,51 @@ def extract_events(
     geom: ArrayGeometry,
     cfg: Tier0Config,
 ) -> list[TriggerEvent]:
-    """Agrupa el raster en eventos temporales contiguos (fusiona huecos cortos)."""
+    """Agrupa el raster en eventos temporales contiguos (fusiona huecos cortos).
+
+    A5: un bloque fusionado que excede `max_merged_block_s` se re-examina
+    con una compuerta de DENSIDAD de coincidencia (ver `_density_resegment`)
+    y se recorta a los límites de cada ráfaga densa que encuentra adentro
+    (una o varias -- incluso una sola ráfaga corta al principio de un
+    bloque largo se recorta a su propio tamaño, descartando el resto como
+    chatter disperso). Bloques de duración normal (la enorme mayoría -- un
+    sismo
+    local real, con su fase P débil y su fase S fuerte, dura segundos, no
+    decenas de segundos) NUNCA tocan esta lógica y se comportan exactamente
+    como antes: se preserva por ejemplo que una fase P débil pero real siga
+    fusionándose con la S fuerte que la sigue (la coincidencia espacial de
+    la S llena los huecos de canal de la P dispersa; partir por densidad
+    ANTES de esa unión fragmenta la P en grupos sin sentido -- encontrado
+    al validar este fix contra el escenario A). El síntoma real que motivó
+    esto (Ridgecrest, 12 archivos reales, ver CHANGELOG A5): con cientos o
+    miles de canales, "algún canal disparado" (`raster.any(axis=0)`) casi
+    nunca tiene un hueco de verdad -- ruido ambiental disperso alcanza para
+    que siempre haya ALGÚN canal por encima del umbral en algún instante, y
+    merge_gap_s nunca encuentra un hueco que fusionar: el archivo entero
+    (menos calentamiento) queda como un solo "evento" de decenas a > cien
+    segundos, mezclando cualquier sismo real con ruido de fondo ajeno.
+    """
     fs = geom.fs_hz
-    any_ch = raster.any(axis=0)
+    n_ch = raster.shape[0]
+    any_ch: np.ndarray = np.asarray(raster.any(axis=0))
     if not any_ch.any():
         return []
-    idx = np.flatnonzero(any_ch)
     merge_n = int(cfg.merge_gap_s * fs)
     min_n = int(cfg.min_event_duration_s * fs)
 
-    events: list[TriggerEvent] = []
-    start = idx[0]
-    prev = idx[0]
-    segs = []
-    for k in idx[1:]:
-        if k - prev > merge_n:
-            segs.append((start, prev))
-            start = k
-        prev = k
-    segs.append((start, prev))
+    raw_segs = _merge_runs(any_ch, merge_n)
 
+    max_block_n = int(cfg.max_merged_block_s * fs)
+    dense_min = max(cfg.dense_min_channels_floor, int(round(cfg.dense_coincidence_frac * n_ch)))
+    segs: list[tuple[int, int]] = []
+    for a, b in raw_segs:
+        if (b - a + 1) > max_block_n:
+            segs.extend(_density_resegment(raster, a, b, merge_n, dense_min))
+        else:
+            segs.append((a, b))
+    segs.sort()
+
+    events: list[TriggerEvent] = []
     for n, (a, b) in enumerate(segs):
         if (b - a + 1) < min_n:
             continue

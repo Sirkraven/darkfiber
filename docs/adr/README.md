@@ -12,3 +12,7 @@ classifications.
 - [0005 — Theil-Sen regression for the onset-velocity fallback](0005-theil-sen-onsets.md)
 - [0006 — Batch/stream parity as a design commitment](0006-batch-stream-parity.md)
 - [0007 — Recall should be a curve with confidence intervals, not a scalar](0007-recall-as-curve-not-scalar.md)
+- [0008 — Causal, asymmetric ground-truth matching window](0008-causal-asymmetric-matching.md)
+- [0009 — Split `MISS_SUPPRESSED` from `MISS_BELOW_FLOOR`](0009-miss-suppressed-vs-below-floor.md)
+- [0010 — A grid-boundary semblance maximum is a non-measurement](0010-boundary-solution-guard.md)
+- [0011 — Confirmation requires two independent velocity estimators to agree](0011-cross-estimator-concordance.md)

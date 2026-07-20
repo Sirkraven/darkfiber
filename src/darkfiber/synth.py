@@ -220,6 +220,44 @@ def add_emergent_regional(
         data[i, a:b] += amp * wave[i, a - s : b - s]
 
 
+def noise_rms(window: np.ndarray) -> float:
+    """RMS representativo de una ventana de ruido: mediana del RMS por canal
+    (robusta a un puñado de canales muertos/anómalos, a diferencia de la
+    media). `window` debe estar ya filtrada a la banda de análisis (ver
+    `bandpass`) para que el número sea comparable entre arreglos con
+    distinto contenido espectral fuera de banda."""
+    per_ch = np.sqrt(np.mean(window.astype(np.float64) ** 2, axis=1))
+    return float(np.median(per_ch))
+
+
+def wavelet_rms(wavelet: np.ndarray) -> float:
+    return float(np.sqrt(np.mean(wavelet.astype(np.float64) ** 2)))
+
+
+def snr_to_amplitude(target_snr: float, noise_window: np.ndarray, wavelet: np.ndarray) -> float:
+    """Definición operativa ÚNICA de SNR del proyecto (A1):
+
+        SNR := RMS(wavelet inyectado) / RMS(ventana de ruido de fondo)
+
+    ambos medidos en la misma banda de análisis y sobre la MISMA ventana en
+    la que cae la inyección. Es una razón de energías (RMS/RMS) — lo que un
+    detector STA/LTA efectivamente compara — no una razón de picos.
+
+    Devuelve la amplitud de escalado del wavelet que produce EXACTAMENTE
+    `target_snr` por construcción (no aproximado):
+
+        amp = target_snr * RMS(ruido) / RMS(wavelet)
+
+    `selftest.inject_and_verify` y `snr_curve.py` llaman esta misma función
+    para que "SNR=X" signifique lo mismo en todo el proyecto. (Antes de A1,
+    `inject_and_verify` escalaba `amp = snr * RMS_banda_ancha(buffer)` sin
+    normalizar por la energía propia del wavelet — un "SNR" distinto, no
+    comparable con el de acá; ver `snr_curve.explain_legacy_recall` para el
+    mapeo retroactivo.)
+    """
+    return target_snr * noise_rms(noise_window) / (wavelet_rms(wavelet) + 1e-12)
+
+
 def add_local_spike(
     data: np.ndarray,
     fs: float,

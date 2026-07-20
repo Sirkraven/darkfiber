@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "darkfiber"
-version = "1.0.0"
+version = "1.1.0"
 description = "Physics-first coherence engine for Distributed Acoustic Sensing (DAS): the slope in the channel-time plane is the physics."
 readme = "README.md"
 license = { text = "AGPL-3.0-or-later" }
@@ -75,6 +75,7 @@ darkfiber-calibrate = "darkfiber.calibrate:main"
 darkfiber-aperture = "darkfiber.characterize_aperture:main_cli"
 darkfiber-interferometry = "darkfiber.interferometry:main"
 darkfiber-convert-sgy = "darkfiber.convert_stanford_sgy:main"
+darkfiber-snr-curve = "darkfiber.snr_curve:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/darkfiber"]

@@ -51,7 +51,20 @@ CREATE TABLE IF NOT EXISTS ledger (
     outcome TEXT,
     dt_detect_s REAL,
     metrics_json TEXT,
+    snr_observed REAL,
     ts REAL
+);
+CREATE TABLE IF NOT EXISTS ledger_invalidations (
+    id INTEGER PRIMARY KEY,
+    event_file TEXT NOT NULL,
+    array_id TEXT,
+    reason TEXT NOT NULL,
+    prior_verdict TEXT,
+    prior_outcome TEXT,
+    prior_dt_detect_s REAL,
+    prior_gt_json TEXT,
+    prior_metrics_json TEXT,
+    invalidated_at REAL
 );
 CREATE TABLE IF NOT EXISTS proposals (
     id INTEGER PRIMARY KEY,
@@ -72,7 +85,24 @@ CREATE TABLE IF NOT EXISTS array_profiles (
     noise_stats_json TEXT,
     thresholds_json TEXT,
     synth_recall REAL,
+    recall_curve_json TEXT,
+    snr50 REAL,
     updated REAL
+);
+CREATE TABLE IF NOT EXISTS array_profile_history (
+    id INTEGER PRIMARY KEY,
+    array_id TEXT NOT NULL,
+    fs REAL,
+    dx REAL,
+    n_ch INTEGER,
+    aperture_m REAL,
+    noise_stats_json TEXT,
+    thresholds_json TEXT,
+    synth_recall REAL,
+    recall_curve_json TEXT,
+    snr50 REAL,
+    note TEXT,
+    archived_at REAL
 );
 """
 
@@ -107,6 +137,15 @@ class SignatureCatalog:
         for table in ("prototypes", "unknown_clusters"):
             with contextlib.suppress(sqlite3.OperationalError):  # columna ya existe
                 self.db.execute(f"ALTER TABLE {table} ADD COLUMN array_id TEXT")
+        # Migración defensiva: bases creadas antes de A1 no tienen la curva
+        # recall-vs-SNR ni el SNR50 resumen (ver snr_curve.py).
+        for col in ("recall_curve_json TEXT", "snr50 REAL"):
+            with contextlib.suppress(sqlite3.OperationalError):  # columna ya existe
+                self.db.execute(f"ALTER TABLE array_profiles ADD COLUMN {col}")
+        # Migración defensiva: bases creadas antes de A2 (Tarea 7) no tienen
+        # el SNR observado por evento del ledger.
+        with contextlib.suppress(sqlite3.OperationalError):  # columna ya existe
+            self.db.execute("ALTER TABLE ledger ADD COLUMN snr_observed REAL")
         self._lock = threading.Lock()
         self.tau_known = tau_known
         self.tau_cluster = tau_cluster
@@ -253,6 +292,7 @@ class SignatureCatalog:
         outcome: str,
         dt_detect_s: float | None,
         metrics_json: dict | None,
+        snr_observed: float | None = None,
     ) -> None:
         """UPSERT por `event_file`: correr el arnés de nuevo sobre el mismo
         archivo actualiza la fila en vez de duplicarla."""
@@ -260,12 +300,13 @@ class SignatureCatalog:
             self.db.execute(
                 """
                 INSERT INTO ledger (event_file, array_id, gt_json, verdict, outcome,
-                                     dt_detect_s, metrics_json, ts)
-                VALUES (?,?,?,?,?,?,?,?)
+                                     dt_detect_s, metrics_json, snr_observed, ts)
+                VALUES (?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(event_file) DO UPDATE SET
                     array_id=excluded.array_id, gt_json=excluded.gt_json,
                     verdict=excluded.verdict, outcome=excluded.outcome,
                     dt_detect_s=excluded.dt_detect_s, metrics_json=excluded.metrics_json,
+                    snr_observed=excluded.snr_observed,
                     ts=excluded.ts
                 """,
                 (
@@ -276,15 +317,85 @@ class SignatureCatalog:
                     outcome,
                     dt_detect_s,
                     json.dumps(metrics_json, default=str) if metrics_json is not None else None,
+                    snr_observed,
                     time.time(),
                 ),
             )
             self.db.commit()
 
+    def invalidate_ledger_rows(self, array_id: str, reason: str) -> int:
+        """Marca como inválidas (NO borra) todas las filas actuales del
+        ledger para `array_id`: copia su estado ANTES de la corrección a
+        `ledger_invalidations` (con motivo y timestamp) para que quede un
+        rastro auditable permanente de qué decía el ledger antes del fix,
+        aunque la fila de `ledger` misma se sobrescriba después con el
+        re-run correcto (mismo event_file, UPSERT). Devuelve cuántas filas
+        se invalidaron."""
+        with self._lock:
+            rows = self.db.execute(
+                "SELECT event_file, array_id, verdict, outcome, dt_detect_s, gt_json, metrics_json "
+                "FROM ledger WHERE array_id = ?",
+                (array_id,),
+            ).fetchall()
+            now = time.time()
+            for event_file, arr, verdict, outcome, dt_detect_s, gt_json, metrics_json in rows:
+                self.db.execute(
+                    "INSERT INTO ledger_invalidations (event_file, array_id, reason, prior_verdict, "
+                    "prior_outcome, prior_dt_detect_s, prior_gt_json, prior_metrics_json, invalidated_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?)",
+                    (
+                        event_file,
+                        arr,
+                        reason,
+                        verdict,
+                        outcome,
+                        dt_detect_s,
+                        gt_json,
+                        metrics_json,
+                        now,
+                    ),
+                )
+            self.db.commit()
+            return len(rows)
+
+    def list_invalidations(self, array_id: str | None = None) -> list[dict]:
+        q = (
+            "SELECT event_file, array_id, reason, prior_verdict, prior_outcome, "
+            "prior_dt_detect_s, prior_gt_json, prior_metrics_json, invalidated_at "
+            "FROM ledger_invalidations"
+        )
+        params: tuple = ()
+        if array_id is not None:
+            q += " WHERE array_id = ?"
+            params = (array_id,)
+        cols = [
+            "event_file",
+            "array_id",
+            "reason",
+            "prior_verdict",
+            "prior_outcome",
+            "prior_dt_detect_s",
+            "prior_gt_json",
+            "prior_metrics_json",
+            "invalidated_at",
+        ]
+        out = []
+        for row in self.db.execute(q, params).fetchall():
+            d = dict(zip(cols, row, strict=True))
+            d["prior_gt_json"] = json.loads(d["prior_gt_json"]) if d["prior_gt_json"] else None
+            d["prior_metrics_json"] = (
+                json.loads(d["prior_metrics_json"]) if d["prior_metrics_json"] else None
+            )
+            out.append(d)
+        return out
+
     def ledger_rows(self, array_id: str | None = None) -> list[dict]:
         """Filas del ledger (todas, o filtradas por `array_id`), con
         `gt_json`/`metrics_json` ya deserializados."""
-        q = "SELECT event_file, array_id, gt_json, verdict, outcome, dt_detect_s, metrics_json, ts FROM ledger"
+        q = (
+            "SELECT event_file, array_id, gt_json, verdict, outcome, dt_detect_s, "
+            "metrics_json, snr_observed, ts FROM ledger"
+        )
         params: tuple = ()
         if array_id is not None:
             q += " WHERE array_id = ?"
@@ -298,6 +409,7 @@ class SignatureCatalog:
             "outcome",
             "dt_detect_s",
             "metrics_json",
+            "snr_observed",
             "ts",
         ]
         out = []
@@ -322,22 +434,30 @@ class SignatureCatalog:
         noise_stats: dict | None = None,
         thresholds: dict | None = None,
         synth_recall: float | None = None,
+        recall_curve: list[dict] | None = None,
+        snr50: float | None = None,
     ) -> None:
-        """UPSERT del perfil de un arreglo. `synth_recall=None` conserva el
-        valor previo (COALESCE) — llamar sin recall no lo borra."""
+        """`recall_curve`: lista de escalones {snr, recall, ci_low, ci_high,
+        n, hits} (ver snr_curve.py, A1). `snr50`: SNR interpolado al que la
+        curva cruza recall=0.5 (None si no se observó en el rango barrido).
+        Como con `synth_recall`, un upsert sin estos campos NO borra lo ya
+        guardado (COALESCE) — p.ej. `run_on_quakeflow.run_array_selftest`
+        sigue actualizando ruido/geometría sin pisar la curva."""
         with self._lock:
             self.db.execute(
                 """
                 INSERT INTO array_profiles (array_id, fs, dx, n_ch, aperture_m,
                                              noise_stats_json, thresholds_json,
-                                             synth_recall, updated)
-                VALUES (?,?,?,?,?,?,?,?,?)
+                                             synth_recall, recall_curve_json, snr50, updated)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(array_id) DO UPDATE SET
                     fs=excluded.fs, dx=excluded.dx, n_ch=excluded.n_ch,
                     aperture_m=excluded.aperture_m,
                     noise_stats_json=excluded.noise_stats_json,
-                    thresholds_json=excluded.thresholds_json,
+                    thresholds_json=COALESCE(excluded.thresholds_json, array_profiles.thresholds_json),
                     synth_recall=COALESCE(excluded.synth_recall, array_profiles.synth_recall),
+                    recall_curve_json=COALESCE(excluded.recall_curve_json, array_profiles.recall_curve_json),
+                    snr50=COALESCE(excluded.snr50, array_profiles.snr50),
                     updated=excluded.updated
                 """,
                 (
@@ -349,10 +469,77 @@ class SignatureCatalog:
                     json.dumps(noise_stats, default=str) if noise_stats is not None else None,
                     json.dumps(thresholds, default=str) if thresholds is not None else None,
                     synth_recall,
+                    json.dumps(recall_curve, default=str) if recall_curve is not None else None,
+                    snr50,
                     time.time(),
                 ),
             )
             self.db.commit()
+
+    def archive_array_profile(self, array_id: str, note: str) -> bool:
+        """Antes de sobrescribir `recall_curve_json`/`snr50` con una
+        medición nueva (A7): la curva recall-vs-SNR es propiedad de
+        INSTALACIÓN+CONFIG, no solo de la instalación — cambiar
+        `Tier0Config.threshold` la vuelve obsoleta, no incorrecta.
+        Copia el estado ACTUAL completo del perfil a
+        `array_profile_history` con una nota, antes de que
+        `upsert_array_profile` lo reemplace. Devuelve False (no archiva
+        nada) si no había perfil previo o no tenía curva medida todavía —
+        no tiene sentido archivar un perfil vacío."""
+        with self._lock:
+            row = self.db.execute(
+                "SELECT array_id, fs, dx, n_ch, aperture_m, noise_stats_json, thresholds_json, "
+                "synth_recall, recall_curve_json, snr50 FROM array_profiles WHERE array_id=?",
+                (array_id,),
+            ).fetchone()
+            if row is None or row[8] is None:  # sin recall_curve_json: nada que archivar
+                return False
+            self.db.execute(
+                "INSERT INTO array_profile_history (array_id, fs, dx, n_ch, aperture_m, "
+                "noise_stats_json, thresholds_json, synth_recall, recall_curve_json, snr50, "
+                "note, archived_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                (*row, note, time.time()),
+            )
+            self.db.commit()
+            return True
+
+    def list_array_profile_history(self, array_id: str | None = None) -> list[dict]:
+        q = (
+            "SELECT array_id, fs, dx, n_ch, aperture_m, noise_stats_json, thresholds_json, "
+            "synth_recall, recall_curve_json, snr50, note, archived_at FROM array_profile_history"
+        )
+        params: tuple = ()
+        if array_id is not None:
+            q += " WHERE array_id = ?"
+            params = (array_id,)
+        cols = [
+            "array_id",
+            "fs",
+            "dx",
+            "n_ch",
+            "aperture_m",
+            "noise_stats_json",
+            "thresholds_json",
+            "synth_recall",
+            "recall_curve_json",
+            "snr50",
+            "note",
+            "archived_at",
+        ]
+        out = []
+        for row in self.db.execute(q, params).fetchall():
+            d = dict(zip(cols, row, strict=True))
+            d["noise_stats_json"] = (
+                json.loads(d["noise_stats_json"]) if d["noise_stats_json"] else None
+            )
+            d["thresholds_json"] = (
+                json.loads(d["thresholds_json"]) if d["thresholds_json"] else None
+            )
+            d["recall_curve_json"] = (
+                json.loads(d["recall_curve_json"]) if d["recall_curve_json"] else None
+            )
+            out.append(d)
+        return out
 
     # ------------------------------------------------------------------
     # Propuestas de calibración (P3): el sistema PROPONE con evidencia, un
@@ -417,7 +604,7 @@ class SignatureCatalog:
         auto-test (`run_array_selftest` en run_on_quakeflow.py)."""
         row = self.db.execute(
             "SELECT array_id, fs, dx, n_ch, aperture_m, noise_stats_json, thresholds_json, "
-            "synth_recall, updated FROM array_profiles WHERE array_id=?",
+            "synth_recall, recall_curve_json, snr50, updated FROM array_profiles WHERE array_id=?",
             (array_id,),
         ).fetchone()
         if row is None:
@@ -431,9 +618,14 @@ class SignatureCatalog:
             "noise_stats_json",
             "thresholds_json",
             "synth_recall",
+            "recall_curve_json",
+            "snr50",
             "updated",
         ]
         d = dict(zip(cols, row, strict=True))
         d["noise_stats_json"] = json.loads(d["noise_stats_json"]) if d["noise_stats_json"] else None
         d["thresholds_json"] = json.loads(d["thresholds_json"]) if d["thresholds_json"] else None
+        d["recall_curve_json"] = (
+            json.loads(d["recall_curve_json"]) if d["recall_curve_json"] else None
+        )
         return d

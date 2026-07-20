@@ -10,7 +10,7 @@ validacion_real/ for the real-data validation record.
 
 from __future__ import annotations
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from .coherence import CoherenceAgent
 from .contracts import (
