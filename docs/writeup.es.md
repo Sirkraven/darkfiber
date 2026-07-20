@@ -476,7 +476,7 @@ el registro", no una adivinanza que suena plausible.
   chequeos sintéticos) son ambos requeridos en verde antes de que
   cualquier cambio al árbol de decisión se considere validado;
   re-confirmado en esta misma pasada de documentación
-  (`CHANGELOG.md [Unreleased]`).
+  (`CHANGELOG.md [1.1.0]`).
 - **Datos**: ninguna de las grabaciones DAS reales viene en el
   repositorio. Los datos de Stanford se obtienen de PubDAS/Globus o del
   espejo de GitHub `FiberOpticEarthquakes` y se convierten localmente

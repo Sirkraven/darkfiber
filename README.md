@@ -56,7 +56,7 @@ the edge of the search grid (a non-measurement), and a requirement that a
 second, structurally different velocity estimator agree with the first.
 Full account, including exactly how each was caught: [the technical
 writeup](docs/writeup.md) §6 (draft, under author review), or the short
-version in [`CHANGELOG.md`](CHANGELOG.md) `[Unreleased]`.
+version in [`CHANGELOG.md`](CHANGELOG.md) `[1.1.0]`.
 
 **What's actually validated:** 43 real DAS recordings across 4 array
 installations (Stanford, Ridgecrest North, Arcata, Monterey Bay) — 16

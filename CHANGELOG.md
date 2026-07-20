@@ -4,9 +4,13 @@ All notable changes to this project are documented here. Bugs found and
 closed are listed alongside features — they're evidence of rigor, not
 something to hide.
 
-## [Unreleased] - "Bloque A" (A1-A10), internal
+## [Unreleased]
 
-Follow-up validation pass after 1.0.0/v5.2, on `dev`. Re-examined every
+Nothing yet.
+
+## [1.1.0] - 2026-07-20 — "Bloque A" (A1-A10)
+
+Follow-up validation pass after 1.0.0/v5.2. Re-examined every
 real-data confirmation the pipeline had produced, using two new
 independent guards, and found that **none of them survive**: the project's
 real-world track record goes from "1 confirmed local earthquake" to
@@ -226,7 +230,7 @@ the calibration engine, packaged for publication.
   doesn't force it into one.
 - East Foothills M4.1 (2017, Stanford array) → `SISMO_CONFIRMADO`, 2.8 s
   before the USGS-published origin time, on the correct beam.
-  **⚠️ Retracted — see `[Unreleased]` above.** This was a fusion artifact
+  **⚠️ Retracted — see `[1.1.0]` above.** This was a fusion artifact
   (the "2.8 s before" block was merged with unrelated prior activity) and
   a boundary-solution non-measurement; re-examined in Bloque A (A5/A9/A10),
   current verdict is `POSIBLE_REGIONAL_EMERGENTE`.
@@ -285,4 +289,5 @@ because they're part of the real history:
   → explicit `--orientation` + real-data hygiene (NaN→0, dead-channel
   report).
 
+[1.1.0]: https://github.com/Sirkraven/darkfiber/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Sirkraven/darkfiber/releases/tag/v1.0.0

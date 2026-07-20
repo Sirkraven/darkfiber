@@ -430,7 +430,7 @@ the correct output is "not in the record," not a plausible-sounding guess.
 - **Tests**: `pytest` (11/11 passing) and `darkfiber-validate` (29/29
   synthetic checks) are both required green before any change to the
   decision tree is considered validated; re-confirmed in this same
-  documentation pass (`CHANGELOG.md [Unreleased]`).
+  documentation pass (`CHANGELOG.md [1.1.0]`).
 - **Data**: none of the real DAS recordings ship in the repository. Stanford
   data is fetched from PubDAS/Globus or the `FiberOpticEarthquakes` GitHub
   mirror and converted locally (`convert_stanford_sgy.py`); QuakeFlow DAS

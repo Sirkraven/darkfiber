@@ -67,8 +67,8 @@ solo guarda los resultados livianos (JSONL + consola) de cada corrida.
   `eastfoothills_real.npz` con el pipeline actual en la máquina donde está
   el archivo.
 
-- **✅ RESUELTO EN A10.** Los 3 SEG-Y originales aparecieron en
-  `C:\Users\yukre\Downloads\` (hash verificado contra el .npz reconstruido:
+- **✅ RESUELTO EN A10.** Los 3 SEG-Y originales aparecieron en la carpeta
+  de Descargas local (hash verificado contra el .npz reconstruido:
   `dbdc936e...`, `6363e7c5...`, `1355cb8d...`), reconvertidos con
   `convert_stanford_sgy.py` a `D:\darkfiber\data\stanford\eastfoothills_real.npz`
   (626 canales × 89,999 muestras, 900.0s @ 100Hz — mismo alcance que el

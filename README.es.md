@@ -57,7 +57,7 @@ búsqueda (una no-medición), y la exigencia de que un segundo estimador de
 velocidad, estructuralmente distinto, concuerde con el primero. Relato
 completo, incluyendo exactamente cómo se atrapó cada uno: [el writeup
 técnico](docs/writeup.md) §6 (borrador, en revisión del autor), o la
-versión corta en [`CHANGELOG.md`](CHANGELOG.md) `[Unreleased]`.
+versión corta en [`CHANGELOG.md`](CHANGELOG.md) `[1.1.0]`.
 
 **Qué está realmente validado:** 43 grabaciones DAS reales en 4
 instalaciones (Stanford, Ridgecrest North, Arcata, Monterey Bay) — 16 con
