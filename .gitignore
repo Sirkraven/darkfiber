@@ -18,6 +18,11 @@
 *.jsonl
 !validacion_real/*.jsonl
 
+# Generated preprint artifacts (regenerable from docs/writeup.md +
+# figures/ via pandoc/Chrome headless; not source, not committed)
+docs/writeup_v1.1.0_preprint.html
+docs/writeup_v1.1.0_preprint.pdf
+
 # Python
 __pycache__/
 *.py[cod]

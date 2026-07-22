@@ -55,6 +55,8 @@ raw per-channel traces that look like scattered, ambiguous transients
 resolve into an unambiguous plane-wave arrival once plotted as
 time-vs-channel-position, because the physics *is* the slope.
 
+![Figure 1: three channel-time panels — a steep near-vertical moveout for an earthquake, a slow diagonal streak for a vehicle, and a single point with no slope for a local transient.](../figures/fig1_pendiente_es_fisica.png)
+
 ## 3. Method
 
 The pipeline is three tiers, each auditable independently:
@@ -70,6 +72,10 @@ The pipeline is three tiers, each auditable independently:
    one. `figures/fig2_semblanza.png` and `figures/fig3_beam_fases_PS.png`
    show this on a synthetic confirmed-earthquake scenario: a clear
    interior semblance peak, and P/S phase picks on the resulting beam.
+
+   ![Figure 2: slant-stack semblance vs. apparent velocity, a clear interior peak.](../figures/fig2_semblanza.png)
+
+   ![Figure 3: the stacked beam with P/S phase picks marked.](../figures/fig3_beam_fases_PS.png)
 3. **Supervisor / taxonomy.** The measured velocity, its coincidence
    fraction (share of the array triggered near-simultaneously) and span
    fraction (spatial extent of the trigger) are classified into one of
@@ -224,6 +230,8 @@ event as magnitude vs. distance (or aperture, where distance isn't
 available), colored by outcome — the empirical detectability envelope
 this matrix traces out, rather than an assumed one.
 
+![Figure 6: magnitude vs. distance/aperture scatter, colored by outcome.](../figures/fig6_detectabilidad.png)
+
 ### 5.2 Detectability as a property of installation, not geometry
 
 Detection recall was measured directly by injecting synthetic events at
@@ -245,6 +253,13 @@ broadly comparable channel counts and spacing — detectability is not a
 fixed property of "how many channels" or "how long is the array," it is
 a property of the specific installation's real noise floor, and has to
 be measured per-installation rather than assumed.
+
+![Figure 6a: recall vs. SNR, ridgecrest_north, with Wilson 95% CIs and SNR50 marked.](../figures/fig6_recall_snr_ridgecrest_north.png)
+
+![Figure 6b: recall vs. SNR, monterey_bay.](../figures/fig6_recall_snr_monterey_bay.png)
+
+![Figure 6c: recall vs. SNR, arcata.](../figures/fig6_recall_snr_arcata.png)
+
 Per-array threshold calibration (`calibrate.py`, evidence-gated: a
 threshold sweep must not break an existing confirmed HIT to be proposed)
 found one improving change — ridgecrest_north's Tier0 threshold (4.0 →
@@ -255,6 +270,10 @@ kept their defaults.
 `figures/fig7_validacion_cruzada_ridgecrest_north.png` show the
 cross-validation of these calibrated thresholds against the real,
 ground-truth-matched events per array.
+
+![Figure 7a: cross-validation, arcata — synthetic recall curve with real events overlaid.](../figures/fig7_validacion_cruzada_arcata.png)
+
+![Figure 7b: cross-validation, ridgecrest_north.](../figures/fig7_validacion_cruzada_ridgecrest_north.png)
 
 ## 6. The two artifacts, as a case study
 
@@ -352,6 +371,8 @@ velocity, measurement error stays near a floor of ~2.4% (exact:
 apertures and velocities, up until the velocity approaches the
 geometric ceiling for that aperture, where error grows sharply.
 
+![Figure 5: velocity measurement error vs. true velocity, swept across apertures — the geometric resolution limit.](../figures/fig5_limite_apertura.png)
+
 **Detectability is per-installation, not a geometric constant** — §5.2's
 3.7× spread in SNR50 (arcata 5.9 vs. monterey_bay 1.6) across three
 arrays with broadly similar channel counts means "will this array see a
@@ -393,7 +414,11 @@ this path passes fully (`tests/test_interferometry.py`,
 `figures/fig4_interferometria.png` shows the resulting virtual-source
 gather — the empirical Green's function recovered between channels
 purely from cross-correlating passing traffic, the "V"-shaped moveout
-pattern characteristic of a genuine virtual source. On real data
+pattern characteristic of a genuine virtual source.
+
+![Figure 4: virtual-source gather from traffic noise-correlation, the empirical Green's function.](../figures/fig4_interferometria.png)
+
+On real data
 (Pawnee), a genuine traffic segment recovered from within the recording
 (`evt_0006`, 263–349 s) produced v=261 m/s, R²=0.00 on a single 86 s pass
 — honestly inconclusive with the amount of real data available (the

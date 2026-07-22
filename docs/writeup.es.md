@@ -61,6 +61,8 @@ ambiguos se resuelven en una llegada de onda plana inequívoca una vez
 graficadas como tiempo-vs-posición-de-canal, porque la física *es* la
 pendiente.
 
+![Figura 1: tres paneles canal-tiempo — moveout casi vertical para un sismo, franja diagonal lenta para un vehículo, y un solo punto sin pendiente para un transitorio local.](../figures/fig1_pendiente_es_fisica.png)
+
 ## 3. Método
 
 El pipeline tiene tres niveles, cada uno auditable de forma
@@ -79,6 +81,10 @@ independiente:
    muestran esto sobre un escenario sintético de sismo-confirmado: un
    pico de semblanza interior claro, y picks de fase P/S sobre el beam
    resultante.
+
+   ![Figura 2: semblanza de slant-stack vs. velocidad aparente, un pico interior claro.](../figures/fig2_semblanza.png)
+
+   ![Figura 3: el beam apilado con los picks de fase P/S marcados.](../figures/fig3_beam_fases_PS.png)
 3. **Supervisor / taxonomía.** La velocidad medida, su fracción de
    coincidencia (parte del arreglo disparada casi-simultáneamente) y su
    fracción de extensión (extensión espacial del disparo) se clasifican
@@ -250,6 +256,8 @@ como magnitud vs. distancia (o apertura, donde no hay distancia
 disponible), coloreado por outcome — la envolvente de detectabilidad
 empírica que traza esta matriz, en vez de una asumida.
 
+![Figura 6: dispersión magnitud vs. distancia/apertura, coloreada por outcome.](../figures/fig6_detectabilidad.png)
+
 ### 5.2 La detectabilidad como propiedad de la instalación, no de la geometría
 
 El recall de detección se midió directamente inyectando eventos
@@ -272,7 +280,15 @@ instalaciones con conteos de canal y espaciados ampliamente comparables —
 la detectabilidad no es una propiedad fija de "cuántos canales" o "qué
 tan largo es el arreglo", es una propiedad del piso de ruido real de esa
 instalación específica, y hay que medirla por instalación en vez de
-asumirla. La calibración de umbral por arreglo (`calibrate.py`,
+asumirla.
+
+![Figura 6a: recall vs. SNR, ridgecrest_north, con IC 95% Wilson y SNR50 marcado.](../figures/fig6_recall_snr_ridgecrest_north.png)
+
+![Figura 6b: recall vs. SNR, monterey_bay.](../figures/fig6_recall_snr_monterey_bay.png)
+
+![Figura 6c: recall vs. SNR, arcata.](../figures/fig6_recall_snr_arcata.png)
+
+La calibración de umbral por arreglo (`calibrate.py`,
 condicionada a evidencia: un barrido de umbral no puede romper un HIT
 confirmado existente para ser propuesto) encontró un cambio que mejora —
 el umbral de Nivel 0 de ridgecrest_north (4.0 → 8.0) — y no encontró
@@ -283,6 +299,10 @@ defaults.
 `figures/fig7_validacion_cruzada_ridgecrest_north.png` muestran la
 validación cruzada de estos umbrales calibrados contra los eventos
 reales con verdad-terreno, por arreglo.
+
+![Figura 7a: validación cruzada, arcata — curva sintética de recall con los eventos reales superpuestos.](../figures/fig7_validacion_cruzada_arcata.png)
+
+![Figura 7b: validación cruzada, ridgecrest_north.](../figures/fig7_validacion_cruzada_ridgecrest_north.png)
 
 ## 6. Los dos artefactos, como estudio de caso
 
@@ -391,6 +411,8 @@ rango amplio de aperturas y velocidades, hasta que la velocidad se
 acerca al techo geométrico de esa apertura, donde el error crece
 fuertemente.
 
+![Figura 5: error de medición de velocidad vs. velocidad real, barrido en distintas aperturas — el límite geométrico de resolución.](../figures/fig5_limite_apertura.png)
+
 **La detectabilidad es por instalación, no una constante geométrica** —
 el factor de 3.7× de §5.2 en SNR50 (arcata 5.9 vs. monterey_bay 1.6)
 entre tres arreglos con conteos de canal ampliamente similares implica
@@ -435,6 +457,9 @@ camino pasa completa (`tests/test_interferometry.py`,
 resultante — la función de Green empírica recuperada entre canales
 puramente por correlación cruzada de tráfico que pasa, el patrón de
 moveout en forma de "V" característico de una fuente virtual genuina.
+
+![Figura 4: gather de fuente virtual desde ruido de tráfico, la función de Green empírica.](../figures/fig4_interferometria.png)
+
 Sobre datos reales (Pawnee), un segmento de tráfico genuino recuperado
 de dentro de la grabación (`evt_0006`, 263–349 s) produjo v=261 m/s,
 R²=0.00 en una sola pasada de 86 s — honestamente inconcluyente con la
