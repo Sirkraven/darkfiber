@@ -87,12 +87,22 @@ def check_text_content(files: list[Path]) -> list[str]:
             if pat.search(text):
                 problems.append(f"possible credential/secret in {rel}")
                 break
+        rel_posix = str(rel).replace("\\", "/")
         for m in EMAIL_PATTERN.finditer(text):
-            if m.group(0) not in ALLOWED_EMAILS and str(rel) not in {
-                "CITATION.cff",
-                "pyproject.toml",
-                "scripts/pre_publish_audit.py",
-            }:
+            if (
+                m.group(0) not in ALLOWED_EMAILS
+                and rel_posix
+                not in {
+                    "CITATION.cff",
+                    "pyproject.toml",
+                    "scripts/pre_publish_audit.py",
+                }
+                # docs/announcement_v1.1/*: draft outreach messages that
+                # intentionally name a real external contact address
+                # (e.g. a mailing list) -- the point of the file, not a
+                # leaked credential (FASE F4, PLAN_CIERRE_Y_LANZAMIENTO).
+                and not rel_posix.startswith("docs/announcement_v1.1/")
+            ):
                 problems.append(f"unexpected email '{m.group(0)}' in {rel}")
     return problems
 

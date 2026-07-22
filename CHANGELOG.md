@@ -6,7 +6,78 @@ something to hide.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **`replay.py` + `stream_runner.py` (C1, Bloque C/"operable")**: streaming
+  path from files to a live-paced flow, with demonstrated batch/stream
+  parity. `replay()` is a real-time-paced (or `--speed N` accelerated)
+  async chunk generator over an H5/NPZ; `StreamRunner` consumes it
+  incrementally and finalizes `(TriggerEvent, CoherenceResult)` pairs
+  that match what `run_on_quakeflow.process_file` (batch) would produce
+  on the same complete file. Design note: Tier0 is exactly causal, so a
+  growing (never-evicting) buffer gives exact parity on that front for
+  free; the bandpass (`sosfiltfilt`, zero-phase, ADR 0004) is the one
+  non-causal step, handled by not finalizing an event until the buffer
+  has enough trailing margin for the filter to have converged
+  (`FINALIZE_SAFETY_MARGIN_S`, empirically measured on real data, not a
+  theoretical bound) *and* the raw Tier0 block containing it (before any
+  A5 density re-segmentation) has genuinely closed — see
+  `stream_runner.raw_block_settled_end_s` for a real bug this caught and
+  fixed during verification (see "Fixed" below). Permanent parity test:
+  `tests/test_stream_parity.py` (synthetic, CI-safe, matches the
+  project's synthetic-only CI policy).
+- `scripts/verify_stream_parity_real.py`: manual, read-only (never opens
+  the ledger) batch-vs-stream comparison against real local `.h5` files,
+  for the parts of C1's acceptance that pytest can't cover with real
+  data. Not run in CI.
+
+### Fixed
+
+- **Found verifying C1 against a real Ridgecrest file (M5.8)**: an early
+  `StreamRunner` design finalized events as soon as there was quiet
+  *after their own boundary*, without checking whether the raw Tier0
+  block containing them (before A5's density re-segmentation) had
+  actually closed. Since density re-segmentation re-examines a raw
+  block's full extent every pass, an early, not-yet-closed raw block
+  produced sub-event boundaries that later shifted once real closure
+  happened — the earlier, wrong sub-events had already been finalized,
+  producing duplicates absent from the batch reference (real symptom:
+  `evt_0000_1021_*` in an early pass, `evt_0000_1045_*` once the
+  enclosing block actually closed). Fixed in
+  `stream_runner.raw_block_settled_end_s`, which requires the raw
+  block's own closure within a bandpass-trusted prefix of the buffer,
+  not just quiet after the extracted sub-event.
+- **Discovered, not "fixed" (a property of the algorithm, not a
+  streaming bug)**: for genuinely marginal `INCOHERENTE_LOCAL_SUPRIMIDO`
+  (noise-floor, already-suppressed) candidates, even the *batch*
+  function's own output is sensitive to how much of the file it's given
+  — `bandpass(data[:, :n], fs)` for a real Ridgecrest file produces a
+  different set of noise-floor candidates at different `n`, well past
+  any reasonable settling margin, confirmed by scanning many `n` values
+  directly (no streaming involved). Both interpretations agree these
+  aren't real signals; `verify_stream_parity_real.py` requires exact
+  parity on every other class and reports this class's differences as
+  informational, not a failure.
+
+### Known limits (declared, not silently shipped)
+
+- **C1's "no lag at `--speed 10`" acceptance is only fully met for
+  moderate arrays.** `StreamRunner` re-runs bandpass + Tier0 on the
+  *entire* growing buffer every analysis pass (required for bandpass
+  exactness — see "Added" above), so total cost across a stream grows
+  roughly with the square of the number of passes for a fixed interval.
+  Verified on two real files from different arrays: ridgecrest_north
+  (1150 ch, 120s) processed in 17.5s of wall clock at `--speed 10`
+  (expected 12s, ~1.5x over); arcata (3020 ch, 420s, one continuous
+  420s-long event — a worst case for this growth pattern) took 244.6s
+  (expected 42s, ~5.8x over), down from 1055.9s before raising the
+  default `analysis_interval_s` from 2.0s to 10.0s (a real, measured
+  4.3x improvement, but not a full fix). Batch/stream *verdict* parity
+  held exactly in both cases regardless. A bounded ring buffer with real
+  sample eviction (no re-growth of the recomputation window with file
+  length) removes this cost pattern entirely — that's C3's job
+  (continuous 24h operation), explicitly out of C1's scope (demonstrate
+  parity), not a silently-shipped gap.
 
 ## [1.1.0] - 2026-07-20 — "Bloque A" (A1-A10)
 
