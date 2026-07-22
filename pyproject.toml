@@ -40,6 +40,7 @@ dependencies = [
 [project.optional-dependencies]
 h5 = ["h5py>=3.10"]
 figs = ["matplotlib>=3.8"]
+dashboard = ["streamlit>=1.30"]
 dev = [
     "pytest>=8.0",
     "ruff>=0.6",

@@ -209,6 +209,33 @@ class StreamRunner:
         self._closed = True
         return out
 
+    def snapshot(self, tail_s: float | None = None) -> dict:
+        """Estado en vivo de solo lectura, pensado para un consumidor
+        externo (p. ej. `dashboard.py`, C2) que quiere mostrar algo
+        mientras el stream corre, sin acoplarse a los atributos internos
+        del runner. NO incluye datos bandpasseados (serían del pase de
+        análisis anterior, no del buffer actual) -- devuelve el buffer
+        crudo sanitizado tal cual está acumulado hasta ahora.
+
+        `tail_s`: si se da, recorta la porción devuelta a los últimos
+        `tail_s` segundos (para no mandar arreglos gigantes a una UI que
+        solo necesita ver "lo último"). `None` devuelve el buffer
+        completo acumulado.
+        """
+        buf = self._buf
+        n_samples = 0 if buf is None else buf.shape[1]
+        if buf is not None and tail_s is not None:
+            tail_n = max(1, int(tail_s * self.geom.fs_hz))
+            buf = buf[:, -tail_n:]
+        return {
+            "buffer": buf,
+            "fs_hz": self.geom.fs_hz,
+            "n_samples_total": n_samples,
+            "duration_s": n_samples / self.geom.fs_hz,
+            "n_finalized": len(self._finalized_ids),
+            "closed": self._closed,
+        }
+
     def _flush_pending(self) -> None:
         if not self._pending_chunks:
             return
