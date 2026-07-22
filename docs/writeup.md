@@ -419,7 +419,9 @@ the correct output is "not in the record," not a plausible-sounding guess.
 ## 9. Reproducibility
 
 - **Code and license**: `https://github.com/Sirkraven/darkfiber`
-  (AGPL-3.0-or-later). **DOI**: `10.5281/zenodo.21383276` (`CITATION.cff`).
+  (AGPL-3.0-or-later). **Concept DOI** (always resolves to the latest
+  release): `10.5281/zenodo.21383275`. **This release's DOI**:
+  `10.5281/zenodo.21455992` (`CITATION.cff`).
 - **Console scripts** (`pyproject.toml`, installed via `pip install -e .`):
   `darkfiber-validate` (synthetic suite, `run_validation.py`),
   `darkfiber-stanford` / `darkfiber-quakeflow` (real-data harnesses),
