@@ -79,6 +79,43 @@ something to hide.
   (continuous 24h operation), explicitly out of C1's scope (demonstrate
   parity), not a silently-shipped gap.
 
+- **`dashboard.py` (C2, Bloque C/"operable")**: Streamlit operator
+  dashboard, four tabs against the same `SignatureCatalog` the rest of
+  the project reads/writes. *Vivo*: runs a `replay.py`/`StreamRunner`
+  demo against a local file (blocking, run-to-completion rather than
+  incrementally live — a deliberate simplification that avoids the
+  race-condition risk of updating Streamlit state from a background
+  thread) and renders the resulting channel-time waterfall with finalized
+  events marked, plus the full verdict feed (`explanations` included).
+  *Catálogo*: signature catalog browser (prototypes, unknown clusters,
+  naming/"bautizo" flow). *Latido*: per-array last self-test, SNR50, and
+  synthetic recall curve. *Scoreboard*: live outcome matrix with Wilson
+  95% CIs. Console script: `darkfiber-dashboard`
+  (`streamlit>=1.30`, optional `[dashboard]` extra). CI-safe smoke test:
+  `tests/test_dashboard.py`, using `streamlit.testing.v1.AppTest` (which
+  actually executes the script, not just imports it) against an empty
+  temp ledger.
+
+### Fixed
+
+- **Relative imports break under `streamlit run`**: `dashboard.py`
+  originally used the project's usual `from .catalog import ...` style,
+  which works fine under `python -m darkfiber.dashboard` but fails under
+  `streamlit run`, which executes the file directly with no parent
+  package (`ImportError: attempted relative import with no known parent
+  package`). Caught by `tests/test_dashboard.py`'s `AppTest` run, not by
+  a plain import check. Fixed by switching to absolute imports
+  (`from darkfiber.catalog import ...`) in that file. See
+  `docs/observaciones.md`, 2026-07-22, for the general note in case a
+  future entry point needs the same treatment.
+- **`ArrowTypeError` on a mixed-type table column**: the scoreboard's
+  per-array table had a "magnitud" column mixing real floats (QuakeFlow
+  ground truth) with the placeholder string `"—"` (no ground truth);
+  Streamlit silently auto-recovers from this (logs a warning, applies its
+  own type coercion) but the underlying cause was fixed properly instead
+  of relying on that fallback, by formatting the column to a string
+  unconditionally.
+
 ## [1.1.0] - 2026-07-20 — "Bloque A" (A1-A10)
 
 Follow-up validation pass after 1.0.0/v5.2. Re-examined every

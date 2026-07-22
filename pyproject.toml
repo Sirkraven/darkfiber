@@ -78,6 +78,7 @@ darkfiber-interferometry = "darkfiber.interferometry:main"
 darkfiber-convert-sgy = "darkfiber.convert_stanford_sgy:main"
 darkfiber-snr-curve = "darkfiber.snr_curve:main"
 darkfiber-replay = "darkfiber.replay:main"
+darkfiber-dashboard = "darkfiber.dashboard:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/darkfiber"]

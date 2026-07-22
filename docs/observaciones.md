@@ -9,6 +9,56 @@ podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
 (ese es trabajo declarado y concreto; esto es más crudo, todavía sin
 decidir si es trabajo).
 
+## 2026-07-22 — C2 (dashboard)
+
+**`streamlit run archivo.py` ejecuta el archivo como script standalone
+(`__main__`, sin paquete padre) — imports relativos revientan.**
+`dashboard.py` usaba `from .catalog import ...` (mismo estilo que todo el
+resto del proyecto) y funcionaba perfecto corrido como
+`python -m darkfiber.dashboard`, pero streamlit lo ejecuta con `exec()`
+directo sobre el archivo, no como módulo del paquete — `ImportError:
+attempted relative import with no known parent package`. Lo atrapó el
+propio smoke test (`AppTest`, que corre el script tal como streamlit lo
+haría) antes de probarlo a mano. Arreglado con imports absolutos
+(`from darkfiber.catalog import ...`) en ese archivo puntual. Vale la
+pena recordarlo si en algún momento se agrega OTRO entry point pensado
+para correr vía `streamlit run` (o cualquier otro runner que haga lo
+mismo) — no es intuitivo que el mismo import que funciona en todo el
+resto del proyecto rompa acá.
+
+**`st.table()` con una columna de tipo mixto (float + string) falla la
+conversión a Arrow, pero streamlit lo "arregla" solo, en silencio.** La
+columna "magnitud" del scoreboard mezclaba números reales (verdad-terreno
+QuakeFlow) con el placeholder de texto `"—"` (sin verdad-terreno) — pyarrow
+tira `ArrowTypeError`, streamlit lo atrapa y hace un fallback automático
+("Applying automatic fixes for column types"), así que la UI no se rompe,
+pero el log queda con un traceback que parece un error real. Se arregló
+forzando la columna entera a texto en vez de confiar en el fallback. Vale
+la pena revisar el resto de las tablas del proyecto (si en algún momento
+se muestran en una UI, no solo en markdown) por el mismo patrón: cualquier
+columna que mezcle `None`/placeholder de texto con un número real es
+candidata a este mismo problema silencioso.
+
+**El waterfall en vivo del M5.8 real de Ridgecrest, corrido a través de
+`replay.py`->`StreamRunner`, muestra el frente de llegada iluminando casi
+todo el arreglo (~1150 canales) a partir de ~47s de forma inequívoca a
+simple vista** — la misma física que cuenta §6 del writeup, pero como
+imagen en vez de números. Podría ser un buen candidato para una figura
+del writeup o del paquete de difusión más adelante (hoy no hay ninguna
+figura que muestre el M5.8 "crudo", solo sus métricas) — no se persiguió
+acá, es una idea para cuando se arme el material de difusión.
+
+**El catálogo de firmas real está genuinamente vacío** (confirmado de
+nuevo acá, ya lo decía el WIP de C2 de la sesión anterior) — ninguna
+corrida real de `run_on_quakeflow.py` llama a `cat.match()`. La vista de
+catálogo del dashboard es, hoy, principalmente una demo de la
+*capacidad*, no una vista de datos reales. Sigue siendo la pieza de
+trabajo más clara si en algún momento se decide conectar
+`COHERENTE_DESCONOCIDO` real al catálogo (extraer un vector de firma de
+un evento real es, en sí, una decisión de diseño física que no está
+tomada todavía — qué representa "la identidad" de una señal recurrente,
+más allá de sus métricas de coherencia).
+
 ## 2026-07-22 — C1 (streaming)
 
 **La inestabilidad de supresión bajo truncamiento de archivo no es un bug
