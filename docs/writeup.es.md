@@ -463,7 +463,9 @@ el registro", no una adivinanza que suena plausible.
 ## 9. Reproducibilidad
 
 - **Código y licencia**: `https://github.com/Sirkraven/darkfiber`
-  (AGPL-3.0-or-later). **DOI**: `10.5281/zenodo.21383276` (`CITATION.cff`).
+  (AGPL-3.0-or-later). **DOI concept** (siempre apunta a la última
+  versión): `10.5281/zenodo.21383275`. **DOI de esta versión**:
+  `10.5281/zenodo.21455992` (`CITATION.cff`).
 - **Console scripts** (`pyproject.toml`, instalados vía
   `pip install -e .`): `darkfiber-validate` (suite sintética,
   `run_validation.py`), `darkfiber-stanford` / `darkfiber-quakeflow`
