@@ -7,17 +7,22 @@ F4 (GATE F4: nothing published).
 ## Title
 
 darkfiber: a physics-first coherence engine for Distributed Acoustic
-Sensing, validated by what it refused to confirm
+Sensing — with measured per-installation detection limits and honest
+abstention
 
 ## Authors
 
-Alejandro Yucare Rios (Sirkraven)
+Alejandro Yucare Ríos, independent researcher
+
+(The GitHub handle/alias lives only in the repository URL below, not
+attached to the author name, per FASE F4.2.)
 
 ## Abstract
 
-(Verbatim from `docs/writeup.md` §1 — copy exactly, do not paraphrase;
-if EarthArXiv has an abstract length limit, trim from the end, not the
-middle, and keep the first two sentences and the "0 of 16" result intact.)
+(Verbatim from `docs/writeup.md` §1 as of FASE F4.2 — copy exactly, do
+not paraphrase; if EarthArXiv has an abstract length limit, trim from
+the end, not the middle, and keep the three bolded sentences — zero
+false alarms, zero signals discarded, zero clean confirmations — intact.)
 
 > DarkFiber is a physics-first coherence engine for earthquake detection
 > on Distributed Acoustic Sensing (DAS) fiber-optic arrays. Instead of
@@ -27,26 +32,38 @@ middle, and keep the first two sentences and the "0 of 16" result intact.)
 > traffic: a coherent moveout across the array, quantified by slant-stack
 > semblance and corroborated by an independent onset-velocity regression.
 > No LLM sits in the verdict path; the system measures physics and
-> reports what it measures. We validated the pipeline against 43 real
-> DAS recordings across four array installations (Stanford, Ridgecrest,
-> Arcata, Monterey Bay) — 16 carrying a cataloged real earthquake to
-> score against, 27 with no cataloged event as a false-alarm check — plus
-> a qualitative teleseism case (Pawnee, 22 raw files) validated
-> separately. The honest result: 0 of 16 real local/regional earthquakes
-> were confirmed as `SISMO_CONFIRMADO`, 8 were correctly flagged as
-> weak-but-present (`HONEST_UNKNOWN`), 2 as regional/emergent arrivals
-> beyond the array's resolving aperture (`HONEST_REGIONAL`), and 6 fell
-> below the measured detection floor for their array
-> (`MISS_BELOW_FLOOR`) — with zero false alarms across all 27 no-event
-> files and zero cases where the engine saw a real signal and lost it
-> (`MISS_SUPPRESSED = 0`). Two apparent confirmations from earlier
-> validation passes were subsequently retracted by two independent
-> internal guards once density re-segmentation exposed event-fusion
-> artifacts and grid-boundary non-measurements underneath them. The
-> thesis of this paper is that this outcome — not a headline detection
-> count — is the actual evidence of a serious measurement system: it
-> rejected results that would have been convenient to keep, for reasons
-> it can show its work on.
+> reports what it measures.
+>
+> We validated the pipeline against 43 real DAS recordings across four
+> array installations (Stanford, Ridgecrest, Arcata, Monterey Bay): 16
+> carry a cataloged real earthquake scored against USGS/SCEDC ground
+> truth, 13 of those 16 drawn from a sample pre-registered before any
+> result was seen.
+>
+> Reliability comes first in the results. Across the 27 files with no
+> cataloged event, the system produced **zero false alarms**. Across
+> every real event, it produced **zero cases of a real signal detected
+> and then discarded**.
+>
+> Of the 16 real earthquakes, **none reached a clean confirmation** — 8
+> were measured as weak-but-present, 2 as regional/emergent arrivals
+> beyond the array's resolving aperture, and 6 fell below that array's
+> own detection floor, each bucket explained by a directly measured
+> curve, not an assumption.
+>
+> The central finding is that detectability itself is a property of the
+> installation, not the array's geometry: recall-vs-SNR, measured against
+> each array's own real background noise, gives a 3.7× spread in SNR50
+> between installations of broadly comparable size — the number an
+> operator would actually need to evaluate whether a given array can see
+> a given event. Two apparent confirmations from earlier validation
+> passes were subsequently retracted by two independent internal guards,
+> once density re-segmentation exposed event-fusion artifacts and
+> grid-boundary non-measurements underneath them — the system retracting
+> its own two headline results is the clearest evidence available that it
+> is not tuned to produce confirmations. Detection limits are given in
+> closed form as a function of array aperture and sampling rate. Code,
+> the full validation ledger, and a DOI are public.
 
 ## Subject areas / discipline
 

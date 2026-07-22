@@ -343,3 +343,38 @@ pass:
 No new figures, no new measurements, no re-run of Bloque A. Zero orphan
 figures reconfirmed after renumbering (same check as B1.5, re-run: 11
 files under `figures/`, 11 citations in `writeup.md`, one-to-one).
+
+## FASE F4.2 — final adjustments (author-approved for publication)
+
+Pure re-formatting of already-verified numbers, checked again for
+completeness rather than correctness (nothing here could have introduced
+a new unsourced figure):
+
+- **Abstract split into shorter paragraphs, three sentences bolded.**
+  Diffed the before/after text word-for-word while writing the edit
+  (not just re-read after) to confirm zero words added or removed beyond
+  paragraph breaks and `**bold**` markup — every clause from the F4.1
+  abstract is present, in the same order, in the F4.2 version.
+- **Authorship**: `CITATION.cff`'s `authors:` block, `docs/writeup.md`/
+  `writeup.es.md` (no byline existed in the body to begin with — checked
+  by `grep -n "Sirkraven"` on both, confirmed the only hits are the repo
+  URL in §9/§9, unchanged), `docs/preprint_cover.html`, and
+  `docs/announcement_v1.1/earth_arxiv_metadata.md`'s Authors section all
+  now read "Alejandro Yucare Ríos" with no alias attached to the name.
+  `earth_arxiv_metadata.md`'s citation-format line ("Yucare Rios, A.")
+  and the repo-URL line (which necessarily contains `Sirkraven`, it's
+  the GitHub org name) were left alone — neither is the "name" the
+  instruction was about.
+- **PDF cover build**: moved from ad hoc shell commands (typed fresh each
+  of the two prior regenerations) into `scripts/build_preprint_pdf.sh` +
+  `docs/preprint_cover.html`, both now tracked in git. Found and fixed a
+  real bug while doing this: the first run of the new script produced a
+  24 KB, 1-page PDF instead of ~2.9 MB/18 pages — git-bash's own
+  `/d/darkfiber/...`-style `pwd` is not a path Chrome's `file://` URL
+  handling accepts on Windows; it silently rendered a "page not found"
+  page instead of erroring. Fixed with `cygpath -w` to convert to a real
+  Windows path before building the URL. Would have shipped a broken PDF
+  silently if the page count hadn't been checked before the visual pass.
+- **Visual re-verification**: re-rendered all 18 pages (`pymupdf`, same
+  method as F4.1) after the fix; sampled the cover, both abstract pages,
+  and the closing page with the new FASE F4.2 addendum — all correct.

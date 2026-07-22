@@ -23,29 +23,34 @@ Validamos el pipeline contra 43 grabaciones DAS reales en cuatro
 instalaciones de arreglo (Stanford, Ridgecrest, Arcata, Monterey Bay): 16
 llevan un sismo real catalogado, puntuado contra verdad-terreno
 USGS/SCEDC, 13 de esos 16 sorteados de una muestra pre-registrada antes
-de ver ningún resultado. La confiabilidad va primero en los resultados:
-sobre los 27 archivos sin evento catalogado, el sistema produjo cero
-falsas alarmas; sobre cada evento real, produjo cero casos de una señal
-real detectada y después descartada. De los 16 sismos reales, ninguno
-alcanzó una confirmación limpia — 8 se midieron como
-débiles-pero-presentes, 2 como llegadas regionales/emergentes más allá de
-la apertura resoluble del arreglo, y 6 cayeron bajo el propio piso de
-detección de ese arreglo, cada bolsillo explicado por una curva
-directamente medida, no una suposición. El hallazgo central es que la
-detectabilidad misma es una propiedad de la instalación, no de la
-geometría del arreglo: recall-vs-SNR, medido contra el ruido de fondo
-real propio de cada arreglo, da un factor de 3.7× de dispersión en SNR50
-entre instalaciones de tamaño ampliamente comparable — el número que un
-operador necesitaría en la práctica para evaluar si un arreglo dado puede
-ver un evento dado. Dos confirmaciones aparentes de pasadas de validación
-anteriores fueron retractadas después por dos guardas internas
-independientes, una vez que la re-segmentación por densidad expuso
-artefactos de fusión de eventos y no-mediciones de borde de grilla debajo
-de ellas — que el sistema retracte sus propios dos resultados titulares
-es la evidencia más clara disponible de que no está afinado para producir
-confirmaciones. Los límites de detección se dan en forma cerrada como
-función de la apertura del arreglo y la tasa de muestreo. El código, el
-ledger completo de validación, y un DOI son públicos.
+de ver ningún resultado.
+
+La confiabilidad va primero en los resultados. Sobre los 27 archivos sin
+evento catalogado, el sistema produjo **cero falsas alarmas**. Sobre cada
+evento real, produjo **cero casos de una señal real detectada y después
+descartada**.
+
+De los 16 sismos reales, **ninguno alcanzó una confirmación limpia** — 8
+se midieron como débiles-pero-presentes, 2 como llegadas
+regionales/emergentes más allá de la apertura resoluble del arreglo, y 6
+cayeron bajo el propio piso de detección de ese arreglo, cada bolsillo
+explicado por una curva directamente medida, no una suposición.
+
+El hallazgo central es que la detectabilidad misma es una propiedad de la
+instalación, no de la geometría del arreglo: recall-vs-SNR, medido contra
+el ruido de fondo real propio de cada arreglo, da un factor de 3.7× de
+dispersión en SNR50 entre instalaciones de tamaño ampliamente comparable
+— el número que un operador necesitaría en la práctica para evaluar si un
+arreglo dado puede ver un evento dado. Dos confirmaciones aparentes de
+pasadas de validación anteriores fueron retractadas después por dos
+guardas internas independientes, una vez que la re-segmentación por
+densidad expuso artefactos de fusión de eventos y no-mediciones de borde
+de grilla debajo de ellas — que el sistema retracte sus propios dos
+resultados titulares es la evidencia más clara disponible de que no está
+afinado para producir confirmaciones. Los límites de detección se dan en
+forma cerrada como función de la apertura del arreglo y la tasa de
+muestreo. El código, el ledger completo de validación, y un DOI son
+públicos.
 
 ## 2. El problema
 
@@ -593,3 +598,18 @@ se barrió el lenguaje en busca de cobertura defensiva gratuita. Ningún
 hecho, cifra, o la retractación de §6 cambió o se suavizó; cada cifra de
 esta pasada está verificada contra `docs/writeup_data.md`, sección "FASE
 F4.1 — editorial pass".
+
+**FASE F4.2 (ajustes finales, aprobado por el autor para publicación):**
+la autoría en la portada y en los metadatos ahora dice solo "Alejandro
+Yucare Ríos, independent researcher" — el handle de GitHub vive
+únicamente en la URL del repositorio en §9, no pegado al nombre
+(`CITATION.cff` y el borrador de metadatos de EarthArXiv se actualizaron
+igual). El resumen se partió en párrafos más cortos con sus tres cifras
+titulares (cero falsas alarmas en los 27 archivos sin evento; cero casos
+de una señal real detectada y descartada; cero confirmaciones limpias,
+cada una explicada por una curva medida) destacadas para que se lean en
+unos quince segundos. No se agregó ni quitó información. La construcción
+del PDF pasó de comandos sueltos a `scripts/build_preprint_pdf.sh` +
+`docs/preprint_cover.html` (versionados en git; el `.html`/`.pdf`
+generado sigue excluido, igual que `figures/`), por reproducibilidad, ya
+que esta era la segunda regeneración.

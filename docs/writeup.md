@@ -20,26 +20,31 @@ We validated the pipeline against 43 real DAS recordings across four array
 installations (Stanford, Ridgecrest, Arcata, Monterey Bay): 16 carry a
 cataloged real earthquake scored against USGS/SCEDC ground truth, 13 of
 those 16 drawn from a sample pre-registered before any result was seen.
-Reliability comes first in the results: across the 27 files with no
-cataloged event, the system produced zero false alarms; across every real
-event, it produced zero cases of a real signal detected and then
-discarded. Of the 16 real earthquakes, none reached a clean confirmation —
-8 were measured as weak-but-present, 2 as regional/emergent arrivals
-beyond the array's resolving aperture, and 6 fell below that array's own
+
+Reliability comes first in the results. Across the 27 files with no
+cataloged event, the system produced **zero false alarms**. Across every
+real event, it produced **zero cases of a real signal detected and then
+discarded**.
+
+Of the 16 real earthquakes, **none reached a clean confirmation** — 8
+were measured as weak-but-present, 2 as regional/emergent arrivals beyond
+the array's resolving aperture, and 6 fell below that array's own
 detection floor, each bucket explained by a directly measured curve, not
-an assumption. The central finding is that detectability itself is a
-property of the installation, not the array's geometry: recall-vs-SNR,
-measured against each array's own real background noise, gives a 3.7×
-spread in SNR50 between installations of broadly comparable size — the
-number an operator would actually need to evaluate whether a given array
-can see a given event. Two apparent confirmations from earlier validation
-passes were subsequently retracted by two independent internal guards,
-once density re-segmentation exposed event-fusion artifacts and
-grid-boundary non-measurements underneath them — the system retracting its
-own two headline results is the clearest evidence available that it is
-not tuned to produce confirmations. Detection limits are given in closed
-form as a function of array aperture and sampling rate. Code, the full
-validation ledger, and a DOI are public.
+an assumption.
+
+The central finding is that detectability itself is a property of the
+installation, not the array's geometry: recall-vs-SNR, measured against
+each array's own real background noise, gives a 3.7× spread in SNR50
+between installations of broadly comparable size — the number an operator
+would actually need to evaluate whether a given array can see a given
+event. Two apparent confirmations from earlier validation passes were
+subsequently retracted by two independent internal guards, once density
+re-segmentation exposed event-fusion artifacts and grid-boundary
+non-measurements underneath them — the system retracting its own two
+headline results is the clearest evidence available that it is not tuned
+to produce confirmations. Detection limits are given in closed form as a
+function of array aperture and sampling rate. Code, the full validation
+ledger, and a DOI are public.
 
 ## 2. The problem
 
@@ -547,3 +552,18 @@ a prior numbering collision) and language was swept for gratuitous
 hedging. No fact, number, or the retraction in §6 changed or softened;
 every number in this pass is checked against `docs/writeup_data.md` in
 "F4.1 — editorial pass" below.
+
+**FASE F4.2 (final adjustments, author-approved for publication):**
+authorship on the cover and in metadata now reads "Alejandro Yucare
+Ríos, independent researcher" only — the GitHub handle lives solely in
+the repository URL in §9, not attached to the name (`CITATION.cff` and
+the EarthArXiv metadata draft updated the same way). The abstract was
+split into shorter paragraphs with its three headline numbers (zero
+false alarms across 27 no-event files; zero cases of a real signal
+detected and discarded; zero clean confirmations, each explained by a
+measured curve) set off so they read in about fifteen seconds. No
+information added or removed. The PDF build itself moved from ad hoc
+commands into `scripts/build_preprint_pdf.sh` + `docs/preprint_cover.html`
+(tracked in git; the generated `.html`/`.pdf` stay gitignored, like
+`figures/`) for reproducibility, since this was already the second
+regeneration.
