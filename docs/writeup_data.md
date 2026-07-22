@@ -292,3 +292,54 @@ moved to before the Results section per F1 item 5's instruction that it
 checked: neither is referenced anywhere else in the current repo tree
 (`grep -rl` for both filenames returns nothing outside themselves) — left
 untouched as historical record, per instruction.
+
+## FASE F4.1 — editorial pass (framing/order only, zero facts changed)
+
+Per explicit instruction: no fact changes, no retraction softened, only
+order and frame. Verified every number touched or newly stated in this
+pass:
+
+- **"13 of those 16 drawn from a sample pre-registered" (abstract, §4).**
+  Not a new number — re-derived and double-checked against
+  `validacion_real/scoreboard.md` directly (not from memory of the
+  earlier README computation): arcata's per-array table shows 3 rows
+  with a magnitude value (`HONEST_UNKNOWN`, all from the blind sample —
+  arcata has no hand-picked events at all) and 12 with none
+  (`CORRECT_REJECTION`). ridgecrest_north's per-array table shows 12
+  rows all with a magnitude value (1 `HONEST_REGIONAL` + 5
+  `HONEST_UNKNOWN` + 6 `MISS_BELOW_FLOOR` = 12), of which 2
+  (`ci37280444.h5`=M2.67, `ci39493944.h5`=M5.8) are the hand-picked A0/P2
+  events and 10 are from the pre-registered blind sample
+  (`sample_plan.md`). 3 (arcata) + 10 (ridgecrest_north) = 13. Matches
+  the same computation already live in `README.md`'s honesty box
+  (unchanged by this pass) — cross-checked, not just repeated.
+- **pytest "14/14 passing" (§9).** Was "11/11" in the pre-F4.1 draft —
+  stale, not wrong-when-written: C1 (streaming parity, committed after
+  the original writeup draft) added 3 tests
+  (`tests/test_stream_parity.py`). Re-ran `pytest` this session: `14
+  passed`. Corrected to match current reality, not a new claim.
+- **`darkfiber-replay` console script (§9).** Added in the same C1
+  commit; verified present in `pyproject.toml` `[project.scripts]`.
+- **3.7× SNR50 spread, DOIs, aperture/margin numbers, the two-artifact
+  case study (§6, untouched per instruction).** All identical to the
+  pre-F4.1 draft — re-read after every edit pass to confirm no
+  incidental change; none found.
+- **Figure renumbering (1-11, sequential).** Not a data change — verified
+  the new numbering assigns each of the 11 files under `figures/` to
+  exactly one number, in document order, with no repeats and no gaps
+  (`grep -c '!\[Figure' docs/writeup.md` → 11, `grep -oE 'Figure [0-9]+'`
+  on the image lines → 1 through 11, each exactly once).
+- **Figure-language effort assessment (§9 bilingual note).** Verified by
+  reading source, not estimated: `set_title`/`suptitle` calls with
+  hardcoded Spanish strings exist in `run_validation.py`,
+  `run_on_quakeflow.py`, `characterize_aperture.py`, `snr_curve.py`, and
+  `interferometry.py` (`grep -n "set_title\|suptitle"` across those five
+  files). Concluded: real multi-file effort to add a second language
+  path without breaking the Spanish-default development workflow (the
+  same code generates the figures used by `run_validation.py --figs`'s
+  own Quickstart demo) — declared in a note per the instruction's own
+  fallback, not attempted this pass.
+
+No new figures, no new measurements, no re-run of Bloque A. Zero orphan
+figures reconfirmed after renumbering (same check as B1.5, re-run: 11
+files under `figures/`, 11 citations in `writeup.md`, one-to-one).

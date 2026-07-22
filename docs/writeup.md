@@ -1,6 +1,6 @@
-# DarkFiber: a physics-first coherence engine for Distributed Acoustic Sensing, validated by what it refused to confirm
+# DarkFiber: a physics-first coherence engine for Distributed Acoustic Sensing — with measured per-installation detection limits and honest abstention
 
-*Draft technical writeup — Bloque B1. Every number below is sourced against
+*Draft technical writeup — Bloque B1/F4.1. Every number below is sourced against
 `docs/writeup_data.md`, `validacion_real/scoreboard.md`,
 `validacion_real/NOTES.md`, and `CHANGELOG.md`. This is a draft for author
 review, not a publication — see the note at the end.*
@@ -14,32 +14,50 @@ per-channel classification problem, it measures the one property that
 distinguishes a real seismic wavefront from noise or traffic: a coherent
 moveout across the array, quantified by slant-stack semblance and
 corroborated by an independent onset-velocity regression. No LLM sits in
-the verdict path; the system measures physics and reports what it
-measures. We validated the pipeline against 43 real DAS recordings across
-four array installations (Stanford, Ridgecrest, Arcata, Monterey Bay) —
-16 carrying a cataloged real earthquake to score against, 27 with no
-cataloged event as a false-alarm check — plus a qualitative teleseism
-case (Pawnee, 22 raw files) validated separately. The
-honest result: **0 of 16 real local/regional earthquakes were confirmed as
-`SISMO_CONFIRMADO`**, 8 were correctly flagged as weak-but-present
-(`HONEST_UNKNOWN`), 2 as regional/emergent arrivals beyond the array's
-resolving aperture (`HONEST_REGIONAL`), and 6 fell below the measured
-detection floor for their array (`MISS_BELOW_FLOOR`) — with zero false
-alarms across all 27 no-event files and zero cases where the engine saw a
-real signal and lost it (`MISS_SUPPRESSED = 0`). Two apparent
-confirmations from earlier validation passes were subsequently retracted
-by two independent internal guards once density re-segmentation exposed
-event-fusion artifacts and grid-boundary non-measurements underneath them.
-The thesis of this paper is that this outcome — not a headline detection
-count — is the actual evidence of a serious measurement system: it
-rejected results that would have been convenient to keep, for reasons it
-can show its work on.
+the verdict path; the system measures physics and reports what it measures.
+
+We validated the pipeline against 43 real DAS recordings across four array
+installations (Stanford, Ridgecrest, Arcata, Monterey Bay): 16 carry a
+cataloged real earthquake scored against USGS/SCEDC ground truth, 13 of
+those 16 drawn from a sample pre-registered before any result was seen.
+Reliability comes first in the results: across the 27 files with no
+cataloged event, the system produced zero false alarms; across every real
+event, it produced zero cases of a real signal detected and then
+discarded. Of the 16 real earthquakes, none reached a clean confirmation —
+8 were measured as weak-but-present, 2 as regional/emergent arrivals
+beyond the array's resolving aperture, and 6 fell below that array's own
+detection floor, each bucket explained by a directly measured curve, not
+an assumption. The central finding is that detectability itself is a
+property of the installation, not the array's geometry: recall-vs-SNR,
+measured against each array's own real background noise, gives a 3.7×
+spread in SNR50 between installations of broadly comparable size — the
+number an operator would actually need to evaluate whether a given array
+can see a given event. Two apparent confirmations from earlier validation
+passes were subsequently retracted by two independent internal guards,
+once density re-segmentation exposed event-fusion artifacts and
+grid-boundary non-measurements underneath them — the system retracting its
+own two headline results is the clearest evidence available that it is
+not tuned to produce confirmations. Detection limits are given in closed
+form as a function of array aperture and sampling rate. Code, the full
+validation ledger, and a DOI are public.
 
 ## 2. The problem
 
+Most of the world's buried and undersea fiber-optic cable is "dark" —
+laid for future capacity, unlit today. Distributed Acoustic Sensing (DAS)
+turns any such strand into a dense strain-rate array for free: one
+interrogator at a single end of an existing cable produces a de facto
+seismic array kilometers long, on infrastructure that is already in the
+ground. The obstacle to actually using that latent capacity for
+earthquake monitoring has never really been sensing — it's trust. A
+system a seismic network operator can act on has to not cry wolf, and it
+has to show its reasoning rather than emit an opaque score. This paper is
+about building that layer.
+
 A modern DAS interrogator turns a single fiber-optic cable into an array
 of hundreds to thousands of strain-rate sensors, sampled at tens to
-hundreds of Hz. That density is the appeal — and the trap. Treated as
+hundreds of Hz. That density is what makes the opportunity real — and
+what makes per-channel analysis the wrong approach. Treated as
 independent channels, a monitoring system built around per-channel
 anomaly detection or per-channel ML classifiers drowns in false alarms:
 traffic, wind, human activity, and instrument artifacts all produce
@@ -49,11 +67,11 @@ physical disturbance crossing the array as a whole, arriving at each
 channel with a time delay set by its apparent velocity along the fiber —
 the *moveout*. That slope, not any single channel's amplitude, is the
 physically meaningful discriminant between "an earthquake crossed this
-array" and "something happened near one point on this cable."
-`figures/fig1_pendiente_es_fisica.png` illustrates this directly: the same
-raw per-channel traces that look like scattered, ambiguous transients
-resolve into an unambiguous plane-wave arrival once plotted as
-time-vs-channel-position, because the physics *is* the slope.
+array" and "something happened near one point on this cable." Figure 1
+illustrates this directly: the same raw per-channel traces that look
+like scattered, ambiguous transients resolve into an unambiguous
+plane-wave arrival once plotted as time-vs-channel-position, because the
+physics *is* the slope.
 
 ![Figure 1: three channel-time panels — a steep near-vertical moveout for an earthquake, a slow diagonal streak for a vehicle, and a single point with no slope for a local transient.](../figures/fig1_pendiente_es_fisica.png)
 
@@ -69,9 +87,9 @@ The pipeline is three tiers, each auditable independently:
    along a swept grid of apparent velocities; the velocity that maximizes
    waveform-shape semblance across channels is the measured apparent
    velocity of the arrival, if the array is coherent enough to resolve
-   one. `figures/fig2_semblanza.png` and `figures/fig3_beam_fases_PS.png`
-   show this on a synthetic confirmed-earthquake scenario: a clear
-   interior semblance peak, and P/S phase picks on the resulting beam.
+   one. Figures 2 and 3 show this on a synthetic confirmed-earthquake
+   scenario: a clear interior semblance peak, and P/S phase picks on the
+   resulting beam.
 
    ![Figure 2: slant-stack semblance vs. apparent velocity, a clear interior peak.](../figures/fig2_semblanza.png)
 
@@ -143,15 +161,14 @@ Real-data validation drew on two sources:
   | arcata | 15 | 3,020 | 100.0 | 5.10 | 15,411 |
   | monterey_bay | 15 | 2,845 | ~200.0 | 5.2 | 14,789 |
 
-**A caveat on monterey_bay, stated rather than silently normalized away:**
-its measured background noise RMS (`array_profiles.noise_stats_json.rms_mean
-≈ 60,106`) is roughly 5-6 orders of magnitude above the other three arrays
-(0.02-0.16), and its sampling rate is `fs≈199.995 Hz` rather than a clean
-200.0 Hz — both taken verbatim from the ledger, not transcription errors.
-The likely explanation is that this particular QuakeFlow source file is in
-different physical units than the other three arrays (e.g. raw
-digitizer counts rather than microstrain-rate), not a measurement error on
-our side. This does **not** undermine the SNR50/recall results above:
+**A note on monterey_bay:** its measured background noise RMS
+(`array_profiles.noise_stats_json.rms_mean ≈ 60,106`) is roughly 5-6
+orders of magnitude above the other three arrays (0.02-0.16), and its
+sampling rate is `fs≈199.995 Hz` rather than a clean 200.0 Hz — both taken
+verbatim from the ledger. The likely explanation is that this particular
+QuakeFlow source file is in different physical units than the other three
+arrays (e.g. raw digitizer counts rather than microstrain-rate). This does
+**not** undermine the SNR50/recall results above:
 `snr_to_amplitude()`, the project's one operative SNR definition, scales
 an injected wavelet by the *local* noise RMS
 (`amp = target_snr · RMS(noise) / RMS(wavelet)`), so it is scale-invariant
@@ -162,45 +179,62 @@ arrays should be drawn from this dataset, and confirming the actual
 physical units of the monterey_bay source file is open, declared work
 (backlog), not resolved here.
 
-A second, related number needs the same care rather than a tidy story:
-`array_profiles.synth_recall = 0.0` for monterey_bay — a legacy,
-low-power self-test metric (`run_array_selftest`, 3 SNR steps × 3 trials
-= 9 injections total) computed separately from the properly-powered
-recall curve above (7 steps × 20 trials = 140 injections, the same
-`snr_to_amplitude` definition). Zero successes in 9 trials is hard to
-reconcile with the recall curve's own measurement at the same SNR values
-(SNR=3: 18/20 hits; SNR=8: 18/20 hits) — if the true recall there is
-really ~90%, 0/9 has roughly a 1-in-a-billion probability by chance,
-which argues against reading it as ordinary sampling noise. It is
-tempting to blame the same unit anomaly above, but that story does not
-actually hold up: `run_array_selftest` injects via the same
+A second, related number: `array_profiles.synth_recall = 0.0` for
+monterey_bay — a legacy, low-power self-test metric (`run_array_selftest`,
+3 SNR steps × 3 trials = 9 injections total) computed separately from the
+properly-powered recall curve above (7 steps × 20 trials = 140 injections,
+the same `snr_to_amplitude` definition). Zero successes in 9 trials is
+hard to reconcile with the recall curve's own measurement at the same SNR
+values (SNR=3: 18/20 hits; SNR=8: 18/20 hits) — if the true recall there
+is really ~90%, 0/9 has roughly a 1-in-a-billion probability by chance,
+which argues against ordinary sampling noise. The unit anomaly above is
+not the explanation: `run_array_selftest` injects via the same
 scale-invariant `snr_to_amplitude()`, so a raw-unit mismatch should not,
-by the mechanism we can see, zero out its recall while leaving the
-curve's recall intact. We are not asserting a cause here — flagging a
-real, well-evidenced discrepancy between two self-test code paths on the
-same array, with the actual mechanism unresolved, rather than connecting
-it to the unit anomaly without evidence that the connection is real. Both
-are backlog items (`docs/writeup_data.md`), not investigated further in
-this documentation pass since doing so would mean running new code
-against Bloque A, which stays frozen.
+by the mechanism visible here, zero out its recall while leaving the
+curve's recall intact. This is reported as an open, well-evidenced
+discrepancy between two self-test code paths on the same array, mechanism
+unresolved, rather than connected to the unit anomaly on speculation. Both
+are backlog items (`docs/writeup_data.md`); investigating further would
+mean running new code against Bloque A, which stays frozen for this
+release.
 
 The QuakeFlow validation ledger totals **43 events across these four
 array/installation entries** (arcata 15, monterey_bay 15,
 ridgecrest_north 12, Stanford/East Foothills 1), all with distinct source
 files — verified by `SELECT COUNT(*), COUNT(DISTINCT event_file) FROM
-ledger` returning `(43, 43)`. Every ridgecrest_north file used is part of
-a pre-registered sample (`sample_plan.md`, drawn 2026-07-15 before any
-result was seen, seed fixed and logged); 8 additional downloaded
-ridgecrest_north files remain an explicit, unrun reserve pending a fresh
-pre-registration, not folded into this sample.
+ledger` returning `(43, 43)`. 8 additional downloaded ridgecrest_north
+files remain an explicit, unrun reserve pending a fresh pre-registration,
+not folded into this sample.
 
 Of the 43, 16 carry a cataloged real earthquake (magnitude, origin time)
 against which the engine's verdict is scored; the remaining 27 have no
-cataloged event and serve as a false-alarm check.
+cataloged event and serve as a false-alarm check. Of those 16, **13 come
+from a sample pre-registered before any result was seen** (`sample_plan.md`,
+drawn 2026-07-15, seed fixed and logged): arcata's 3 ground-truth events
+and 10 of ridgecrest_north's 12. The remaining 3 — East Foothills M4.1,
+and the 2 hand-picked ridgecrest_north events (M2.67 and M5.8) — predate
+that discipline and were chosen as plausible candidates, not drawn blind.
+Two of those three (M4.1 and M5.8) are the retracted/re-examined cases in
+§6; the third (M2.67) is not — its hand-picked origin is noted here for
+completeness, not because its own outcome (`MISS_BELOW_FLOOR`) needed
+re-examination.
 
 ## 5. Results
 
-### 5.1 Final matrix (N=16 ground-truth-matched real events)
+### 5.1 Reliability first
+
+The taxonomy below has more than two outcomes because the system is built
+to report what it actually measured, not to collapse every event into a
+confirm/reject binary — each bucket is a distinct, intentional output,
+not an apology for the absence of a confirmed hit. The two numbers that
+matter most for an operational system come first: across the 27 files
+with no cataloged event, the system produced **27/27 correct rejections
+and 0 false alarms**; across every real, ground-truth-matched event, it
+produced **0 cases of `MISS_SUPPRESSED`** — no instance of a real signal
+detected and then wrongly discarded, the failure mode a monitoring system
+exists to avoid.
+
+**Final matrix (N=16 ground-truth-matched real events):**
 
 | Outcome | n/N | Rate | Wilson 95% CI |
 |---|---|---|---|
@@ -214,23 +248,22 @@ Plus, on the 27 files with no cataloged event: **27/27 CORRECT_REJECTION,
 0/27 FALSE_ALARM.**
 
 `HIT` means a real local/regional earthquake reached `SISMO_CONFIRMADO`.
-`HONEST_UNKNOWN` means the engine saw a real but weak signal and correctly
-declined to over-confirm it. `HONEST_REGIONAL` means a real, large,
-spatially-massive arrival was correctly recognized as beyond this array's
-resolving aperture rather than forced into a confirmed-or-suppressed
-binary. `MISS_SUPPRESSED` (zero occurrences) would mean the engine
-detected something and discarded it wrongly — the bad failure mode.
-`MISS_BELOW_FLOOR` means no Tier0 candidate ever appeared in the causal
-matching window for that event at all, consistent with the event being
-below this array's measured detection floor rather than a classification
-bug (§5.2 measures that floor directly). The sample is small (N=16) and
-the Wilson intervals are correspondingly wide — reported as measured, not
-smoothed. `figures/fig6_detectabilidad.png` plots every ground-truth-matched
-event as magnitude vs. distance (or aperture, where distance isn't
-available), colored by outcome — the empirical detectability envelope
-this matrix traces out, rather than an assumed one.
+`HONEST_UNKNOWN` means the engine measured a real but weak signal and
+reported it as such rather than over-confirming it. `HONEST_REGIONAL`
+means a real, large, spatially-massive arrival was recognized as beyond
+this array's resolving aperture rather than forced into a
+confirmed-or-suppressed binary. `MISS_SUPPRESSED` is the outcome that
+would mean the engine detected something and discarded it wrongly; it
+occurred zero times. `MISS_BELOW_FLOOR` means no Tier0 candidate appeared
+in the causal matching window for that event at all, consistent with the
+event sitting below this array's measured detection floor rather than a
+classification bug (§5.2 measures that floor directly). The sample is
+small (N=16), so the Wilson intervals are correspondingly wide — reported
+as measured. Figure 4 plots every ground-truth-matched event as magnitude
+vs. distance (or aperture, where distance isn't available), colored by
+outcome — the empirical detectability envelope this matrix traces out.
 
-![Figure 6: magnitude vs. distance/aperture scatter, colored by outcome.](../figures/fig6_detectabilidad.png)
+![Figure 4: magnitude vs. distance/aperture scatter, colored by outcome.](../figures/fig6_detectabilidad.png)
 
 ### 5.2 Detectability as a property of installation, not geometry
 
@@ -245,35 +278,38 @@ with Wilson 95% confidence intervals at each step (n=20 trials/step):
 | monterey_bay | 1.6 |
 | arcata | 5.9 |
 
-(`figures/fig6_recall_snr_ridgecrest_north.png`,
-`figures/fig6_recall_snr_monterey_bay.png`,
-`figures/fig6_recall_snr_arcata.png`.) Arcata's 5.9 vs. monterey_bay's
-1.6 is a 3.7× spread (5.9 / 1.6 = 3.6875) across installations with
-broadly comparable channel counts and spacing — detectability is not a
-fixed property of "how many channels" or "how long is the array," it is
-a property of the specific installation's real noise floor, and has to
-be measured per-installation rather than assumed.
+Arcata's 5.9 vs. monterey_bay's 1.6 is a 3.7× spread (5.9 / 1.6 = 3.6875)
+across installations with broadly comparable channel counts and spacing:
+detectability is a property of the specific installation's real noise
+floor, not of "how many channels" or "how long is the array." The
+practical implication is what makes this worth measuring rather than
+assuming — SNR50 is specification language. An operator can take a
+proposed installation's own recall-vs-SNR curve and evaluate directly
+whether it will see the class of event they care about, the same way a
+sensor's noise-equivalent input is used to evaluate whether it can see a
+given signal, instead of inferring detectability from aperture and
+channel count alone.
 
-![Figure 6a: recall vs. SNR, ridgecrest_north, with Wilson 95% CIs and SNR50 marked.](../figures/fig6_recall_snr_ridgecrest_north.png)
+![Figure 5: recall vs. SNR, ridgecrest_north, with Wilson 95% CIs and SNR50 marked.](../figures/fig6_recall_snr_ridgecrest_north.png)
 
-![Figure 6b: recall vs. SNR, monterey_bay.](../figures/fig6_recall_snr_monterey_bay.png)
+![Figure 6: recall vs. SNR, monterey_bay.](../figures/fig6_recall_snr_monterey_bay.png)
 
-![Figure 6c: recall vs. SNR, arcata.](../figures/fig6_recall_snr_arcata.png)
+![Figure 7: recall vs. SNR, arcata.](../figures/fig6_recall_snr_arcata.png)
+
+### 5.3 Evidence-gated calibration and cross-validation
 
 Per-array threshold calibration (`calibrate.py`, evidence-gated: a
 threshold sweep must not break an existing confirmed HIT to be proposed)
 found one improving change — ridgecrest_north's Tier0 threshold (4.0 →
 8.0) — and found no improving change for arcata or monterey_bay, which
-kept their defaults.
+kept their defaults. Figures 8 and 9 show the cross-validation of these
+calibrated thresholds against the real, ground-truth-matched events per
+array: the synthetic recall-vs-SNR curve from §5.2, with each real event
+overlaid at its own observed SNR.
 
-`figures/fig7_validacion_cruzada_arcata.png` and
-`figures/fig7_validacion_cruzada_ridgecrest_north.png` show the
-cross-validation of these calibrated thresholds against the real,
-ground-truth-matched events per array.
+![Figure 8: cross-validation, arcata — synthetic recall curve with real events overlaid.](../figures/fig7_validacion_cruzada_arcata.png)
 
-![Figure 7a: cross-validation, arcata — synthetic recall curve with real events overlaid.](../figures/fig7_validacion_cruzada_arcata.png)
-
-![Figure 7b: cross-validation, ridgecrest_north.](../figures/fig7_validacion_cruzada_ridgecrest_north.png)
+![Figure 9: cross-validation, ridgecrest_north.](../figures/fig7_validacion_cruzada_ridgecrest_north.png)
 
 ## 6. The two artifacts, as a case study
 
@@ -364,35 +400,35 @@ resolve an apparent velocity if the total delay across the array spans at
 least `k` samples (default k=3) — below that, the channel-0-to-channel-N
 shift is sub-sample and indistinguishable from infinite (flat moveout).
 Closed form: `v_app_max_resoluble = L · fs / k`
-(`coherence.v_app_max_resoluble`). `figures/fig5_limite_apertura.png`
-sweeps this directly: on clean synthetic events with a known true
-velocity, measurement error stays near a floor of ~2.4% (exact:
-2.36500596068128%, `figures/limite_apertura.json`) across a wide range of
-apertures and velocities, up until the velocity approaches the
-geometric ceiling for that aperture, where error grows sharply.
+(`coherence.v_app_max_resoluble`). Figure 10 sweeps this directly: on
+clean synthetic events with a known true velocity, measurement error
+stays near a floor of ~2.4% (exact: 2.36500596068128%,
+`figures/limite_apertura.json`) across a wide range of apertures and
+velocities, up until the velocity approaches the geometric ceiling for
+that aperture, where error grows sharply.
 
-![Figure 5: velocity measurement error vs. true velocity, swept across apertures — the geometric resolution limit.](../figures/fig5_limite_apertura.png)
+![Figure 10: velocity measurement error vs. true velocity, swept across apertures — the geometric resolution limit.](../figures/fig5_limite_apertura.png)
 
-**Detectability is per-installation, not a geometric constant** — §5.2's
+**Detectability is per-installation, not a geometric constant.** §5.2's
 3.7× spread in SNR50 (arcata 5.9 vs. monterey_bay 1.6) across three
 arrays with broadly similar channel counts means "will this array see a
 given event" cannot be answered from geometry alone; it requires
 measuring against that installation's real noise.
 
 **The sample is small.** N=16 ground-truth-matched real events yields
-wide Wilson intervals (e.g. HONEST_UNKNOWN's true rate could plausibly be
-anywhere from 28% to 72%) — reported honestly rather than dressed up with
-a false precision the sample doesn't support.
+wide Wilson intervals — e.g. HONEST_UNKNOWN's true rate could plausibly
+sit anywhere from 28% to 72%. Reported as measured, at the sample size
+actually available.
 
-**An open question, not papered over:** both real "near-miss" events in
-§6 pinned to the *edge* of the swept velocity grid rather than showing an
-interior peak with elevated error, while the synthetic sweep (§7, above)
-shows clean interior peaks with low, bounded error across a comparably
-wide range of true velocities and apertures. Why real strong earthquakes
-at these two arrays produced boundary-saturating semblance curves instead
-of noisy-but-interior peaks is not resolved by anything in this dataset —
-recorded here as the most interesting open question this validation
-surfaced, not as a settled result.
+**An open question.** Both real near-miss events in §6 pinned to the
+*edge* of the swept velocity grid rather than showing an interior peak
+with elevated error, while the synthetic sweep above shows clean
+interior peaks with low, bounded error across a comparably wide range of
+true velocities and apertures. Why real strong earthquakes at these two
+arrays produced boundary-saturating semblance curves instead of
+noisy-but-interior peaks is not resolved by anything in this dataset —
+the most interesting open question this validation surfaced, not a
+settled result.
 
 ## 8. Future work
 
@@ -410,20 +446,20 @@ damage, saturation) without any active source at all
 (`interferometry.py`, `darkfiber-interferometry` console script). The
 synthetic validation of
 this path passes fully (`tests/test_interferometry.py`,
-`test_interferometry_demo_passes_all_four_checks`, 4/4);
-`figures/fig4_interferometria.png` shows the resulting virtual-source
-gather — the empirical Green's function recovered between channels
-purely from cross-correlating passing traffic, the "V"-shaped moveout
-pattern characteristic of a genuine virtual source.
+`test_interferometry_demo_passes_all_four_checks`, 4/4); Figure 11 shows
+the resulting virtual-source gather — the empirical Green's function
+recovered between channels purely from cross-correlating passing
+traffic, the "V"-shaped moveout pattern characteristic of a genuine
+virtual source.
 
-![Figure 4: virtual-source gather from traffic noise-correlation, the empirical Green's function.](../figures/fig4_interferometria.png)
+![Figure 11: virtual-source gather from traffic noise-correlation, the empirical Green's function.](../figures/fig4_interferometria.png)
 
-On real data
-(Pawnee), a genuine traffic segment recovered from within the recording
-(`evt_0006`, 263–349 s) produced v=261 m/s, R²=0.00 on a single 86 s pass
-— honestly inconclusive with the amount of real data available (the
-synthetic demo needed 240 s to converge), rather than a fabricated
-velocity. Extending this to longer real traffic windows is open work.
+On real data (Pawnee), a genuine traffic segment recovered from within
+the recording (`evt_0006`, 263–349 s) produced v=261 m/s, R²=0.00 on a
+single 86 s pass — inconclusive at the amount of real data available so
+far (the synthetic demo needed 240 s to converge), reported as such
+rather than as a fabricated velocity. Extending this to longer real
+traffic windows is open work.
 
 **A read-only cognitive layer, strictly separated from the verdict path.**
 A separate, explicitly-scoped extension (`darkfiber_cortex`, optional
@@ -453,11 +489,13 @@ the correct output is "not in the record," not a plausible-sounding guess.
   `darkfiber-calibrate` (evidence-gated threshold calibration),
   `darkfiber-aperture` (aperture/geometry sweep, §7),
   `darkfiber-interferometry` (§8), `darkfiber-convert-sgy` (Stanford
-  SEG-Y → NPZ), `darkfiber-snr-curve` (§5.2 recall curves).
-- **Tests**: `pytest` (11/11 passing) and `darkfiber-validate` (29/29
+  SEG-Y → NPZ), `darkfiber-snr-curve` (§5.2 recall curves),
+  `darkfiber-replay` (real-time-paced file replay for the streaming path,
+  `CHANGELOG.md [Unreleased]`).
+- **Tests**: `pytest` (14/14 passing) and `darkfiber-validate` (29/29
   synthetic checks) are both required green before any change to the
   decision tree is considered validated; re-confirmed in this same
-  documentation pass (`CHANGELOG.md [1.1.0]`).
+  documentation pass (`CHANGELOG.md`).
 - **Data**: none of the real DAS recordings ship in the repository. Stanford
   data is fetched from PubDAS/Globus or the `FiberOpticEarthquakes` GitHub
   mirror and converted locally (`convert_stanford_sgy.py`); QuakeFlow DAS
@@ -470,6 +508,18 @@ the correct output is "not in the record," not a plausible-sounding guess.
 - **Every figure in this document is regenerable** from the scripts above;
   none are checked into version control (`figures/` is gitignored by
   design) and none were hand-edited.
+- **A bilingual note**: this document's prose is English; the figures'
+  internal titles/axis labels are Spanish, matching the project's own
+  working-language convention (code and API in English, the system's own
+  `explanations` and its figure-generation code in Spanish throughout
+  `run_validation.py`, `run_on_quakeflow.py`, `characterize_aperture.py`,
+  `snr_curve.py`, and `interferometry.py`). Producing English-labeled
+  variants would mean adding a second language path to the plotting code
+  in all five of those modules without disturbing the Spanish default
+  used by the project's own development workflow — assessed as real,
+  multi-file effort, not a quick relabel, so it's declared here rather
+  than attempted in this pass. Every figure caption in the text above
+  states in English what the figure shows.
 
 ---
 
@@ -487,3 +537,13 @@ ledger snapshot and was restored to the active ledger with its original
 provenance intact, rather than re-measured). Nothing here is submitted
 anywhere. Alejandro reviews as the paper's actual author before anything
 goes to EarthArXiv or any external venue.
+
+**FASE F4.1 (editorial pass, approved by the author before it started):**
+title, abstract, §2's opening, and §5's structure were reordered and
+reframed — the reader meets the system's capability before its null
+result, and the null result is framed as evidence of the method, not an
+apology. Figure references were renumbered sequentially (1-11, resolving
+a prior numbering collision) and language was swept for gratuitous
+hedging. No fact, number, or the retraction in §6 changed or softened;
+every number in this pass is checked against `docs/writeup_data.md` in
+"F4.1 — editorial pass" below.

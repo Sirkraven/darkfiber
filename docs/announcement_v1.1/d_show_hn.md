@@ -29,10 +29,15 @@ now catch this exact failure mode. Full account, including the exact
 numbers and the guard logic: `docs/writeup.md` in the repo.
 
 Current honest result across 43 real DAS files (4 array installations,
-16 with a cataloged real earthquake): 0 confirmed, 0 false alarms, with
-every real event landing in an honestly-labeled bucket (weak-but-present,
-regional/beyond-resolvable-aperture, or below the array's measured
-detection floor) instead of a forced binary.
+16 with a cataloged real earthquake, 13 of those 16 from a sample
+pre-registered before any result was seen): 0 confirmed, 0 false alarms,
+with every real event landing in an honestly-labeled bucket
+(weak-but-present, regional/beyond-resolvable-aperture, or below the
+array's measured detection floor) instead of a forced binary. Side
+finding: detectability itself (SNR50) turns out to be a property of the
+specific installation, not array geometry — it varies 3.7x between two
+arrays with similar channel counts, measured against each array's own
+real noise.
 
 No LLM in the verdict path — every field in a verdict is a direct
 physical measurement with an auditable explanation attached. AGPL-3.0,
