@@ -144,6 +144,19 @@ class SignatureCatalog:
         # bloquean al escritor (mismo patrón que el feature store de v4).
         self.db = sqlite3.connect(db_path, check_same_thread=False)
         self.db.execute("PRAGMA journal_mode=WAL")
+        # Default de SQLite: 1000 páginas (~4 MiB con el page size default
+        # de 4 KiB) antes de que un autocheckpoint mueva el WAL a la base
+        # principal. Con escritura poco frecuente (p. ej. `live_verdicts`
+        # en `pipeline_daemon.py`, un veredicto por evento finalizado, no
+        # por muestra) eso puede tardar mucho en dispararse solo -- un kill
+        # duro (SIGKILL, sin pasar por `close()`) entre medio deja esas
+        # filas SOLO en el -wal: recuperables al reabrir por SQLite mismo,
+        # pero invisibles para cualquier cosa que lea el .db crudo sin
+        # pasar por su API (una copia de archivo a ciegas, no
+        # `sqlite3.Connection.backup()`, que sí es WAL-aware). 100 páginas
+        # (~400 KiB) acota esa ventana a un puñado de escrituras sin
+        # checkpointear en cada insert individual.
+        self.db.execute("PRAGMA wal_autocheckpoint=100")
         self.db.executescript(_SCHEMA)
         # Migración defensiva: bases creadas antes de P3 no tienen array_id.
         for table in ("prototypes", "unknown_clusters"):
@@ -162,6 +175,20 @@ class SignatureCatalog:
         self.tau_known = tau_known
         self.tau_cluster = tau_cluster
         self.naming_threshold = naming_threshold
+
+    def close(self) -> None:
+        """Cierre limpio: fuerza un checkpoint COMPLETO del WAL a la base
+        principal (`PRAGMA wal_checkpoint(TRUNCATE)` -- trunca el propio
+        archivo -wal a 0 bytes tras el checkpoint, no solo lo intenta)
+        antes de cerrar la conexión. Pensado para un shutdown ordenado
+        (`pipeline_daemon.py`, handler de SIGTERM/SIGINT) donde no hace
+        falta esperar al autocheckpoint automático (ver
+        `wal_autocheckpoint` en `__init__`) -- mismo lock que cualquier
+        otra escritura, para no truncar el WAL a mitad de un insert de
+        otro hilo."""
+        with self._lock:
+            self.db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            self.db.close()
 
     # ------------------------------------------------------------------
     def match(
