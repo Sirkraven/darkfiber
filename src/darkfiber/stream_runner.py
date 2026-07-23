@@ -82,6 +82,7 @@ Uso:
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Callable
 
 import numpy as np
 
@@ -91,6 +92,23 @@ from .run_on_stanford import sanitize
 from .selftest import pipeline_margin_s
 from .synth import bandpass
 from .triage import _merge_runs, extract_events, extract_segments, sta_lta_ratio, trigger_raster
+
+# Contrato de la decisión "¿hasta qué punto está cerrado el bloque crudo?"
+# (raster, fs, merge_gap_s, trusted_n) -> settled_end_s (None si nada
+# cerró todavía dentro del prefijo de confianza). `raw_block_settled_end_s`
+# (abajo) es la implementación por defecto -- inyectable en `StreamRunner`
+# (parámetro `closure_criterion`) siguiendo el mismo patrón funcional que
+# `infer_fn` en `batching.py` (un callable con contrato fijo, no una
+# jerarquía de clases: no hace falta más para esto). Por qué es inyectable
+# en vez de una constante fija: es la pieza más delicada de todo C1/C3 --
+# ver el docstring de `raw_block_settled_end_s` para el bug real que
+# corrigió, y `PLAN_CIERRE_Y_LANZAMIENTO.md`/CHANGELOG (C3, "Known
+# limits") para por qué una heurística de cierre consciente de densidad
+# (todavía no construida) es candidata a reemplazarla en arreglos grandes
+# -- cualquier estrategia nueva se prueba con el MISMO contrato y el
+# MISMO test de regresión (`tests/test_closure_criterion.py`), sin tocar
+# `StreamRunner`.
+ClosureCriterion = Callable[[np.ndarray, float, float, int], float | None]
 
 # Bandpass and STA/LTA operate on a WINDOW of the buffer at every
 # analysis pass (see module docstring): with C3's real eviction, that
@@ -239,6 +257,7 @@ class StreamRunner:
         tier0_threshold: float = 4.0,
         no_filter: bool = False,
         analysis_interval_s: float = DEFAULT_ANALYSIS_INTERVAL_S,
+        closure_criterion: ClosureCriterion = raw_block_settled_end_s,
     ):
         self.geom = geom
         self.t0cfg = t0cfg or Tier0Config(threshold=tier0_threshold)
@@ -246,6 +265,11 @@ class StreamRunner:
         self.agent = CoherenceAgent(geom, self.coh_cfg, tier0_threshold=tier0_threshold)
         self.no_filter = no_filter
         self.analysis_interval_s = analysis_interval_s
+        # Inyectable (ver `ClosureCriterion` arriba) -- default es la
+        # implementación de producción; test_closure_criterion.py corre el
+        # mismo escenario contra un doble bugueado para probar que la
+        # regresión que C1 cerró se detecta, sin tocar esta clase.
+        self._closure_criterion = closure_criterion
         self._finalize_margin_s = finalize_margin_s(self.coh_cfg, geom.aperture_m)
         # Colchón adicional que `_safe_evict_point` deja ANTES de cualquier
         # segmento todavía sin evictar (ver ese docstring): sin esto, un
@@ -369,7 +393,7 @@ class StreamRunner:
             # causal todavía asentando, ver `finalize_margin_s`) -- ni
             # siquiera se usa para decidir si un bloque crudo está cerrado.
             trusted_n = buf.shape[1] - int(self._finalize_margin_s * fs)
-            settled_end_local_s = raw_block_settled_end_s(raster, fs, t0cfg.merge_gap_s, trusted_n)
+            settled_end_local_s = self._closure_criterion(raster, fs, t0cfg.merge_gap_s, trusted_n)
             segs = extract_segments(raster, t0cfg, geom.fs_hz)
             seg_numbers = self._assign_seg_numbers(
                 segs, sample_offset, settled_end_local_s, fs, force_finalize

@@ -8,6 +8,44 @@ something to hide.
 
 ### Added
 
+- **`tests/test_closure_criterion.py`: permanent regression test for the
+  premature-finalization bug C1 closed**, and the instrument that will
+  make the backlogged density-aware closure heuristic (see C3's "Known
+  limits" above) auditable before it replaces the current one.
+  `stream_runner.raw_block_settled_end_s` is now injectable
+  (`StreamRunner(closure_criterion=...)`, `ClosureCriterion` type alias —
+  same functional-DI pattern as `infer_fn` in `batching.py`, default
+  unchanged, no behavior change for any existing caller). A reconnaissance
+  pass first confirmed the real C1 case's mechanism is fully documented
+  (three independent, consistent sources: the commit message, this
+  CHANGELOG, and `raw_block_settled_end_s`'s own docstring — finalizing a
+  sub-event as soon as there's quiet *after its own boundary*, without
+  checking whether the enclosing raw block had actually closed) but its
+  concrete values are not (two sample indices with no `fs` attached,
+  `evt_0000_1021_*` → `evt_0000_1045_*`; no file confirmed — only
+  circumstantial evidence it was `ci39493944.h5`; no window, no block
+  bounds; C1 landed as a single atomic commit, so there's no buggy
+  revision in git to check out either) — rather than reconstruct those
+  missing values, the test reproduces the documented *mechanism* on its
+  own synthetic `raster` (a block with a partial-silence valley shorter
+  than `merge_gap_s`, which shouldn't split it, followed by a real gap
+  longer than `merge_gap_s` and a second block). Three checks apply to
+  the production criterion, all required together (any subset admits a
+  degenerate pass): no fragmentation (doesn't split the valleyed block —
+  the actual C1 bug), no fusion (does close the first block before the
+  second one starts — without this, "never closes," the real measured
+  Arcata state above, would trivially pass "no fragmentation"), and a
+  bounded closure latency. A test double reproducing the pre-C1 design
+  (`_buggy_pre_c1_closure_criterion`, test-only, never imported outside
+  this file) is run through the exact same fragmentation assertion used
+  for the production criterion, and does fail it — captured directly:
+  `settled_end_s=8.0` reported repeatedly while the true block was
+  `(5.0, 11.0)`, the same shape of error as the real
+  `evt_0000_1021_*`/`evt_0000_1045_*` symptom, on traceable synthetic
+  values instead of a reconstruction dressed up as the real case. The
+  mechanism behind the real C1 bug now has an executable, CI-permanent
+  representation, not just the prose in commit `1794fc1`.
+
 - **Real ring-buffer eviction in `stream_runner.py` (C3, Bloque
   C/"operable")**: the buffer no longer grows for the life of the
   stream — once a raw Tier0 block genuinely closes, everything before it

@@ -9,6 +9,57 @@ podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
 (ese es trabajo declarado y concreto; esto es más crudo, todavía sin
 decidir si es trabajo).
 
+## 2026-07-23 — Test de regresión para el bug de finalización prematura de C1
+
+**Reconocimiento del caso real de C1.** Antes de escribir el test, se
+buscó en `CHANGELOG.md`, este mismo archivo, `docs/adr/0006-batch-stream-parity.md`
+y el historial de git (commit `1794fc1`, único commit de C1 — atómico,
+sin WIP previo) el caso real que expuso el bug. Resultado: el MECANISMO
+está documentado completo y consistente en tres fuentes independientes
+(el mensaje del commit, `CHANGELOG.md`, y el docstring actual de
+`raw_block_settled_end_s`) — el diseño original finalizaba un sub-evento
+en cuanto había silencio DESPUÉS de su propio borde, sin chequear si el
+bloque crudo que lo contenía (antes de la re-segmentación por densidad,
+A5) seguía abierto. Pero los VALORES concretos del caso real NO están —
+solo dos índices de muestra sin `fs` asociada (`evt_0000_1021_*` →
+`evt_0000_1045_*`), ni ventana temporal, ni límites de bloque, ni el
+archivo confirmado (se infiere circunstancialmente que era
+`ci39493944.h5`, el único M5.8 de Ridgecrest usado en todo el proyecto,
+pero el commit nunca lo nombra). Tampoco hay una revisión de git con el
+diseño bugueado aislado para reproducir contra ella — C1 llegó al
+repo ya arreglado. Se decidió, en vez de inventar esos valores, construir
+el test enteramente sobre el mecanismo documentado, con datos sintéticos
+propios — más honesto que fabricar una reconstrucción con apariencia de
+precisión que el registro no sostiene.
+
+**El test (`tests/test_closure_criterion.py`) construye un `raster`
+sintético directamente** (sin pasar por `StreamRunner`/física de onda):
+un evento A con un valle de silencio interno más corto que
+`merge_gap_s` (no debería partir el bloque — el mismo tipo de hueco que
+la estrategia bugueada confunde con un final) seguido de un gap real
+mayor a `merge_gap_s` y un evento B. El criterio de cierre correcto
+(ahora inyectable, `StreamRunner(closure_criterion=...)`, ver
+`stream_runner.ClosureCriterion`) pasa los tres asserts necesarios
+(ninguno alcanza solo): no fragmenta A en el valle, cierra A antes de
+que B empiece (no degenera en "nunca cerrar", que es exactamente el
+estado medido en Arcata — ver CHANGELOG C3), y lo hace con latencia
+acotada. Un doble de test que reproduce el diseño pre-C1
+(`_buggy_pre_c1_closure_criterion`, nunca en producción) SÍ fragmenta A
+en el valle, confirmado corriendo la MISMA aserción que usa la
+estrategia correcta y capturando el `AssertionError` real:
+`settled_end_s=8.0` reportado repetidamente (75 veces, entre t=8.02s y
+más) mientras el bloque crudo verdadero era `(5.0, 11.0)` — la firma
+exacta del bug real (mismo tipo de corrimiento que
+`evt_0000_1021_*` → `evt_0000_1045_*`, solo que con valores propios,
+trazables, no inventados con apariencia del caso real).
+
+**Por qué esto importa más allá de este test puntual**: es el
+instrumento que hace auditable la heurística de cierre por densidad que
+C3 dejó como backlog (necesaria porque el criterio actual casi nunca
+cierra en arreglos grandes como Arcata) — cualquier implementación nueva
+de `ClosureCriterion` se valida con este mismo test antes de reemplazar
+la actual, sin volver a razonar el mecanismo desde cero cada vez.
+
 ## 2026-07-23 — C3 (ring buffer + operación continua)
 
 **El hallazgo más importante de C3 no fue de implementación: fue que la
