@@ -75,6 +75,14 @@ a { color: #1a355e; }
   color: #666;
   white-space: nowrap;
 }
+.cover-meta-pending {
+  color: #b91c1c;
+  font-weight: bold;
+}
+.cover-meta-notice {
+  font-style: italic;
+  color: #666;
+}
 .cover-abstract {
   text-align: left;
   border-top: 1px solid #ccc;

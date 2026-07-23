@@ -5,48 +5,7 @@
 `validacion_real/NOTES.md`, and `CHANGELOG.md`. This is a draft for author
 review, not a publication — see the note at the end.*
 
-## 1. Abstract
-
-DarkFiber is a physics-first coherence engine for earthquake detection on
-Distributed Acoustic Sensing (DAS) fiber-optic arrays. Instead of treating
-each of an array's hundreds to thousands of channels as an independent
-per-channel classification problem, it measures the one property that
-distinguishes a real seismic wavefront from noise or traffic: a coherent
-moveout across the array, quantified by slant-stack semblance and
-corroborated by an independent onset-velocity regression. No LLM sits in
-the verdict path; the system measures physics and reports what it measures.
-
-We validated the pipeline against 43 real DAS recordings across four array
-installations (Stanford, Ridgecrest, Arcata, Monterey Bay): 16 carry a
-cataloged real earthquake scored against USGS/SCEDC ground truth, 13 of
-those 16 drawn from a sample pre-registered before any result was seen.
-
-Reliability comes first in the results. Across the 27 files with no
-cataloged event, the system produced **zero false alarms**. Across every
-real event, it produced **zero cases of a real signal detected and then
-discarded**.
-
-Of the 16 real earthquakes, **none reached a clean confirmation** — 8
-were measured as weak-but-present, 2 as regional/emergent arrivals beyond
-the array's resolving aperture, and 6 fell below that array's own
-detection floor, each bucket explained by a directly measured curve, not
-an assumption.
-
-The central finding is that detectability itself is a property of the
-installation, not the array's geometry: recall-vs-SNR, measured against
-each array's own real background noise, gives a 3.7× spread in SNR50
-between installations of broadly comparable size — the number an operator
-would actually need to evaluate whether a given array can see a given
-event. Two apparent confirmations from earlier validation passes were
-subsequently retracted by two independent internal guards, once density
-re-segmentation exposed event-fusion artifacts and grid-boundary
-non-measurements underneath them — the system retracting its own two
-headline results is the clearest evidence available that it is not tuned
-to produce confirmations. Detection limits are given in closed form as a
-function of array aperture and sampling rate. Code, the full validation
-ledger, and a DOI are public.
-
-## 2. The problem
+## 1. The problem
 
 Most of the world's buried and undersea fiber-optic cable is "dark" —
 laid for future capacity, unlit today. Distributed Acoustic Sensing (DAS)
@@ -80,7 +39,7 @@ physics *is* the slope.
 
 ![Figure 1: three channel-time panels — a steep near-vertical moveout for an earthquake, a slow diagonal streak for a vehicle, and a single point with no slope for a local transient.](../figures/fig1_pendiente_es_fisica.png)
 
-## 3. Method
+## 2. Method
 
 The pipeline is three tiers, each auditable independently:
 
@@ -109,10 +68,10 @@ The pipeline is three tiers, each auditable independently:
    `COHERENTE_DESCONOCIDO` (coherent but unclassified — feeds the
    signature catalog), and `POSIBLE_REGIONAL_EMERGENTE` (massive,
    quasi-simultaneous, spatially-decorrelated arrival whose moveout the
-   array's aperture cannot resolve — regional or distant events; see §7).
+   array's aperture cannot resolve — regional or distant events; see §6).
 
 Two design commitments make `SISMO_CONFIRMADO` specifically hard to earn,
-both added after real-data failures (§6):
+both added after real-data failures (§5):
 
 - **A grid-boundary semblance maximum is not a measurement.** If the
   semblance argmax sits on the edge of the swept velocity grid rather
@@ -142,7 +101,7 @@ is a direct physical measurement, and every verdict carries a
 human-readable `explanations` list showing exactly which measurements
 produced it. Nothing here is a language model's summary or judgment call.
 
-## 4. Data
+## 3. Data
 
 Real-data validation drew on two sources:
 
@@ -220,13 +179,13 @@ and 10 of ridgecrest_north's 12. The remaining 3 — East Foothills M4.1,
 and the 2 hand-picked ridgecrest_north events (M2.67 and M5.8) — predate
 that discipline and were chosen as plausible candidates, not drawn blind.
 Two of those three (M4.1 and M5.8) are the retracted/re-examined cases in
-§6; the third (M2.67) is not — its hand-picked origin is noted here for
+§5; the third (M2.67) is not — its hand-picked origin is noted here for
 completeness, not because its own outcome (`MISS_BELOW_FLOOR`) needed
 re-examination.
 
-## 5. Results
+## 4. Results
 
-### 5.1 Reliability first
+### 4.1 Reliability first
 
 The taxonomy below has more than two outcomes because the system is built
 to report what it actually measured, not to collapse every event into a
@@ -262,7 +221,7 @@ would mean the engine detected something and discarded it wrongly; it
 occurred zero times. `MISS_BELOW_FLOOR` means no Tier0 candidate appeared
 in the causal matching window for that event at all, consistent with the
 event sitting below this array's measured detection floor rather than a
-classification bug (§5.2 measures that floor directly). The sample is
+classification bug (§4.2 measures that floor directly). The sample is
 small (N=16), so the Wilson intervals are correspondingly wide — reported
 as measured. Figure 4 plots every ground-truth-matched event as magnitude
 vs. distance (or aperture, where distance isn't available), colored by
@@ -270,7 +229,7 @@ outcome — the empirical detectability envelope this matrix traces out.
 
 ![Figure 4: magnitude vs. distance/aperture scatter, colored by outcome.](../figures/fig6_detectabilidad.png)
 
-### 5.2 Detectability as a property of installation, not geometry
+### 4.2 Detectability as a property of installation, not geometry
 
 Detection recall was measured directly by injecting synthetic events at
 known SNR into each array's own real background noise (not a generic
@@ -301,7 +260,7 @@ channel count alone.
 
 ![Figure 7: recall vs. SNR, arcata.](../figures/fig6_recall_snr_arcata.png)
 
-### 5.3 Evidence-gated calibration and cross-validation
+### 4.3 Evidence-gated calibration and cross-validation
 
 Per-array threshold calibration (`calibrate.py`, evidence-gated: a
 threshold sweep must not break an existing confirmed HIT to be proposed)
@@ -309,14 +268,14 @@ found one improving change — ridgecrest_north's Tier0 threshold (4.0 →
 8.0) — and found no improving change for arcata or monterey_bay, which
 kept their defaults. Figures 8 and 9 show the cross-validation of these
 calibrated thresholds against the real, ground-truth-matched events per
-array: the synthetic recall-vs-SNR curve from §5.2, with each real event
+array: the synthetic recall-vs-SNR curve from §4.2, with each real event
 overlaid at its own observed SNR.
 
 ![Figure 8: cross-validation, arcata — synthetic recall curve with real events overlaid.](../figures/fig7_validacion_cruzada_arcata.png)
 
 ![Figure 9: cross-validation, ridgecrest_north.](../figures/fig7_validacion_cruzada_ridgecrest_north.png)
 
-## 6. The two artifacts, as a case study
+## 5. The two artifacts, as a case study
 
 This is the section that carries the paper's actual argument. Two events
 each passed through an apparent confirmation and were subsequently
@@ -397,7 +356,7 @@ confirmations — the taxonomy exists precisely so "I can't resolve this"
 is a distinct, honest, and equally actionable output from "confirmed" or
 "noise."
 
-## 7. Known limits
+## 6. Known limits
 
 **Aperture bounds resolvable velocity, in closed form.** A slant-stack
 over an array of aperture `L` (meters) sampled at `fs` Hz can only
@@ -414,7 +373,7 @@ that aperture, where error grows sharply.
 
 ![Figure 10: velocity measurement error vs. true velocity, swept across apertures — the geometric resolution limit.](../figures/fig5_limite_apertura.png)
 
-**Detectability is per-installation, not a geometric constant.** §5.2's
+**Detectability is per-installation, not a geometric constant.** §4.2's
 3.7× spread in SNR50 (arcata 5.9 vs. monterey_bay 1.6) across three
 arrays with broadly similar channel counts means "will this array see a
 given event" cannot be answered from geometry alone; it requires
@@ -425,7 +384,7 @@ wide Wilson intervals — e.g. HONEST_UNKNOWN's true rate could plausibly
 sit anywhere from 28% to 72%. Reported as measured, at the sample size
 actually available.
 
-**An open question.** Both real near-miss events in §6 pinned to the
+**An open question.** Both real near-miss events in §5 pinned to the
 *edge* of the swept velocity grid rather than showing an interior peak
 with elevated error, while the synthetic sweep above shows clean
 interior peaks with low, bounded error across a comparably wide range of
@@ -435,7 +394,7 @@ noisy-but-interior peaks is not resolved by anything in this dataset —
 the most interesting open question this validation surfaced, not a
 settled result.
 
-## 8. Future work
+## 7. Future work
 
 **Virtual-source interferometry from discarded traffic — passive
 subsurface monitoring, not induced seismicity.** To be explicit about
@@ -482,7 +441,7 @@ checked by a deterministic validator. This inherits the core engine's own
 honesty principle by construction: when an answer isn't in the record,
 the correct output is "not in the record," not a plausible-sounding guess.
 
-## 9. Reproducibility
+## 8. Reproducibility
 
 - **Code and license**: `https://github.com/Sirkraven/darkfiber`
   (AGPL-3.0-or-later). **Concept DOI** (always resolves to the latest
@@ -492,9 +451,9 @@ the correct output is "not in the record," not a plausible-sounding guess.
   `darkfiber-validate` (synthetic suite, `run_validation.py`),
   `darkfiber-stanford` / `darkfiber-quakeflow` (real-data harnesses),
   `darkfiber-calibrate` (evidence-gated threshold calibration),
-  `darkfiber-aperture` (aperture/geometry sweep, §7),
-  `darkfiber-interferometry` (§8), `darkfiber-convert-sgy` (Stanford
-  SEG-Y → NPZ), `darkfiber-snr-curve` (§5.2 recall curves),
+  `darkfiber-aperture` (aperture/geometry sweep, §6),
+  `darkfiber-interferometry` (§7), `darkfiber-convert-sgy` (Stanford
+  SEG-Y → NPZ), `darkfiber-snr-curve` (§4.2 recall curves),
   `darkfiber-replay` (real-time-paced file replay for the streaming path,
   `CHANGELOG.md [Unreleased]`).
 - **Tests**: `pytest` (14/14 passing) and `darkfiber-validate` (29/29
@@ -526,6 +485,28 @@ the correct output is "not in the record," not a plausible-sounding guess.
   than attempted in this pass. Every figure caption in the text above
   states in English what the figure shows.
 
+## 9. References
+
+**Not yet verified — placeholder list for the author to complete before
+submission.** No citation below has been checked against the actual
+published work (title, authors, venue, year, DOI); each entry names only
+the source this document already draws on informally in the text above.
+Do not cite this section as-is.
+
+- Lindsey, N. J., et al. (2017), *Geophysical Research Letters* — the
+  Stanford DAS array data source used in §3/§5. **[PENDIENTE DE
+  VERIFICAR: authors, exact title, volume/issue/pages, DOI]**
+- Zhu, W. and Beroza, G. C. — QuakeFlow, the source of the Ridgecrest DAS
+  data (`ci39493944.h5`) and its ground-truth pipeline used in §3/§5.
+  **[PENDIENTE DE VERIFICAR: authors, exact title, venue, year, DOI]**
+- Ajo-Franklin, J. B., et al. — DAS seismology, background for the
+  method described in §2. **[PENDIENTE DE VERIFICAR: authors, exact
+  title, venue, year, DOI]**
+- van den Ende, M. P. A. and Ampuero, J.-P. — machine learning on DAS,
+  relevant contrast for the "no LLM in the verdict path" design
+  commitment in §2. **[PENDIENTE DE VERIFICAR: authors, exact title,
+  venue, year, DOI]**
+
 ---
 
 ## Author review note
@@ -544,19 +525,19 @@ anywhere. Alejandro reviews as the paper's actual author before anything
 goes to EarthArXiv or any external venue.
 
 **FASE F4.1 (editorial pass, approved by the author before it started):**
-title, abstract, §2's opening, and §5's structure were reordered and
+title, abstract, §1's opening, and §4's structure were reordered and
 reframed — the reader meets the system's capability before its null
 result, and the null result is framed as evidence of the method, not an
 apology. Figure references were renumbered sequentially (1-11, resolving
 a prior numbering collision) and language was swept for gratuitous
-hedging. No fact, number, or the retraction in §6 changed or softened;
+hedging. No fact, number, or the retraction in §5 changed or softened;
 every number in this pass is checked against `docs/writeup_data.md` in
 "F4.1 — editorial pass" below.
 
 **FASE F4.2 (final adjustments, author-approved for publication):**
 authorship on the cover and in metadata now reads "Alejandro Yucare
 Ríos, independent researcher" only — the GitHub handle lives solely in
-the repository URL in §9, not attached to the name (`CITATION.cff` and
+the repository URL in §8, not attached to the name (`CITATION.cff` and
 the EarthArXiv metadata draft updated the same way). The abstract was
 split into shorter paragraphs with its three headline numbers (zero
 false alarms across 27 no-event files; zero cases of a real signal
@@ -567,3 +548,27 @@ commands into `scripts/build_preprint_pdf.sh` + `docs/preprint_cover.html`
 (tracked in git; the generated `.html`/`.pdf` stay gitignored, like
 `figures/`) for reproducibility, since this was already the second
 regeneration.
+
+**EarthArXiv submission-prep pass:** the abstract's copy in the body
+(formerly §1) was removed as a duplicate of the cover page's abstract —
+the body now opens at "The problem," and sections 2-9 (formerly 3-9) plus
+every internal `§N` cross-reference in the text were renumbered to match.
+A References section (§9) was added with four placeholder entries the
+author must verify before submission (Lindsey et al. 2017; Zhu & Beroza,
+QuakeFlow; Ajo-Franklin et al.; van den Ende & Ampuero) — no citation was
+fabricated or completed from memory. The cover page (`preprint_cover.html`)
+now has `[ORCID: PENDIENTE]` and `[EMAIL: PENDIENTE]` placeholders,
+required by EarthArXiv and styled in red so they can't be missed in
+review. Regenerated PDF checked page-by-page (text extraction +
+rendered page images) for duplicate content, truncation, missing
+linebreaks, and consistent section/figure numbering — all clean; see the
+commit message for the specific checks run. Two items are flagged for the
+author's decision, not resolved here: (1) this note and the italic draft
+disclaimer at the top of the body both reference internal project jargon
+("Bloque", "FASE") and disclose AI authorship of the draft — appropriate
+for the repo, unclear whether appropriate for the actual EarthArXiv
+upload; (2) build defects reported ahead of this pass (duplicated §5,
+truncated §8, missing linebreaks at several section boundaries) could not
+be reproduced in the file that was actually on disk, before or after this
+pass's changes — worth a second look with the freshly regenerated PDF
+before assuming they're resolved.
