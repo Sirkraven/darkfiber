@@ -171,13 +171,63 @@ def _density_resegment(
     return [(a + lo, a + hi) for lo, hi in dense_segs]
 
 
+def extract_segments(raster: np.ndarray, cfg: Tier0Config, fs: float) -> list[tuple[int, int]]:
+    """La lista de segmentos (post re-segmentación por densidad, A5),
+    ordenada por inicio, que `extract_events` convierte en eventos --
+    factorizada aparte para que `StreamRunner` (C3) pueda calcular cuántos
+    segmentos hay antes de un punto de corte de eviction propuesto, sin
+    duplicar esta lógica. `n` en `evt_{n:04d}_...` (`extract_events`) es
+    exactamente la posición 0-indexada de un segmento en esta lista."""
+    n_ch = raster.shape[0]
+    any_ch: np.ndarray = np.asarray(raster.any(axis=0))
+    if not any_ch.any():
+        return []
+    merge_n = int(cfg.merge_gap_s * fs)
+    raw_segs = _merge_runs(any_ch, merge_n)
+    max_block_n = int(cfg.max_merged_block_s * fs)
+    dense_min = max(cfg.dense_min_channels_floor, int(round(cfg.dense_coincidence_frac * n_ch)))
+    segs: list[tuple[int, int]] = []
+    for a, b in raw_segs:
+        if (b - a + 1) > max_block_n:
+            segs.extend(_density_resegment(raster, a, b, merge_n, dense_min))
+        else:
+            segs.append((a, b))
+    segs.sort()
+    return segs
+
+
 def extract_events(
     raster: np.ndarray,
     ratio: np.ndarray,
     geom: ArrayGeometry,
     cfg: Tier0Config,
+    *,
+    seg_numbers: list[int] | None = None,
+    sample_offset: int = 0,
 ) -> list[TriggerEvent]:
     """Agrupa el raster en eventos temporales contiguos (fusiona huecos cortos).
+
+    `seg_numbers`/`sample_offset` (default `None`/0, sin efecto sobre
+    ningún llamador existente -- batch incluido): permiten que un
+    llamador que solo ve una VENTANA de `raster` (no el archivo completo,
+    p. ej. `StreamRunner` con eviction real, C3) reconstruya los mismos
+    `event_id`/`t_start_s`/`t_end_s` ABSOLUTOS que produciría el batch
+    sobre el archivo completo. `sample_offset` es el índice de muestra
+    ABSOLUTO del primer sample de `raster` (0 si `raster` ya es el
+    archivo completo, como en batch). `seg_numbers`, si se da, reemplaza
+    la posición 0-indexada por defecto (`enumerate(segs)`) por un `n`
+    explícito por segmento, en el mismo orden que `extract_segments`
+    devuelve -- necesario porque, con eviction real, la posición LOCAL de
+    un segmento en la lista de ESTA ventana puede no ser estable pasada a
+    pasada (un segmento vecino puede dejar de ser detectable si cae en la
+    zona de calentamiento de Tier0 cerca del borde de la ventana, sin que
+    el segmento en sí haya cambiado) -- `StreamRunner` mantiene la
+    numeración `n` real de forma persistente por posición ABSOLUTA de
+    inicio, no re-derivada de la posición local en cada pasada (bug real,
+    encontrado corriendo el test de stream largo con eviction: el mismo
+    segmento terminaba con `event_id` distinto entre pasadas). Con ambos
+    en su default, el comportamiento es idéntico al de antes de que
+    existieran estos parámetros.
 
     A5: un bloque fusionado que excede `max_merged_block_s` se re-examina
     con una compuerta de DENSIDAD de coincidencia (ver `_density_resegment`)
@@ -202,27 +252,19 @@ def extract_events(
     segundos, mezclando cualquier sismo real con ruido de fondo ajeno.
     """
     fs = geom.fs_hz
-    n_ch = raster.shape[0]
-    any_ch: np.ndarray = np.asarray(raster.any(axis=0))
-    if not any_ch.any():
-        return []
-    merge_n = int(cfg.merge_gap_s * fs)
     min_n = int(cfg.min_event_duration_s * fs)
-
-    raw_segs = _merge_runs(any_ch, merge_n)
-
-    max_block_n = int(cfg.max_merged_block_s * fs)
-    dense_min = max(cfg.dense_min_channels_floor, int(round(cfg.dense_coincidence_frac * n_ch)))
-    segs: list[tuple[int, int]] = []
-    for a, b in raw_segs:
-        if (b - a + 1) > max_block_n:
-            segs.extend(_density_resegment(raster, a, b, merge_n, dense_min))
-        else:
-            segs.append((a, b))
-    segs.sort()
+    segs = extract_segments(raster, cfg, fs)
+    if not segs:
+        return []
+    if seg_numbers is None:
+        seg_numbers = list(range(len(segs)))
+    elif len(seg_numbers) != len(segs):
+        raise ValueError(
+            f"seg_numbers debe tener un elemento por segmento: {len(seg_numbers)} vs {len(segs)}"
+        )
 
     events: list[TriggerEvent] = []
-    for n, (a, b) in enumerate(segs):
+    for n, (a, b) in zip(seg_numbers, segs, strict=True):
         if (b - a + 1) < min_n:
             continue
         sub = raster[:, a : b + 1]
@@ -245,9 +287,9 @@ def extract_events(
             suffix = f"_{g_i}" if len(groups) > 1 else ""
             events.append(
                 TriggerEvent(
-                    event_id=f"evt_{n:04d}_{a}{suffix}",
-                    t_start_s=ga / fs,
-                    t_end_s=(gb + 1) / fs,
+                    event_id=f"evt_{n:04d}_{a + sample_offset}{suffix}",
+                    t_start_s=(ga + sample_offset) / fs,
+                    t_end_s=(gb + sample_offset + 1) / fs,
                     ch_min=int(grp.min()),
                     ch_max=int(grp.max()),
                     n_triggered_channels=int(grp.size),

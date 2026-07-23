@@ -9,6 +9,78 @@ podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
 (ese es trabajo declarado y concreto; esto es más crudo, todavía sin
 decidir si es trabajo).
 
+## 2026-07-23 — C3 (ring buffer + operación continua)
+
+**El hallazgo más importante de C3 no fue de implementación: fue que la
+compuerta de cierre de bloque crudo (`raw_block_settled_end_s`, ya
+existente desde C1) prácticamente nunca se abre en un arreglo real y
+grande.** Escaneando el archivo real de Arcata usado para medir C3
+(3.020 canales, 420s): el 92.3% de la línea de tiempo tiene AL MENOS UN
+canal por encima del umbral Tier0 en algún instante — con tantos
+canales, es casi estadísticamente garantizado. El bloque crudo
+("¿algún canal disparado?") termina siendo UNO SOLO que cubre casi el
+archivo entero, sin importar que la re-segmentación por densidad (A5) sí
+logre extraer eventos individuales limpios adentro — A5 actúa DESPUÉS
+del cierre, no ayuda a que el bloque exterior cierre. Resultado medido:
+el buffer retenido llega al 100% del archivo (cero eviction real) tanto
+en el caso patológico (un solo bloque sin resegmentar, 5 de 6 archivos
+de Arcata muestreados) como en el caso "normal" (con 113 eventos
+significativos bien extraídos) — la propia extracción de eventos
+funciona perfecto, pero la eviction nunca tiene oportunidad de actuar.
+Los dos números duros de C3 (margen ≥2× a `--speed 1`, sin lag
+acumulativo a `--speed 10`) NO se cumplen para Arcata con el diseño
+actual: 0.92× y 0.21× respectivamente, medidos, no estimados. Vale la
+pena, para cualquier trabajo futuro sobre esto, no tratarlo como "hay que
+optimizar la eviction" — la eviction que se construyó funciona
+correctamente donde tiene oportunidad de actuar (confirmado con un
+archivo real de Ridgecrest y con un test sintético largo). El problema
+real está un nivel más arriba: la propia noción de "bloque cerrado" para
+un arreglo de miles de canales necesitaría un criterio de densidad, no
+de "¿absolutamente ningún canal activo?" — y tocar eso significa tocar
+la misma lógica que ya evitó un bug real de finalización prematura en
+C1, así que cualquier cambio ahí necesita el mismo nivel de rigor
+empírico que esa vez, no un parche rápido.
+
+**Bug real, encontrado en el camino a lo anterior: numerar eventos por
+posición LOCAL en la ventana de cada pasada no sobrevive ni siquiera sin
+eviction, en datos reales con mucha actividad.** La primera versión de
+la numeración persistente (`StreamRunner._seg_global_n`) asignaba un
+número global la PRIMERA vez que veía la posición absoluta de inicio de
+un segmento — pero un segmento perteneciente a un bloque crudo TODAVÍA
+ABIERTO puede cambiar de forma entre pasadas a medida que llega más
+contexto (la re-segmentación por densidad re-examina el bloque abierto
+completo cada vez, por diseño desde A5) — numerar esa forma provisoria
+como si fuera definitiva infla el conteo total muy por encima del que
+produce el batch. Se encontró recién al verificar contra un archivo real
+de Arcata con eventos normales (el escenario sintético de este mismo
+Bloque, más limpio, no lo disparaba) — otro recordatorio de que la
+verificación sintética de este proyecto (política de CI) no sustituye la
+verificación manual contra datos reales que exige
+`PLAN_CIERRE_Y_LANZAMIENTO`, ni siquiera para un cambio que "solo" toca
+bookkeeping de numeración, no física.
+
+**El asentamiento del bandpass no-causal en el borde IZQUIERDO de una
+ventana recortada (eviction) es, medido sobre un archivo real de
+Ridgecrest cerca del M5.8, más rápido que el borde derecho ya
+documentado en C1** (converge a diferencia relativa exactamente 0.0 a
+partir de ~10s de margen, contra los ~20s medidos para el borde derecho
+en C1) — no se usó ese número más chico como margen real (se reusa
+`finalize_margin_s`, ya más grande, por simplicidad y para no introducir
+una segunda constante empírica), pero vale la pena tenerlo registrado
+como dato en sí: sugiere que la asimetría entre bordes de un filtro
+`sosfiltfilt` (forward-backward) no es necesariamente simétrica, y que
+si algún día hace falta apretar el margen para ganar rendimiento, el
+lado izquierdo tiene más margen de sobra que el derecho.
+
+**La estabilidad de memoria del daemon a través de MUCHOS ciclos de
+archivo (23 loops de un archivo real de 120s en 240s de reloj real,
++0.3% de RSS) es una propiedad DISTINTA de si la eviction logra achicar
+el buffer DENTRO de un archivo/stream único** — vale la pena no
+confundirlas en reportes futuros. La primera está sólidamente
+confirmada (cada `StreamRunner` se recolecta por completo entre
+archivos); la segunda depende enteramente del hallazgo de arriba sobre
+el cierre de bloques crudos.
+
 ## 2026-07-23 — C4 (pilot kit)
 
 **Escribir el pilot kit obligó a nombrar en voz alta un hueco que ya

@@ -41,6 +41,7 @@ dependencies = [
 h5 = ["h5py>=3.10"]
 figs = ["matplotlib>=3.8"]
 dashboard = ["streamlit>=1.30"]
+ops = ["pyyaml>=6.0"]
 dev = [
     "pytest>=8.0",
     "ruff>=0.6",
@@ -79,6 +80,7 @@ darkfiber-convert-sgy = "darkfiber.convert_stanford_sgy:main"
 darkfiber-snr-curve = "darkfiber.snr_curve:main"
 darkfiber-replay = "darkfiber.replay:main"
 darkfiber-dashboard = "darkfiber.dashboard:main"
+darkfiber-pipeline = "darkfiber.pipeline_daemon:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/darkfiber"]

@@ -74,7 +74,7 @@ async def stream_results(data, geom, t0cfg, coh_cfg, no_filter, speed, analysis_
             out[evt.event_id] = (evt, res)
     for evt, res in await runner.finish():
         out[evt.event_id] = (evt, res)
-    return out, time.perf_counter() - t_wall0
+    return out, time.perf_counter() - t_wall0, runner.max_buffer_samples_seen
 
 
 def main() -> None:
@@ -96,10 +96,17 @@ def main() -> None:
     t_batch0 = time.perf_counter()
     geom, t0cfg, coh_cfg, batch = batch_results(data, fs, dx, args.no_filter)
     t_batch = time.perf_counter() - t_batch0
-    stream, t_stream = asyncio.run(
+    stream, t_stream, max_buf_samples = asyncio.run(
         stream_results(
             data, geom, t0cfg, coh_cfg, args.no_filter, args.speed, args.analysis_interval
         )
+    )
+    file_dur_s = data.shape[1] / fs
+    expected_s = file_dur_s / max(args.speed, 1e-9)
+    print(
+        f"C3: buffer retenido máximo = {max_buf_samples} muestras "
+        f"({max_buf_samples / fs:.1f}s) vs. archivo completo {file_dur_s:.1f}s "
+        f"({100 * max_buf_samples / fs / file_dur_s:.1f}% -- eviction real si esto es << 100%)"
     )
 
     def is_noise(bucket: dict, eid: str) -> bool:
@@ -116,7 +123,8 @@ def main() -> None:
         f"batch: {len(batch)} evento(s) ({len(sig_batch)} significativos) en {t_batch:.2f}s | "
         f"stream: {len(stream)} evento(s) ({len(sig_stream)} significativos), "
         f"{t_stream:.2f}s de reloj real "
-        f"(speed={args.speed}, {data.shape[1] / fs / max(args.speed, 1e-9):.2f}s esperado sin lag)"
+        f"(speed={args.speed}, {expected_s:.2f}s esperado sin lag, "
+        f"margen={expected_s / max(t_stream, 1e-9):.2f}x)"
     )
     ok = not only_batch and not only_stream
     if not ok:

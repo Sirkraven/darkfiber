@@ -1,0 +1,43 @@
+# Plantilla de installation.yaml (C3) -- copiar a data/installation.yaml
+# (o donde apunte el volumen de docker-compose.yml) y llenar con los
+# valores REALES de la instalación. Ver installation_config.py para el
+# esquema completo (todos los campos, con sus defaults).
+
+array_id: mi_arreglo # aísla perfiles/veredictos de otras instalaciones
+
+geometry:
+  n_channels: 1150 # requerido
+  channel_spacing_m: 8.0
+  fs_hz: 100.0
+
+tier0:
+  threshold: 4.0 # calibrar con darkfiber-calibrate, no a mano
+
+coherence: {} # defaults de CoherenceConfig; overridear solo con evidencia
+
+data_source:
+  mode: replay_loop # único modo hoy -- ver docs/pilot_kit.md
+  path: /data/incoming # archivo .h5/.npz, o directorio (loop en orden)
+  speed: 1.0 # 1.0=tiempo real; null=sin pacing; N=acelerado
+  chunk_s: 1.0
+
+ledger_db_path: /data/quakeflow_ledger.db
+analysis_interval_s: 10.0
+no_filter: false
+
+logging:
+  path: /data/logs/pipeline.log
+  level: INFO
+  max_bytes: 10485760 # 10 MiB por archivo
+  backup_count: 5
+
+healthcheck:
+  host: 0.0.0.0
+  port: 8080
+  stale_after_s: 30 # /healthz da 503 si no se procesó nada en este tiempo
+
+backup:
+  enabled: true
+  dir: /data/backups
+  interval_s: 3600 # cada hora
+  keep_last: 24 # 24h de backups horarios

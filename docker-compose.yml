@@ -1,0 +1,49 @@
+# DarkFiber (C3): pipeline (continuous ingestion) + dashboard (operator
+# UI), sharing one volume for the SQLite ledger and one for input data.
+#
+# Quickstart:
+#   1. mkdir -p data && cp your installation.yaml data/  (see
+#      installation_config.py for the schema; docs/pilot_kit.md for what
+#      an operator needs to provide)
+#   2. Put the source .h5/.npz file(s) `data_source.path` in installation.yaml
+#      points to under ./data/ too (or mount a separate read-only volume).
+#   3. docker compose up
+#
+# Acceptance (PLAN_v5.2 §C3): `docker compose up` on a clean machine
+# brings up both services; killing the pipeline container -> restart
+# policy brings it back and it resumes without corrupting the SQLite
+# ledger (WAL mode, see catalog.py) -- verified by hand, not by this file
+# alone; see CHANGELOG.md for the actual test run.
+
+services:
+  pipeline:
+    build: .
+    image: darkfiber:latest
+    command: ["darkfiber-pipeline", "--config", "/data/installation.yaml"]
+    volumes:
+      - ./data:/data
+    ports:
+      - "8080:8080" # healthcheck (/healthz, /status)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  dashboard:
+    build: .
+    image: darkfiber:latest
+    command: >
+      sh -c "python -m streamlit run
+      $(python -c 'import darkfiber.dashboard as d; print(d.__file__)')
+      --server.address=0.0.0.0 --server.port=8501
+      -- --db /data/quakeflow_ledger.db"
+    volumes:
+      - ./data:/data
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
+    depends_on:
+      - pipeline

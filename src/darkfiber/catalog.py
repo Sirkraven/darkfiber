@@ -104,6 +104,18 @@ CREATE TABLE IF NOT EXISTS array_profile_history (
     note TEXT,
     archived_at REAL
 );
+CREATE TABLE IF NOT EXISTS live_verdicts (
+    id INTEGER PRIMARY KEY,
+    event_id TEXT NOT NULL,
+    array_id TEXT,
+    source_file TEXT,
+    t_start_s REAL,
+    t_end_s REAL,
+    verdict TEXT,
+    explanations_json TEXT,
+    metrics_json TEXT,
+    ts REAL
+);
 """
 
 
@@ -318,6 +330,52 @@ class SignatureCatalog:
                     dt_detect_s,
                     json.dumps(metrics_json, default=str) if metrics_json is not None else None,
                     snr_observed,
+                    time.time(),
+                ),
+            )
+            self.db.commit()
+
+    # ------------------------------------------------------------------
+    # Veredictos en vivo (C3): registro operacional de una corrida real
+    # (pipeline_daemon.py), SIN verdad-terreno -- deliberadamente en una
+    # tabla propia, no en `ledger`, para no mezclar "validado contra
+    # catálogo público" (lo que `ledger`/`validacion_real/scoreboard.md`
+    # significan en todo el resto del proyecto) con "esto es lo que el
+    # sistema dijo en producción, todavía sin comparar contra nada" (ver
+    # docs/pilot_kit.md, la comparación es un paso posterior y explícito,
+    # no algo que este método decida).
+    # ------------------------------------------------------------------
+    def insert_live_verdict(
+        self,
+        event_id: str,
+        array_id: str,
+        source_file: str,
+        t_start_s: float,
+        t_end_s: float,
+        verdict: str | None,
+        explanations: list[str] | None,
+        metrics_json: dict | None,
+    ) -> None:
+        """INSERT simple (no upsert): cada `event_id` de una corrida en
+        vivo es único por construcción (`StreamRunner`, ver ese módulo),
+        así que no hay "re-correr el mismo archivo" que deba pisar una
+        fila anterior como en `upsert_ledger`."""
+        with self._lock:
+            self.db.execute(
+                """
+                INSERT INTO live_verdicts (event_id, array_id, source_file, t_start_s,
+                                            t_end_s, verdict, explanations_json, metrics_json, ts)
+                VALUES (?,?,?,?,?,?,?,?,?)
+                """,
+                (
+                    event_id,
+                    array_id,
+                    source_file,
+                    t_start_s,
+                    t_end_s,
+                    verdict,
+                    json.dumps(explanations, default=str) if explanations is not None else None,
+                    json.dumps(metrics_json, default=str) if metrics_json is not None else None,
                     time.time(),
                 ),
             )

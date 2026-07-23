@@ -8,6 +8,107 @@ something to hide.
 
 ### Added
 
+- **Real ring-buffer eviction in `stream_runner.py` (C3, Bloque
+  C/"operable")**: the buffer no longer grows for the life of the
+  stream — once a raw Tier0 block genuinely closes, everything before it
+  (minus `finalize_margin_s` of retained margin) is physically dropped,
+  turning the per-pass cost from O(buffer size, growing without bound)
+  into O(a bounded margin), independent of total stream duration. Two
+  mechanisms make this exact, not approximate: `_safe_evict_point` never
+  cuts through a segment (retreats to a segment's own start, with an
+  extra `pullback_n` cushion — see "Fixed" below for why the cushion is
+  load-bearing, not decorative); and `StreamRunner._seg_global_n`
+  assigns each real segment's `event_id` number ONCE, persistently, by
+  its absolute start position, rather than re-deriving it from local
+  position in each pass's shrinking window (`extract_events` gained a
+  `seg_numbers` parameter for this, default `None` preserves the exact
+  old behavior for every other caller, batch included). New
+  CI-safe permanent test: `test_stream_eviction_stays_bounded_and_parity_holds_over_long_stream`
+  (900s synthetic stream, 5 well-separated events) — asserts both exact
+  batch/stream parity AND that the retained buffer stays under 30% of
+  the stream's total size, so a regression to unbounded growth fails
+  loudly, not silently.
+- **`pipeline_daemon.py` (`darkfiber-pipeline`) + `installation_config.py`
+  (C3)**: continuous-operation entry point. Reads one `installation.yaml`
+  per instrument (`installation.example.yaml` is the annotated template)
+  covering array geometry, calibrated thresholds, data source, ledger
+  path, logging, healthcheck, and backup — zero hardcoded constants in
+  the daemon itself, per `PLAN_v5.2`'s §C3 spec. Runs `replay.py` ->
+  `StreamRunner` against the configured file(s) in a loop (today's only
+  mode — see "Known limits"), writes each finalized verdict to a new
+  `live_verdicts` table (`catalog.py`) kept deliberately separate from
+  the ground-truth `ledger`, exposes `/healthz` + `/status` over a
+  stdlib `http.server` (no new web-framework dependency), and backs up
+  the SQLite ledger periodically via `sqlite3.Connection.backup()` (the
+  crash-safe native API, not a raw file copy). New optional extra:
+  `pip install darkfiber[ops]` (`pyyaml`).
+- **`Dockerfile` + `docker-compose.yml` + `.dockerignore` +
+  `docs/deployment.md` (C3)**: one image, two services (`pipeline`,
+  `dashboard`) sharing a data volume; `unless-stopped` restart policy;
+  Docker `HEALTHCHECK` wired to the daemon's own `/healthz`. **Not
+  tested end-to-end** — Docker isn't installed in the environment this
+  was built in; only YAML/syntax-checked. The underlying daemon logic
+  itself *was* verified directly (see below), just not the container
+  build/run cycle — flagged, not silently assumed working.
+
+### Fixed
+
+- **Two real numbering bugs, both found verifying against real Arcata
+  data (the synthetic test suite didn't catch either — its scenario is
+  cleaner than a real, busy array)**:
+  1. A segment already finalized but not yet evicted can become
+     undetectable in fresh re-computation once the buffer's own edge
+     gets within Tier0's warmup zone of it (`ratio` forced to 1.0 for
+     the first `lta_s+sta_s+gap_s`, see `sta_lta_ratio`) — corrupting
+     the numbering of whatever comes after it in that pass. Fixed by
+     giving `_safe_evict_point` a protected zone `[a - pullback_n, b]`
+     around every not-yet-evicted segment (not just `[a, b]`), so the
+     buffer's edge never gets close enough to matter.
+  2. A segment belonging to a still-open raw block can change shape
+     between passes as more context arrives (density re-segmentation,
+     A5, re-examines the whole open block every time by design) —
+     assigning it a permanent global number before it's confirmed
+     closed let each revision consume a new number, inflating the
+     total count far past what batch produces. Fixed by only
+     persisting a segment's number once it's confirmed closed (or at
+     `finish()`, when everything is finalized regardless of margin,
+     matching how batch treats the file's true end); still-open
+     segments get a throwaway, never-reused number that's consistent
+     with them never actually being finalized that pass.
+
+### Known limits (declared, not silently shipped)
+
+- **The two C3 hard numeric requirements (Arcata margin ≥2× at
+  `--speed 1`, no cumulative lag at `--speed 10`) are NOT met**, measured
+  on a real 3,020-channel, 420s Arcata file: 0.92× and 0.21× respectively
+  — both below target. Root cause, confirmed by direct measurement, is
+  architectural, not a bug in this pass's eviction code: the raw-block
+  closure gate (`raw_block_settled_end_s`, unchanged since C1) requires
+  a multi-second window with *zero* channels active anywhere in the
+  array. On this file, 92.3% of the timeline has at least one of 3,020
+  channels above the Tier0 threshold somewhere — with that many
+  channels, near-statistically guaranteed — so the raw block essentially
+  never closes and eviction never gets a chance to run, even though the
+  eviction mechanism itself is correct (verified against a real
+  Ridgecrest file and the synthetic long-stream test above, both of
+  which have genuine quiet gaps). Closing this gap needs a
+  density-aware closure heuristic for the raw block itself (today's A5
+  density resegmentation only runs *after* closure) — flagged as
+  follow-up, not attempted here given the risk of reintroducing the
+  premature-finalization bug the current strict check exists to
+  prevent. See `docs/deployment.md` and `docs/observaciones.md`
+  (2026-07-23) for the full measurement.
+- **24h continuous-operation soak test not run literally.** A scaled
+  proxy was: the daemon's actual per-file loop against a real 120s
+  Ridgecrest file, looped for 240s of wall clock (23 full loops, ~46 min
+  of stream-equivalent time) — resident memory flat (171.6 → 173.0 MB,
+  +0.3%), no cross-loop leak. This confirms daemon-level stability
+  across many files, a different property from whether eviction bounds
+  memory *within* one very long stream (see above) — see
+  `docs/deployment.md` for the distinction. A genuine unattended 24h run
+  is recommended before treating this gate as closed with full
+  confidence.
+
 - **`docs/pilot_kit.md` + `docs/pilot_data_agreement_template.md` (C4,
   Bloque C/"operable")**: the pilot kit for a fiber operator's technical
   team — sendable as-is, no prior call needed, per the acceptance
