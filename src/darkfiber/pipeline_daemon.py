@@ -198,6 +198,7 @@ async def _run_file(
     cfg: InstallationConfig,
     cat: SignatureCatalog,
     state: _HealthState,
+    shutdown: asyncio.Event,
 ) -> None:
     data, fs, dx, _attrs = load_file(path, fs=cfg.data_source.fs_hz, dx=cfg.data_source.dx_m)
     data = sanitize(data)
@@ -231,15 +232,26 @@ async def _run_file(
             state.verdicts_written += 1
             log.info(f"{event_file} {evt.event_id}: {res.classification.value}")
 
+    stopped_early = False
     async for chunk in replay(
         data, fs, chunk_s=cfg.data_source.chunk_s, speed=cfg.data_source.speed
     ):
+        if shutdown.is_set():
+            # Corta de CONSUMIR chunks nuevos -- no espera el resto del
+            # archivo (que a `speed` real podría tardar minutos) -- pero
+            # todavía no sale de la función: el `finish()` de abajo sigue
+            # corriendo siempre, para drenar lo que ya está bufferizado
+            # en `runner` en vez de tirarlo. "Drenar antes de cortar", no
+            # cortar en seco.
+            stopped_early = True
+            break
         finalized = await runner.feed(chunk)
         state.touch(event_file)
         if finalized:
             await _persist(finalized)
     await _persist(await runner.finish())
-    state.files_processed += 1
+    if not stopped_early:
+        state.files_processed += 1
 
 
 async def run_forever(
@@ -256,7 +268,7 @@ async def run_forever(
             path = files[i % len(files)]
             i += 1
             try:
-                await _run_file(path, cfg, cat, state)
+                await _run_file(path, cfg, cat, state, shutdown)
             except Exception as exc:  # noqa: BLE001 -- un archivo roto no debe tumbar el daemon
                 state.last_error = f"{path}: {exc}"
                 log.exception(f"error procesando {path} -- se sigue con el próximo archivo")
