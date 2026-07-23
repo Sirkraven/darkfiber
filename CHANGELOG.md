@@ -8,6 +8,28 @@ something to hide.
 
 ### Added
 
+- **`docs/pilot_kit.md` + `docs/pilot_data_agreement_template.md` (C4,
+  Bloque C/"operable")**: the pilot kit for a fiber operator's technical
+  team — sendable as-is, no prior call needed, per the acceptance
+  criterion in the project's own closure plan. Covers what an operator
+  would need to provide (files in the formats `replay.py` already
+  ingests; array geometry; something to compare against), what they'd
+  receive (dashboard, fully-explained verdicts, an SNR50 curve measured
+  against *their* array's own real noise, a scoreboard in the same
+  format as `validacion_real/scoreboard.md`), a 2-week shadow-mode plan,
+  and an explicit "what this pilot is *not*" section: no live
+  socket/API adapter to a real interrogator protocol exists yet (shadow
+  mode today means periodic file handoff, not a persistent connection);
+  continuous 24h+ operation is not validated (Arcata's `--speed 10`
+  streaming lag, already documented below, is the concrete reason); and
+  the system is not tuned to produce confirmations, so mostly
+  honest-uncertain pilot verdicts would be consistent with every other
+  array validated so far, not a sign of malfunction. The data agreement
+  template documents, verified against `catalog.py`'s actual table
+  schema (not asserted from memory), that raw DAS waveform data is never
+  stored in the local ledger — only file references, derived scalar
+  metrics, verdicts, and supplied ground truth.
+
 - **`replay.py` + `stream_runner.py` (C1, Bloque C/"operable")**: streaming
   path from files to a live-paced flow, with demonstrated batch/stream
   parity. `replay()` is a real-time-paced (or `--speed N` accelerated)

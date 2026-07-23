@@ -9,6 +9,39 @@ podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
 (ese es trabajo declarado y concreto; esto es más crudo, todavía sin
 decidir si es trabajo).
 
+## 2026-07-23 — C4 (pilot kit)
+
+**Escribir el pilot kit obligó a nombrar en voz alta un hueco que ya
+existía pero nunca se había hecho explícito como límite del producto: hoy
+no existe ningún adaptador de ingesta en vivo (socket/API) contra el
+protocolo real de un interrogador.** `replay.py` ya lo decía en su propio
+docstring ("deuda declarada para cuando haya hardware real hablando un
+protocolo de verdad"), pero era una nota de implementación, no algo
+dirigido a un lector externo. Al escribir "qué necesita el dueño de la
+fibra" para el pilot kit, quedó claro que shadow-mode HOY solo puede
+ofrecerse como entrega periódica de archivos, no como conexión persistente
+— y que prometer lo segundo sin tenerlo sería exactamente el tipo de
+sobreventa que el proyecto existe para no hacer. Vale la pena que cuando
+C3 (ring buffer + Docker) avance, alguien revise si ese trabajo también
+habilita o no un adaptador de ingesta real — hoy son dos huecos distintos
+(rendimiento del buffer vs. protocolo de hardware) que un lector externo
+fácilmente confundiría como uno solo.
+
+**El esquema de `catalog.py` (ledger, array_profiles, etc.) nunca guardó
+la forma de onda cruda en ninguna tabla — eso ya era cierto por
+construcción, sin que nadie lo hubiera declarado como propiedad del
+diseño.** Al escribir la sección de manejo de datos del pilot kit
+(qué se guarda, qué no), revisar el `CREATE TABLE` real confirmó que cada
+tabla solo guarda referencias de archivo, métricas numéricas derivadas y
+metadatos — nunca las muestras canal-tiempo. Esto se convirtió en el
+argumento central (y verificable, no una promesa) de "los datos crudos
+del operador nunca salen de su infraestructura" en el acuerdo de datos.
+Vale la pena mantenerlo así deliberadamente de acá en más (no es difícil
+que una futura función de debugging agregue una columna BLOB con una
+ventana cruda "solo para diagnóstico" y rompa esta propiedad sin que
+nadie lo note) — candidato a un test de regresión de esquema si el
+proyecto llega a tener un pilot real corriendo.
+
 ## 2026-07-22 — C2 (dashboard)
 
 **`streamlit run archivo.py` ejecuta el archivo como script standalone
