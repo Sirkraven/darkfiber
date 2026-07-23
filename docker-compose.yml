@@ -25,6 +25,14 @@ services:
     ports:
       - "8080:8080" # healthcheck (/healthz, /status)
     restart: unless-stopped
+    stop_grace_period: 30s # tiempo para drenar el archivo en curso y
+    # checkpointear el WAL (SIGTERM -> pipeline_daemon.py) antes de un
+    # SIGKILL forzado -- ver ese módulo para el shutdown handler.
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
       interval: 30s
@@ -45,5 +53,13 @@ services:
     ports:
       - "8501:8501"
     restart: unless-stopped
+    stop_grace_period: 30s # paridad con pipeline -- el dashboard no
+    # escribe al ledger, así que no tiene un checkpoint que perder; no
+    # hace falta más que esto acá.
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
     depends_on:
       - pipeline
