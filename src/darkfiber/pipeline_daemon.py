@@ -31,6 +31,7 @@ import json
 import logging
 import logging.handlers
 import os
+import signal
 import sqlite3
 import threading
 import time
@@ -241,15 +242,17 @@ async def _run_file(
     state.files_processed += 1
 
 
-async def run_forever(cfg: InstallationConfig, state: _HealthState) -> None:
+async def run_forever(
+    cfg: InstallationConfig, state: _HealthState, shutdown: asyncio.Event
+) -> None:
     cat = SignatureCatalog(cfg.ledger_db_path)
     files = _discover_files(cfg.data_source.path)
     log.info(f"array_id={cfg.array_id}: {len(files)} archivo(s), loop continuo")
-    stop = asyncio.Event()
+    stop = asyncio.Event()  # señal interna, solo para _backup_loop -- ver más abajo
     backup_task = asyncio.create_task(_backup_loop(cfg.ledger_db_path, cfg.backup, stop))
     try:
         i = 0
-        while True:
+        while not shutdown.is_set():
             path = files[i % len(files)]
             i += 1
             try:
@@ -258,8 +261,18 @@ async def run_forever(cfg: InstallationConfig, state: _HealthState) -> None:
                 state.last_error = f"{path}: {exc}"
                 log.exception(f"error procesando {path} -- se sigue con el próximo archivo")
     finally:
+        # Orden importa: `_run_file` (arriba) ya drenó el archivo en curso
+        # (incluye `runner.finish()`) antes de que el `while` revisara
+        # `shutdown` y saliera -- acá solo queda apagar el backup loop
+        # (esperando su cancelación real, no solo pedida, para que no
+        # siga leyendo el .db mientras `cat.close()` lo checkpointea) y
+        # cerrar el ledger.
+        log.info("cerrando: apagando backup loop y checkpointeando el ledger")
         stop.set()
         backup_task.cancel()
+        await asyncio.gather(backup_task, return_exceptions=True)
+        cat.close()
+        log.info("shutdown limpio completo")
 
 
 def main() -> None:
@@ -274,9 +287,37 @@ def main() -> None:
     _start_healthcheck_server(state, cfg.healthcheck)
     log.info(f"darkfiber-pipeline arrancando: array_id={cfg.array_id}")
     try:
-        asyncio.run(run_forever(cfg, state))
+        asyncio.run(_main_async(cfg, state))
     except KeyboardInterrupt:
+        # Red de seguridad, no la ruta principal: en Linux/Docker,
+        # _main_async ya instala un handler de SIGINT que apaga
+        # ordenadamente vía `shutdown` -- esto solo cubre una plataforma
+        # donde `add_signal_handler` no esté disponible (ver ahí).
         log.info("interrumpido por el usuario, cerrando")
+
+
+async def _main_async(cfg: InstallationConfig, state: _HealthState) -> None:
+    """Registra SIGTERM/SIGINT vía `loop.add_signal_handler`, no
+    `signal.signal`: sus callbacks corren DENTRO del event loop (no en un
+    contexto de señal restringido), así que pueden tocar primitivas de
+    asyncio (`shutdown.set()`) de forma segura -- `signal.signal` no lo
+    garantiza para código async. `add_signal_handler` necesita un loop
+    YA corriendo, por eso esto vive en una corrutina separada en vez de
+    antes de `asyncio.run()`. `docker stop` manda SIGTERM (con
+    `stop_grace_period` de margen antes de un SIGKILL forzado, ver
+    docker-compose.yml) -- sin este handler, Python lo mata sin ningún
+    cleanup. En Windows (`add_signal_handler` no soportado,
+    `NotImplementedError`) cae al `except KeyboardInterrupt` de `main()`,
+    que sigue cubriendo Ctrl+C -- Docker, donde esto corre de verdad,
+    siempre es Linux."""
+    shutdown = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        try:
+            loop.add_signal_handler(sig, shutdown.set)
+        except NotImplementedError:
+            log.warning(f"add_signal_handler no soportado para {sig.name} en esta plataforma")
+    await run_forever(cfg, state, shutdown)
 
 
 if __name__ == "__main__":
