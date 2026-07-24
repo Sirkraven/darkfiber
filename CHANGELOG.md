@@ -8,6 +8,53 @@ something to hide.
 
 ### Added
 
+- **Ordered shutdown for the pipeline daemon and container survivability
+  (C3 operational hardening)**, prompted by both pipeline and dashboard
+  containers dying simultaneously with exit code 137 (external SIGKILL —
+  root cause outside this repo, already investigated and closed: not
+  OOM, not SQLite corruption, not a broken bind mount, not the
+  healthcheck). `docker-compose.yml`: `stop_grace_period: 30s` on both
+  services (`restart: unless-stopped` was already present on both, not
+  newly added) and a bounded `json-file` logging driver (`max-size: 20m`,
+  `max-file: 5`) so container logs can't grow unbounded. `catalog.py`:
+  new `SignatureCatalog.close()` (`PRAGMA wal_checkpoint(TRUNCATE)` then
+  connection close, under the same lock as every other write) and
+  `wal_autocheckpoint` tightened from SQLite's default 1000 pages
+  (~4 MiB) to 100 (~400 KiB) at connection open, bounding how much a hard
+  kill can lose to a handful of writes instead of up to the old
+  threshold. `pipeline_daemon.py`: `loop.add_signal_handler` (not
+  `signal.signal` — its callbacks run inside the event loop itself, safe
+  to touch asyncio primitives) registers SIGTERM/SIGINT handlers that set
+  a `shutdown` Event; the existing (but never actually triggered by
+  `docker stop`, since nothing installed a SIGTERM handler before this)
+  `finally: stop.set(); backup_task.cancel()` in `run_forever()` is
+  extended, not replaced, to also await the backup task's real
+  cancellation and call the new `cat.close()`. `_run_file` checks
+  `shutdown` once per chunk and stops consuming new ones early, but
+  always still calls `runner.finish()` before returning — drains
+  whatever's already buffered instead of dropping it, doesn't wait out
+  an entire real-time-paced file just to respond to a stop request.
+  `add_signal_handler` is Unix-only (confirmed directly: `NotImplementedError`
+  on this Windows dev machine); guarded per-signal with a warning instead
+  of crashing, and the pre-existing `KeyboardInterrupt` catch in `main()`
+  remains as a fallback — Docker, the actual deployment target, is always
+  Linux. The graceful-shutdown *path* itself could only be verified by
+  code review here (git-bash's `kill -SIGINT` doesn't reliably reach a
+  Windows console process the way a real SIGINT would), but the
+  `wal_autocheckpoint` tightening WAS verified under a real forced kill
+  on this machine: WAL stayed bounded at 140 KiB and
+  `PRAGMA integrity_check` reported "ok" with all rows intact. Also
+  verified directly: `_run_file` given a `shutdown` already set ~50ms
+  into a real Ridgecrest replay still produced and persisted its one
+  buffered verdict via `finish()`.
+  `wal_autocheckpoint=100` and the shutdown handling were applied per
+  explicit author confirmation; a proposed `UNIQUE` constraint for
+  `live_verdicts` idempotency was explicitly declined — see
+  `PLAN_CIERRE_Y_LANZAMIENTO.md`'s backlog for why (the table is already
+  an intentional append-only occurrence log, not deduplicated; the real
+  gap is specific to a future "growing incoming directory" pilot mode,
+  not this fix).
+
 - **`tests/test_closure_criterion.py`: permanent regression test for the
   premature-finalization bug C1 closed**, and the instrument that will
   make the backlogged density-aware closure heuristic (see C3's "Known

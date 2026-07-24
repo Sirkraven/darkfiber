@@ -378,3 +378,13 @@ a new unsourced figure):
 - **Visual re-verification**: re-rendered all 18 pages (`pymupdf`, same
   method as F4.1) after the fix; sampled the cover, both abstract pages,
   and the closing page with the new FASE F4.2 addendum — all correct.
+
+## Operational fix (SIGTERM/SQLite shutdown, C3) — pytest count correction
+
+- **pytest "14/14" (§9, in `docs/writeup.md` and `docs/writeup.es.md`).**
+  Stale, not wrong-when-written: C2, C3, and the C1 closure-criterion
+  regression test (all committed after F4.2) added tests of their own.
+  Re-ran `pytest` this session: `20 passed`. Corrected both language
+  versions to match current reality, same as the "11/11" → "14/14"
+  correction above — not a new claim, just re-verified against a moving
+  target.

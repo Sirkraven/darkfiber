@@ -9,6 +9,41 @@ podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
 (ese es trabajo declarado y concreto; esto es más crudo, todavía sin
 decidir si es trabajo).
 
+## 2026-07-24 — Shutdown ordenado del pipeline (SIGTERM/SQLite)
+
+**`add_signal_handler` es Unix-only, y `kill -SIGINT` desde git-bash en
+Windows no llega de forma confiable a un proceso de consola real** —
+confirmado a mano en esta misma máquina: `NotImplementedError` al
+registrar el handler (esperado, documentado en la propia librería
+estándar), y un `SIGINT` mandado vía `kill` desde git-bash NO disparó
+siquiera el `except KeyboardInterrupt` de respaldo que ya existía en
+`main()` — el proceso siguió corriendo hasta un `taskkill //F` directo.
+Esto significa que el path de shutdown ordenado (el motivo entero de
+este trabajo) no se puede verificar de punta a punta en esta máquina de
+desarrollo — solo por revisión de código + el patrón estándar de
+`asyncio`. Vale la pena, si esto vuelve a tocarse, probarlo de verdad en
+un contenedor Linux (`docker compose stop pipeline` con
+`stop_grace_period`) antes de confiar en que funciona como está escrito.
+
+**El intento de reproducir un shutdown ordenado en Windows terminó
+siendo, sin querer, una prueba real de la OTRA mitad del fix.** Como el
+`SIGINT` no disparó nada, tuve que matar el proceso con `taskkill //F`
+-- un kill duro genuino, sin ningún cleanup. El `-wal` quedó en 140 KiB
+(bien por debajo del nuevo umbral de `wal_autocheckpoint=100`, ~400 KiB)
+y `PRAGMA integrity_check` dio "ok" con las 10 filas ya escritas
+intactas y legibles. Ni siquiera hizo falta que el handler de señal
+funcionara para que el ajuste de `wal_autocheckpoint` ya redujera la
+exposición real ante un kill duro -- las dos partes del fix son
+independientes y cada una aporta algo por separado, no solo en conjunto.
+
+**`data/count.py`, un script de una sola línea de consulta al ledger,
+apareció sin trackear en el working directory durante la verificación
+final** (`ruff check .` lo encontró, `ruff check src/ tests/` no, que es
+lo que CI realmente corre sobre un checkout limpio). No lo toqué --
+parece ser la propia herramienta de inspección que originó el reporte
+del bug de shutdown (cuenta filas por tabla, coincide con el "150 filas"
+mencionado). Queda como está, fuera de git, no es parte de este trabajo.
+
 ## 2026-07-23 — Test de regresión para el bug de finalización prematura de C1
 
 **Reconocimiento del caso real de C1.** Antes de escribir el test, se

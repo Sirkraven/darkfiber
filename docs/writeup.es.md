@@ -539,7 +539,7 @@ el registro", no una adivinanza que suena plausible.
   `darkfiber-convert-sgy` (SEG-Y de Stanford → NPZ), `darkfiber-snr-curve`
   (curvas de recall de §5.2), `darkfiber-replay` (replay paced en tiempo
   real para el camino de streaming, `CHANGELOG.md [Unreleased]`).
-- **Tests**: `pytest` (14/14 pasando) y `darkfiber-validate` (29/29
+- **Tests**: `pytest` (20/20 pasando) y `darkfiber-validate` (29/29
   chequeos sintéticos) son ambos requeridos en verde antes de que
   cualquier cambio al árbol de decisión se considere validado;
   re-confirmado en esta misma pasada de documentación (`CHANGELOG.md`).

@@ -456,7 +456,7 @@ the correct output is "not in the record," not a plausible-sounding guess.
   SEG-Y → NPZ), `darkfiber-snr-curve` (§4.2 recall curves),
   `darkfiber-replay` (real-time-paced file replay for the streaming path,
   `CHANGELOG.md [Unreleased]`).
-- **Tests**: `pytest` (14/14 passing) and `darkfiber-validate` (29/29
+- **Tests**: `pytest` (20/20 passing) and `darkfiber-validate` (29/29
   synthetic checks) are both required green before any change to the
   decision tree is considered validated; re-confirmed in this same
   documentation pass (`CHANGELOG.md`).
