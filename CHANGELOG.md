@@ -8,6 +8,54 @@ something to hide.
 
 ### Added
 
+- **F1.2b: spec verification for the F1.2 candidate census, closing every
+  "no confirmado" field against a primary source before any candidate can
+  reach F1.3.** Read-only, no DAS data downloaded. Recovered the actual
+  PubDAS paper's Table 1 (exact specs for all 8 hosted datasets) by
+  extracting the EarthArXiv preprint PDF directly with PyMuPDF after
+  WebFetch's HTML-to-markdown conversion failed on it — this is the
+  primary source behind most of the corrections below, not a
+  reconstruction. **Real errata, recorded not silently fixed**: FORESEE
+  was misplaced in the v1 census as Brady Hot Springs, NV (geothermal) —
+  it's actually at Penn State, State College, PA (urban university
+  campus); the error came from an unverified general search conflating it
+  with the physically separate PoroTomo/FORGE projects that really are at
+  Brady Hot Springs. Completed exact channel count, spacing, gauge
+  length, hosted sampling rate, format, and volume for FOSSA, FORESEE,
+  Stanford-2, Fairbanks, LaFarge-Conco, and PoroTomo DASH; recomputed each
+  one's minimum noise-duration floor from the corrected apertures.
+  PoroTomo DASH surfaced a real open question, not resolved here: its
+  zigzag "fishbone" layout means cable length (~8.8km) and geometric
+  aperture (~1.5km) diverge sharply, and the noise-floor formula assumes
+  a roughly linear cable — both values reported, no default picked.
+  Fairbanks flagged with an operational caveat: the PubDAS-hosted subset
+  is active-source only (nightly vibrator sweeps), so real background-
+  noise availability between sweeps needs confirming at first read access,
+  not assumed. Brno's stored-file sampling rate could not be resolved
+  even from the full paper (PMC12078700) — the paper states only the
+  interrogator's 20kHz pulse rate, never the stored HDF5 time-axis rate —
+  so Brno stays excluded from F1.3 until resolved by another channel
+  (author contact or a first metadata-only read, the latter needing its
+  own separate authorization). Verified and refuted, with the primary
+  source's own Table 1/Table 3, the hypothesis that PubDAS's "seafloor"
+  8th dataset is the MARS/Monterey Bay cable: none of PubDAS's 8 hosted
+  datasets is a Monterey Bay dataset at all — PubDAS's real seafloor
+  entry is Valencia (Spain, submarine telecom cable, a genuine new
+  candidate not yet in the selected list). A much smaller, non-PubDAS-
+  hosted "Monterey Bay" entry does exist in the paper's Table 3 (4 days,
+  0.565GB) but its size/duration point to the original 2018 4-day MARS
+  campaign, not the year-long SeaFOAM deployment the project's existing
+  `monterey_bay` array almost certainly comes from (near-exact channel-
+  spacing/fs match to Romanowicz et al. 2023) — same physical cable, two
+  different experiments, not the same dataset. Globus setup steps
+  documented from the paper's own §6 and cross-checked against
+  `DAS-RCN/awesome-das` for the actual endpoint link (not taken from a
+  single unverified search result): install + first OAuth login are
+  necessarily user-side; scripted transfers after that could be automated
+  in F1.4/F1.5 if authorized. Declared, not-yet-executed per-array
+  download-size plan (~30GB proposed ceiling for the 6 candidates with
+  complete specs) added for F1.3 to work from. Full detail:
+  `docs/snr50_extension_fase1.md` §F1.2b.
 - **`snr_curve.py` gains `.npz` support and manual noise-exclusion windows
   (F1.1, SNR50 extension to more installations)**: `gather_noise_sources`
   now loads through `replay.load_file` (same loader `stream_runner.py`/

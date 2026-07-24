@@ -197,3 +197,218 @@ diseña esa selección acá.
 | GorDAS | `arcata` | Conteo de archivos de evento idéntico (2,470) al subset "Arcata" de HF `quakeflow_das` |
 | SCEDC AWS Open Data DAS-Ridgecrest | `ridgecrest_north` | 1,150 "good channels" tras filtrado — coincide exacto con `array_profiles.n_ch` |
 | PubDAS "Stanford 1 (Stanford campus array)" | `stanford1_campus` | Coincidencia de nombre/convención con el array ya corrido en F1.1 — **inferencia por nombre, no verificación directa por conteo de canales** (a diferencia de las dos filas de arriba). Marcado explícitamente como menos verificado que los otros dos descartes. |
+
+---
+
+## F1.2b — Verificación de specs (cerrado)
+
+*Solo lectura, previa al pre-registro. Cero descargas de datos DAS reales.
+Objetivo: cerrar cada "No confirmado" de la tabla F1.2 con fuente primaria
+antes de que cualquier candidato pueda entrar a F1.3.*
+
+### Fe de erratas (no edición silenciosa)
+
+**FORESEE estaba mal ubicado en el census v1.** Decía "Brady Hot Springs,
+NV, geotérmico" — **incorrecto**. Fuente primaria (Zhu et al. 2021, *Solid
+Earth*, y el propio paper de PubDAS §4.2, Spica et al. 2023): FORESEE está
+en **Penn State University, State College, PA** — campus universitario,
+fibra oscura enterrada en conducto de concreto a 1-10 m de profundidad
+bajo el campus. El error de v1 vino de una búsqueda general que mezcló
+FORESEE con FORGE/PoroTomo (ambos sí en Brady Hot Springs, NV, pero son
+proyectos geotérmicos distintos) sin verificar contra el paper que
+efectivamente lo describe — exactamente el tipo de error que la
+verificación de F1.2b existe para atrapar. Fila corregida en la tabla de
+abajo, no se borra el error de v1 sin dejar constancia.
+
+### Specs completas — fuente primaria: Table 1, Spica et al. 2023 (PubDAS)
+
+Conseguí el preprint completo (EarthArXiv, `eartharxiv.org/repository/object/3574/download/7140/`,
+33 páginas, extraído con PyMuPDF porque el WebFetch normal no pudo
+parsear el PDF). La Tabla 1 del paper da specs exactas de los 8 datasets
+que PubDAS aloja — esto reemplaza casi todos los "No confirmado" de la
+tabla v1 con la fuente primaria real, no una reconstrucción.
+
+| Candidato | Canales | Spacing | Gauge length | fs (archivo alojado) | Formato | T. span alojado | Vol. total alojado | Duración mín. ruido/trial (recalculada) |
+|---|---|---|---|---|---|---|---|---|
+| FOSSA | **11,648** (confirmado dos veces: texto §4.3 y CL/CS de Tabla 1: 23,300m/2m) | 2 m | 10 m | 500 Hz (nativo, sin downsamplear) | TDMS (Silixa nativo; la Tabla 1 imprime "TDSM", posible error de OCR del PDF — no corregido silenciosamente, señalado acá) | 7 días | 11,680 GB | **56.3 s** (aperture=23,300 m) |
+| FORESEE (Penn State, corregido) | 2,137 canales geolocalizados por tap test (Zhu et al. 2021, texto); Tabla 1 da CL=4,900m/CS=2m → ~2,450 canales nominales en el archivo — **discrepancia menor entre las dos fuentes primarias, no resuelta, ambas citadas** | 2 m | 10 m | 125 Hz alojado en PubDAS (downsampleado desde 500 Hz nativo — único preprocesamiento aplicado, según el propio paper) | HDF5 | 365 días (primer año del experimento; el experimento completo corrió 2.5 años, abr-2019 a oct-2022, pero PubDAS solo tiene el primer año) | 29,338 GB (el dataset más grande de PubDAS) | **22.6 s** (aperture=4,900 m, CL de Tabla 1) / 21.4 s si se usa la apertura de los 2,137 canales calibrados — ambas cerca del ~22s esperado |
+| Stanford-2 (Sand Hill Road) | **1,250** (confirmado tres veces: FDSN red `9T`, Tabla 1, y texto §4.6) | 8.16 m | 20 m | 250 Hz (nativo) | SEG-Y | 14 días (2 semanas completas, 1-14 marzo 2020) | 2,887 GB | **32.3 s** (aperture=10,200 m) |
+| Fairbanks Permafrost | **4,000** (CL=4,000m/CS=1m de Tabla 1, consistente con "4,000 sensores @ 1m" de fuente secundaria) | 1 m | 10 m | 1,000 Hz | TDMS (mismo caveat de OCR que FOSSA) | 59 días nominales — **pero ver caveat abajo** | 10,441 GB | **20.9 s** (aperture=4,000 m) |
+| LaFarge-Conco (mina) | **1,120** (CL≈1,120m/CS=1m de Tabla 1 y texto §4.4 — 3 capas de cable en el mismo trazado, no 3× canales) | 1 m | 10 m | 1,000 Hz | SEG-Y | 2 días (con fuentes activas: pesa de 23kg + 2 tronaduras de mina) | 45 GB (el dataset más chico de PubDAS por lejos) | **15.7 s** (aperture=1,120 m) |
+| PoroTomo DASH (Brady Hot Springs, NV) | **8,720** (Silixa iDAS, fuente: GDR + literatura secundaria cruzada con dos búsquedas independientes) | 1.021 m | 10 m | 1,000 Hz | SEG-Y + H5 | 15-18 días (8-26 marzo 2016, con una pausa) | 81,000 GB (Tabla 3 de PubDAS, dataset externo — no en PubDAS mismo, ver más abajo) | **Ambiguo — ver caveat geométrico abajo**: 29.7 s si se usa longitud de cable (~8,800m) o 16.4 s si se usa la apertura geométrica real (~1.5km, arreglo en "espina de pescado"/zigzag) |
+| Brno (event classification, condicional) | **1,663** (confirmado, PMC full text) | 1 m | No especificado en el paper | **No resuelto — ver sección Brno abajo** | HDF5 | No especificado en el paper (mismo gap que fs) | 46 GB total (Figshare) | **16.7 s** (aperture=1,662 m) — calculable independientemente del gap de fs |
+
+**Caveat Fairbanks** (no estaba en v1, aparece al leer el texto completo
+del paper): el dataset alojado en PubDAS **no es ruido continuo** — es
+"el experimento activo, que graba disparos secuenciales de un único
+Surface Orbital Vibrator (SOV), barrido varias veces cada noche" (texto
+§4.1). Los 59 días nominales de T.span probablemente contienen huecos
+grandes entre sesiones de barrido nocturno — la tasa promedio del dataset
+(10,441 GB / 59 días ≈ 2.05 MB/s) es baja para 4,000 canales @ 1kHz
+(¬16 MB/s en crudo), lo que es consistente con grabación no continua, no
+con compresión. **No confirmado si hay suficiente ruido de fondo real
+entre barridos para 140 inyecciones — a verificar en el primer acceso de
+solo lectura (F1.4), no asumido acá.**
+
+**Caveat LaFarge-Conco**: aunque el dataset trae fuentes activas
+(marcado ⋆ en Tabla 1), el texto confirma que SÍ hay ruido de fondo real
+utilizable: "ruido de fondo de tráfico de camiones de mina y cintas
+transportadoras se observa durante el experimento DAS, excepto cuando la
+mina se despejó para las tronaduras" (§4.4) — no es un dataset
+puramente activo, a diferencia de la duda abierta en Fairbanks.
+
+**Caveat PoroTomo DASH — ambigüedad geométrica real, no resuelta**: el
+arreglo tiene forma de "espina de pescado" (zigzag) con apertura
+geométrica máxima de ~1.5 km en dirección NE-SW, pero la longitud total
+de cable es ~8.8-8.9 km (el cable se dobla sobre sí mismo repetidamente).
+La fórmula de duración mínima de ruido (`min_len_s`) se derivó asumiendo
+un cable aproximadamente lineal (válido para los otros 6 arrays de esta
+tabla) — para un arreglo zigzag, la apertura físicamente relevante para
+el moveout de plano-onda es la geométrica (~1.5 km), no la longitud de
+cable. Usar la apertura geométrica da un piso más bajo (16.4s) que usar
+la longitud de cable (29.7s). **No decido acá cuál usar — queda como
+pregunta abierta explícita para F1.3**, con ambos valores calculados y
+citados.
+
+### Brno — resolución del paper completo
+
+Conseguí el full-text vía PMC (`pmc.ncbi.nlm.nih.gov/articles/PMC12078700/`,
+Nature *Scientific Data* 2025, Brno University of Technology). Resultado:
+
+- **Ambiente**: confirmado directo del texto, no inferido — "instalada 1
+  metro bajo tierra, junto a la vereda" en un campus universitario en
+  Brno, Rep. Checa. Fibra ITU-T G.652.D estándar, originalmente para
+  comunicación inter-campus.
+- **Licencia**: confirmado — **CC BY-NC-ND 4.0**. Tag aplicado: **excluido
+  de cualquier uso comercial y de redistribución modificada.**
+- **La bandera de fs — no se pudo resolver, y no es un gap mío**: el
+  paper especifica una "tasa de repetición de pulso de 20 kHz" pero
+  **nunca declara explícitamente la tasa temporal del archivo HDF5
+  almacenado** (que puede ser menor que la tasa de pulso del
+  interrogador — son cosas distintas, como ya se sospechaba en el census
+  v1). La sección de Data Records describe la forma del array
+  (`RawData`, Tiempo × 1,663 canales) pero no da el Hz del eje temporal.
+  **Esto es una omisión real del paper, confirmada al leer el texto
+  completo — no una búsqueda insuficiente de mi parte.** Sin ese dato,
+  Brno **no cumple "specs completas" y no entra a F1.3** en este estado.
+  Dos caminos posibles, ninguno tomado acá: (a) contactar a los autores
+  (Brno Univ. of Technology, Dept. de Telecomunicaciones), o (b) leer el
+  header del propio archivo HDF5 tras un primer acceso de solo lectura —
+  lo segundo ya cruza la línea hacia "tocar el dataset", así que
+  necesitaría autorización explícita separada antes de F1.3, no implícita
+  acá.
+
+### Hipótesis MARS/Monterey Bay — refutada como estaba planteada, con matiz
+
+Encontré la Tabla 1 (los 8 datasets que PubDAS aloja DIRECTAMENTE) y la
+Tabla 3 (lista no-exhaustiva de OTROS datasets DAS en OTRAS plataformas,
+solo referenciados por el paper) en el mismo PDF. Resultado:
+
+- **Los 8 datasets que PubDAS aloja son**: Fairbanks, FORESEE, FOSSA,
+  LaFarge-Conco, Stanford-1, Stanford-2, Stanford-3, **Valencia**. **No
+  hay ningún dataset de Monterey Bay/MARS entre los 8 alojados por
+  PubDAS.** El ejemplo real de "seafloor" que menciona el abstract del
+  paper es **Valencia** (cable submarino de telecomunicaciones
+  Valencia-Palma de Mallorca, operado por IslaLink — 2,977 canales,
+  16.8m spacing, 1000Hz nativo/250Hz alojado, HDF5, 40,811 de sus 50,000m
+  están bajo el lecho marino del Mediterráneo, confirmado por presencia
+  de oleaje/microsismo secundario en los registros) — **no Monterey Bay**.
+  La hipótesis, tal como estaba planteada ("el octavo dataset seafloor =
+  MARS = monterey_bay"), **queda refutada**: PubDAS no tiene un dataset
+  de Monterey Bay entre sus 8 propios.
+- **Matiz — sí existe un "Monterey Bay" en la Tabla 3** (dataset externo,
+  NO alojado por PubDAS, solo catalogado): "Monterey Bay, Moss Landing
+  CA, 4 días, 0.565 GB, tinyurl.com/ynab86bc". Por duración (4 días) y
+  tamaño (0.565 GB, minúsculo), esto coincide con la campaña original de
+  2018 de Lindsey et al. (4 días de mantenimiento del nodo MARS,
+  ~10,000 canales, cable repropuesto como arreglo DAS) — **NO con
+  SeaFOAM** (Romanowicz et al. 2023, despliegue de un año completo,
+  10,245 canales/5.1m/200Hz — specs que coinciden casi exactas con el
+  `monterey_bay` ya medido en el proyecto: 2,845 canales/5.2m/199.995Hz,
+  probablemente un subconjunto de canales de SeaFOAM). Es decir: **hay
+  evidencia razonable de que el `monterey_bay` del proyecto viene de
+  SeaFOAM, no de la campaña de 4 días de 2018** — son dos experimentos
+  físicamente en el mismo cable pero temporalmente distintos y con
+  specs distintas (10,000 canales/4 días/2018 vs. 10,245 canales/1
+  año/2022-2023). La entrada de Tabla 3 sería, en principio, un
+  candidato nuevo genuino (chico, descargable sin Globus vía el link
+  corto) — pero no estaba en la lista de 7 seleccionados y no lo agrego
+  acá sin tu aprobación, solo lo dejo documentado como hallazgo.
+- **Recomendación no pedida pero relevante**: Valencia llena mejor el
+  hueco de diversidad "seafloor/submarino" que la hipótesis original
+  buscaba — es un candidato PubDAS real, con specs completas de fuente
+  primaria, no en la lista de 7. Lo señalo para tu consideración, no lo
+  agrego a la selección.
+
+### Setup de Globus — pasos exactos
+
+Fuente primaria: §6 del paper de PubDAS ("How to access PubDAS") +
+verificación cruzada del link real contra `github.com/DAS-RCN/awesome-das`
+(no tomado de una sola búsqueda sin verificar).
+
+**Lo que hacés vos** (instalación + autenticación, según tu propia
+instrucción — no automatizable sin tus credenciales):
+1. Instalar **Globus Connect Personal** (Windows/Mac/Linux, gratis) desde
+   `globus.org` — agente liviano de un solo usuario.
+2. Autenticarte en `app.globus.org` (login institucional o cuenta
+   Globus/Google/ORCID — OAuth, requiere tu navegador).
+3. Registrar tu máquina como un "endpoint" personal de Globus (parte del
+   instalador — le da nombre/ownership, queda asociado a tu cuenta).
+4. Primer acceso a la colección PubDAS vía navegador para aceptar
+   términos, si los pide: `https://app.globus.org/file-manager?origin_id=706e304c-5def-11ec-9b5c-f9dfb1abb183&origin_path=/`
+   (endpoint ID verificado contra `DAS-RCN/awesome-das`, no inventado).
+
+**Lo automatizable después** (una vez que tu endpoint esté activo y
+autenticado — yo podría scriptear esto si lo autorizás en F1.4/F1.5, no
+ahora):
+- Transferencias específicas vía `globus-cli transfer` o el SDK de Python
+  de Globus, apuntando de la colección PubDAS a tu endpoint personal —
+  no requiere reautenticar cada vez mientras el token siga vigente.
+- Selección de archivos/rangos de fecha específicos dentro de cada
+  dataset (Globus permite filtrar por carpeta/patrón antes de transferir).
+- Verificación de integridad post-transferencia (Globus ya hace checksum
+  automático, no hace falta un paso separado).
+
+**No automatizable en ningún punto**: la instalación del software y el
+primer login OAuth — ambos requieren tu navegador/credenciales, por
+diseño de Globus, no por una limitación mía.
+
+### Plan de descarga por array — tamaños declarados ANTES de bajar
+
+Propuesta de techo, **no ejecutado, a tu aprobación**: descargar ~10× el
+piso de `min_len_s` por candidato (margen conservador, consistente con
+la recomendación ya escrita en F1.1 de "pedir varias veces el piso, no
+el mínimo exacto"), calculado con la tasa Vol/T.span de cada dataset
+(Tabla 1). **No es el tamaño total del dataset — es una ventana acotada
+de ruido real, elegida por vos antes de bajar nada.**
+
+| Candidato | Ventana propuesta (10×piso) | Tasa (Vol/T.span) | Tamaño estimado |
+|---|---|---|---|
+| LaFarge-Conco | 157 s | 0.26 MB/s | **~0.04 GB** |
+| FORESEE | 226 s | 0.93 MB/s | **~0.21 GB** |
+| Fairbanks | 209 s | 2.05 MB/s (promedio — ver caveat de huecos arriba) | **~0.43 GB** |
+| Stanford-2 | 323 s | 2.39 MB/s | **~0.77 GB** |
+| FOSSA | 563 s | 19.31 MB/s | **~10.6 GB** |
+| PoroTomo DASH | 164-297 s (según qué apertura se use) | 62.5 MB/s | **~10.0-18.1 GB** |
+| Brno | No calculable — falta fs y duración total del archivo fuente | — | — |
+| **Total (6 con specs completas)** | — | — | **~22-30 GB** |
+
+FOSSA y PoroTomo dominan el costo (tasa alta: muchos canales × fs alta).
+Un techo total de **~30 GB** para el primer batch cubriría los 6 con
+specs completas, dejando margen. **No se baja nada con esto — es la cifra
+a la que pedís que se ajuste el plan de F1.3/F1.4, vos decidís el techo
+real.**
+
+### Veredicto por candidato — ¿entra a F1.3 con specs completas?
+
+| Candidato | Specs completas? | Notas |
+|---|---|---|
+| FOSSA | Sí | Único caveat menor: formato TDMS con posible error de OCR en la fuente |
+| FORESEE (corregido) | Sí | Ubicación corregida; discrepancia menor de canales (2,137 vs ~2,450) documentada, no bloqueante |
+| Stanford-2 | Sí | Triple-confirmado, sin caveats |
+| Fairbanks | Sí, con caveat operacional | Specs completas, pero falta confirmar cuánto ruido real de fondo hay entre barridos SOV antes de comprometer F1.3 |
+| LaFarge-Conco | Sí | Ruido de fondo real confirmado presente pese a ser dataset "activo" |
+| PoroTomo DASH | Sí, con ambigüedad abierta | Specs completas; falta decidir qué apertura usar (geométrica vs. longitud de cable) |
+| Brno | **No** | fs y duración total del archivo no están en el paper — gap real de la fuente, no mío. Queda condicional hasta resolverse por otra vía |
+
+---
