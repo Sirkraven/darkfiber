@@ -22,9 +22,13 @@ para usar esta misma función — antes de A1 usaba una fórmula distinta (ver
 
 Uso:
     python snr_curve.py --dir carpeta_con_h5/ --array-id ridgecrest_north [--figs] [--legacy-check]
+    python snr_curve.py --dir carpeta_con_npz/ --array-id stanford1_campus \
+        --fs 100 --dx 8.16 --exclude-s 395 455
 
-Este script NUNCA se conecta a la red: solo lee .h5 ya presentes en disco
-(mismo contrato que run_on_quakeflow.py).
+Este script NUNCA se conecta a la red: solo lee `.h5` (QuakeFlow) y/o
+`.npz` (Stanford u otro formato sin attrs embebidos -- `--fs`/`--dx`
+obligatorios, ver `replay.load_file`) ya presentes en disco (mismo
+contrato que `run_on_quakeflow.py`/`run_on_stanford.py`).
 """
 
 from __future__ import annotations
@@ -41,7 +45,8 @@ from ._cli_utf8 import ensure_utf8_stdio
 from .catalog import SignatureCatalog
 from .coherence import CoherenceAgent
 from .contracts import ArrayGeometry, CoherenceConfig, EventClass, Tier0Config
-from .run_on_quakeflow import load_quakeflow_h5, valid_event_index
+from .replay import load_file
+from .run_on_quakeflow import valid_event_index
 from .run_on_stanford import sanitize
 from .selftest import inject_and_verify_sized, pipeline_margin_s
 from .synth import add_plane_wave, bandpass, noise_rms, ricker, wavelet_rms
@@ -76,18 +81,37 @@ def wilson_ci(k: int, n: int, z: float = Z_95) -> tuple[float, float]:
     return (max(0.0, center - half), min(1.0, center + half))
 
 
-def gather_noise_sources(files: list[str], margin_s: float = NOISE_MARGIN_S) -> list[dict]:
+def gather_noise_sources(
+    files: list[str],
+    margin_s: float = NOISE_MARGIN_S,
+    fs_override: float | None = None,
+    dx_override: float | None = None,
+    manual_exclude_s: tuple[float, float] | None = None,
+) -> list[dict]:
     """Ventanas de ruido REAL sin evento, alejadas del origen catalogado.
 
     Si el archivo trae `event_time_index` (verdad-terreno embebida, ver
-    load_quakeflow_h5), se descarta todo lo que caiga a menos de `margin_s`
-    del origen; si no trae verdad-terreno, se usa el archivo completo (se
-    documenta explícitamente al imprimir, no se oculta el supuesto).
+    `load_quakeflow_h5` vía `replay.load_file`), se descarta todo lo que
+    caiga a menos de `margin_s` del origen -- comportamiento SIN CAMBIOS
+    para `.h5` de QuakeFlow. `.npz` (Stanford u otro formato sin attrs
+    embebidos, ver `replay.load_file`) nunca trae `event_time_index`; para
+    esos archivos, si se da `manual_exclude_s=(inicio_s, fin_s)`, esa
+    ventana se excluye manualmente en su lugar (misma lógica de
+    antes/después, generalizada a un rango explícito en vez de
+    origen±margen) -- documentado explícitamente en cada fuente
+    (`exclusion_kind`, ver más abajo) para que quede trazable en el JSON
+    de salida qué archivo usó qué criterio. Sin ninguno de los dos, se usa
+    el archivo completo (se documenta explícitamente al imprimir, no se
+    oculta el supuesto) -- comportamiento previo, sin cambios.
+
+    `fs_override`/`dx_override`: pasan directo a `replay.load_file` --
+    ignorados para `.h5` (que trae su propio fs/dx embebido, a menos que
+    se quieran forzar), OBLIGATORIOS para `.npz`.
     """
     sources: list[dict] = []
     for path in files:
         try:
-            data, fs, dx, attrs = load_quakeflow_h5(path)
+            data, fs, dx, attrs = load_file(path, fs=fs_override, dx=dx_override)
         except Exception as exc:
             print(f"  ({os.path.basename(path)}: omitido, {exc})")
             continue
@@ -97,19 +121,44 @@ def gather_noise_sources(files: list[str], margin_s: float = NOISE_MARGIN_S) -> 
         margin_n = int(margin_s * fs)
         idx = valid_event_index(attrs)
         if idx is not None:
+            exclusion_kind = "event_time_index"
             segments = []
             if idx - margin_n > int(2 * fs):
                 segments.append((0, idx - margin_n))
             if idx + margin_n < n_t - int(2 * fs):
                 segments.append((idx + margin_n, n_t))
+        elif manual_exclude_s is not None:
+            exclusion_kind = "manual (--exclude-s)"
+            excl_a = int(manual_exclude_s[0] * fs)
+            excl_b = int(manual_exclude_s[1] * fs)
+            print(
+                f"  ({os.path.basename(path)}: sin origen embebido, excluyendo manualmente "
+                f"[{manual_exclude_s[0]:.1f}s, {manual_exclude_s[1]:.1f}s])"
+            )
+            segments = []
+            if excl_a > int(2 * fs):
+                segments.append((0, excl_a))
+            if excl_b < n_t - int(2 * fs):
+                segments.append((excl_b, n_t))
         else:
+            exclusion_kind = "none (archivo completo, sin verdad-terreno)"
             print(f"  ({os.path.basename(path)}: sin origen embebido, se asume ruido completo)")
             segments = [(0, n_t)]
 
         for a, b in segments:
             if b - a < int(10 * fs):
                 continue
-            sources.append(dict(path=path, fs=fs, dx=dx, n_ch=n_ch, noise=data[:, a:b]))
+            sources.append(
+                dict(
+                    path=path,
+                    fs=fs,
+                    dx=dx,
+                    n_ch=n_ch,
+                    noise=data[:, a:b],
+                    exclusion_kind=exclusion_kind,
+                    segment_s=(a / fs, b / fs),
+                )
+            )
     return sources
 
 
@@ -302,7 +351,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    ap.add_argument("--dir", required=True, help="Carpeta con .h5 ya descargados de QuakeFlow DAS")
+    ap.add_argument(
+        "--dir", required=True, help="Carpeta con .h5 de QuakeFlow DAS y/o .npz ya descargados"
+    )
     ap.add_argument("--array-id", required=True)
     ap.add_argument("--db", default="quakeflow_ledger.db")
     ap.add_argument("--n-per-step", type=int, default=N_PER_STEP)
@@ -311,6 +362,19 @@ def main() -> None:
         type=float,
         default=NOISE_MARGIN_S,
         help="Alejamiento mínimo (s) al origen catalogado para considerar 'sin evento'",
+    )
+    ap.add_argument("--fs", type=float, default=None, help="fs (Hz) -- OBLIGATORIO para .npz")
+    ap.add_argument("--dx", type=float, default=None, help="dx (m) -- OBLIGATORIO para .npz")
+    ap.add_argument(
+        "--exclude-s",
+        type=float,
+        nargs=2,
+        metavar=("INICIO", "FIN"),
+        default=None,
+        help="Ventana [INICIO,FIN] en segundos a excluir manualmente del pool de ruido -- "
+        "SOLO aplica a archivos SIN event_time_index embebido (p.ej. .npz de Stanford); "
+        "un archivo con verdad-terreno embebida sigue usando esa automáticamente, sin "
+        "cambios. Ver gather_noise_sources().",
     )
     ap.add_argument("--figs", action="store_true")
     ap.add_argument(
@@ -329,9 +393,11 @@ def main() -> None:
     )
     args = ap.parse_args()
 
-    files = sorted(glob.glob(os.path.join(args.dir, "*.h5")))
+    files = sorted(
+        glob.glob(os.path.join(args.dir, "*.h5")) + glob.glob(os.path.join(args.dir, "*.npz"))
+    )
     if not files:
-        raise SystemExit(f"no se encontraron .h5 en {args.dir}")
+        raise SystemExit(f"no se encontraron .h5 ni .npz en {args.dir}")
 
     cat = SignatureCatalog(args.db, naming_threshold=3)
     if args.threshold is not None:
@@ -354,11 +420,23 @@ def main() -> None:
         "instalación+config (A7), no solo de la instalación."
     )
     print(f"\nCargando ruido real sin evento de {len(files)} archivo(s)...")
-    sources = gather_noise_sources(files, margin_s=args.noise_margin_s)
+    exclude_s = tuple(args.exclude_s) if args.exclude_s else None
+    sources = gather_noise_sources(
+        files,
+        margin_s=args.noise_margin_s,
+        fs_override=args.fs,
+        dx_override=args.dx,
+        manual_exclude_s=exclude_s,
+    )
     if not sources:
         raise SystemExit("no se pudo extraer ninguna ventana de ruido sin evento de estos archivos")
     total_noise_s = sum(s["noise"].shape[1] / s["fs"] for s in sources)
     print(f"  {len(sources)} tramo(s) de ruido, {total_noise_s:.0f}s totales")
+    for s in sources:
+        print(
+            f"    {os.path.basename(s['path'])} [{s['segment_s'][0]:.1f}s, {s['segment_s'][1]:.1f}s] "
+            f"({(s['segment_s'][1] - s['segment_s'][0]):.1f}s) -- exclusion_kind={s['exclusion_kind']}"
+        )
 
     curve = []
     t0 = time.perf_counter()
@@ -435,6 +513,25 @@ def main() -> None:
                 "curve": curve,
                 "snr50": snr50,
                 "runtime_s": dt,
+                # Provenance del pool de ruido (F1.1, extensión a .npz):
+                # qué archivo aportó qué tramo, y si la exclusión de
+                # evento fue automática (event_time_index embebido) o
+                # manual (--exclude-s, para formatos sin verdad-terreno
+                # embebida). Distinto por-fuente porque una corrida
+                # puede en general mezclar ambos casos.
+                "noise_exclusion": {
+                    "margin_s": args.noise_margin_s,
+                    "manual_exclude_s": list(exclude_s) if exclude_s is not None else None,
+                    "sources": [
+                        {
+                            "file": os.path.basename(s["path"]),
+                            "segment_s": list(s["segment_s"]),
+                            "duration_s": s["segment_s"][1] - s["segment_s"][0],
+                            "exclusion_kind": s["exclusion_kind"],
+                        }
+                        for s in sources
+                    ],
+                },
             },
             fh,
             indent=2,
