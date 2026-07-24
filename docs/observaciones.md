@@ -9,6 +9,35 @@ podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
 (ese es trabajo declarado y concreto; esto es más crudo, todavía sin
 decidir si es trabajo).
 
+## 2026-07-24 — SNR50 de ridgecrest_north: idéntico bajo threshold 4.0 y 8.0
+
+**Observación, no experimento — a revisitar en F1.6 con N mayor.**
+Verificando la procedencia de los 3 SNR50 existentes para la extensión
+de Fase 1 (ver `docs/snr50_extension_fase1.md`), encontré que
+ridgecrest_north tiene DOS mediciones completas de SNR50, una bajo
+threshold=4.0 (default, archivada en `array_profile_history` tras la
+corrección A7 — "curva/SNR50 medidos bajo threshold=4.0... SNR50=2.50")
+y otra bajo threshold=8.0 (calibrado, A7/A8 — la vigente,
+`figures/snr_curve_ridgecrest_north.json`, corrida completa 140/140,
+`threshold_source="perfil del arreglo (calibrate.py --apply)"`) — **el
+valor interpolado es el MISMO: SNR50=2.50 en ambas.** Dos JSON como
+evidencia, ambos con curvas completas (no truncadas ni degeneradas):
+el snapshot archivado (4.0) y `figures/snr_curve_ridgecrest_north.json`
+(8.0).
+
+Posible indicio de que, para este array, el crossing de 50% recall está
+gobernado por la COHERENCIA (semblanza + concordancia de estimadores,
+aguas abajo) y no por Tier0/STA-LTA (aguas arriba) — un cambio de
+umbral de disparo de 4.0 a 8.0 (2×) no movió el punto donde el pipeline
+completo cruza 50% de detección. Si esto se sostiene con N mayor (más
+arrays, más pasos de umbral), tendría una implicación práctica directa
+para F1.5/F1.6: el umbral Tier0 de un array nuevo importaría menos de
+lo esperado para su SNR50 medido, siempre que no esté tan mal calibrado
+que empiece a suprimir triggers reales antes de que lleguen a
+coherencia. No se diseña ningún experimento para esto ahora — queda
+registrado para cuando F1.6 tenga más arrays y pueda mirarlo con
+evidencia, no una anécdota de N=1.
+
 ## 2026-07-24 — Shutdown ordenado del pipeline (SIGTERM/SQLite)
 
 **`add_signal_handler` es Unix-only, y `kill -SIGINT` desde git-bash en

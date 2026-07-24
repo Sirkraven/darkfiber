@@ -8,6 +8,44 @@ something to hide.
 
 ### Added
 
+- **`snr_curve.py` gains `.npz` support and manual noise-exclusion windows
+  (F1.1, SNR50 extension to more installations)**: `gather_noise_sources`
+  now loads through `replay.load_file` (same loader `stream_runner.py`/
+  `pipeline_daemon.py` already use) instead of a QuakeFlow-only `.h5`
+  path, so formats without embedded ground truth (`.npz`) work too — new
+  `--fs`/`--dx` CLI flags, `SystemExit` if missing (never assumed, per
+  project convention). New `--exclude-s START END` generalizes the
+  existing event-time-index noise split to files without embedded
+  ground truth: same before/after-window logic, applied manually. Output
+  JSON gained a `noise_exclusion` block recording, per noise source, its
+  `exclusion_kind` (`"event_time_index"` / `"manual (--exclude-s)"` /
+  `"none"`) and exact `segment_s` — traceable after the fact, not just
+  visible in the console at run time. 4 new tests
+  (`tests/test_snr_curve.py`): `.npz` loader shape/dtype/explicit fs-dx,
+  and two independent checks that an excluded window never leaks into
+  the returned noise pool. No changes to Tier0/coherence/supervisor
+  (Bloque A, frozen).
+- **Stanford (`stanford1_campus`) SNR50 measured: 7.73**, closing F1.1 of
+  the SNR50-extension plan. Run against the existing
+  `eastfoothills_real.npz` (626 ch, fs=100Hz, dx=8.16m) with
+  `--exclude-s 395 455` (covers the USGS origin at t=401s, the A10 dense
+  core `[410.3,423.8]`s, and the tail of the originally-fused block),
+  threshold left at the global default (4.0 — this array never had an
+  A7/A8 calibration applied). 140/140 valid trials, monotone non-decreasing
+  recall within Wilson 95% CI. Updates the cross-array spread from 3.7×
+  (3 arrays) to 4.83× (4 arrays):
+  `monterey_bay (1.6) < ridgecrest_north (2.5) < arcata (5.9) < stanford1_campus (7.73)`.
+  Full technical note, protocol details, and per-array threshold
+  provenance: `docs/snr50_extension_fase1.md`.
+- **F1.2 read-only census of public DAS datasets** (no downloads — metadata
+  and documentation only): 7 new candidate installations found across
+  PubDAS, Figshare, and OEDI, ranked by access method and installation-
+  environment diversity for a future F1.3 pre-registration (not started —
+  gated behind explicit approval). Two datasets initially suspected of
+  being new leads were verified, with direct evidence, to be arrays
+  already in the project under a different name (GorDAS = `arcata`;
+  SCEDC AWS Open Data DAS-Ridgecrest = `ridgecrest_north`, exact channel-
+  count match). Full table: `docs/snr50_extension_fase1.md`.
 - **Ordered shutdown for the pipeline daemon and container survivability
   (C3 operational hardening)**, prompted by both pipeline and dashboard
   containers dying simultaneously with exit code 137 (external SIGKILL —
