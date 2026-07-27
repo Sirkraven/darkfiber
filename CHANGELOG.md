@@ -8,6 +8,28 @@ something to hide.
 
 ### Added
 
+- **F1.3 pre-registration correction: FOSSA's lazy-loading design does
+  not change the SNR calibration mechanism** — the prior commit's "one
+  whole file per trial" phrasing was ambiguous enough to read as a
+  measurement-unit change, which it was never meant to be and would not
+  have been comparable to the 4 already-measured arrays. Clarified with
+  code citations that the mechanism is unchanged: `run_step` already
+  picks one random source per trial (`snr_curve.py:194`, unmodified
+  code) and `inject_and_verify_sized` already slices a local window
+  from within it, calibrating SNR against that window's own RMS
+  (`selftest.py:126-131`, also unmodified) — identical to every other
+  array. The only actual change for FOSSA is deferring *when* a file
+  gets loaded into RAM (lazy, one at a time) versus all 19 up front
+  (13.3GB simultaneous, infeasible) — not what the pipeline does with
+  the data once loaded. Verified the noise floor against the *exact*
+  formula in `inject_and_verify_sized`/`pipeline_margin_s` (not the
+  fitted approximation): because the floor depends on the trial's
+  randomly-sampled `v_app`, it ranges from 48.25s (fastest `v_app`) to
+  56.32s (slowest) — leaving 3.68s to 11.75s of margin in a 60-second
+  file. The floor always fits (no trial is ever discarded for a too-
+  short window), but it is not generous at the slow-`v_app` end, and
+  that's reported as a number to decide on, not silently resolved.
+
 - **F1.3 pre-registration fully instantiated with real, untranslated
   Globus captures for all 4 arrays** (FOSSA, Valencia, Stanford-2,
   FORESEE) — literal first filenames, real per-file sizes, and a final

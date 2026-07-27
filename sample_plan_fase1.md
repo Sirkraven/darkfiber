@@ -50,43 +50,69 @@ SNR=1 sin cuantización (§1e del borrador anterior, sin cambios).
 Piso de ruido: 56.3s (aperture=23,300m). Margen ~20× con K=19
 (1,140s nominal — o más ancho si hay huecos reales, ver abajo).
 
-### 1c. Esquema de lectura — REVISADO por la evidencia de huecos
+### 1c. Esquema de lectura — corregido: el mecanismo NO cambia, solo la carga en RAM
 
-**La posible existencia de huecos entre archivos (§1) cambia la
-recomendación de la revisión anterior.** Antes proponía leer ventanas
-que podían cruzar el borde entre 2 archivos consecutivos, tratándolos
-como un stream virtual continuo — eso asume contigüidad estricta, que
-la evidencia ahora pone en duda. Cruzar un borde real (con hueco) crearía
-un salto discontinuo dentro de la ventana de un trial — un artefacto
-que podría confundir al STA/LTA o corromper la coherencia, no por SNR
-insuficiente sino por una construcción inválida de la ventana.
+**Corrección de la revisión anterior.** El texto previo ("un archivo
+completo por trial") describía mal lo que realmente proponía y sonaba
+a un cambio de mecanismo de medición — no lo era, pero la redacción no
+lo dejaba claro. **El mecanismo es idéntico al de los 4 arrays ya
+medidos, sin excepción**: dos etapas, tal como pediste.
 
-**Recomendación revisada, más simple**: **un archivo completo por
-trial, elegido al azar entre los K=19, cargado bajo demanda (lazy)**.
-Cada trial sortea CUÁL de los 19 archivos usar, carga SOLO ESE archivo
-(~0.7GB, se libera después), y saca su ventana local de adentro (mismo
-margen de jitter de un solo archivo, ~3.7s, que ya tenía cada archivo
-individualmente). La variedad de muestreo entre los 140 trials viene de
-CUÁL archivo se sortea (19 opciones, ~7.4 trials/archivo en promedio),
-no de cruzar bordes. Esto:
-- Evita por completo la complejidad de lectura parcial cruzando bordes
-  de `npTDMS` (ya no hace falta verificar su rendimiento para eso).
-- Mantiene la RAM acotada a 1 archivo (~0.7GB) por trial, igual que la
-  propuesta anterior, pero con una implementación más simple: una
-  variante "lazy" de `gather_noise_sources` que guarda RUTAS de archivo
-  en la lista de fuentes en vez de arrays ya cargados, y difiere el
-  `load_file` real al momento de `inject_and_verify_sized`, descartando
-  el array después. La versión actual de `gather_noise_sources` carga
-  TODO en RAM de una — con K=19 eso sí sería el problema original
-  (13.3GB simultáneos), confirmando que hace falta este cambio, no es
-  opcional.
-- No depende de ninguna verificación de contigüidad estricta entre
-  archivos — directamente no la necesita, cada trial usa un solo
-  archivo.
+1. **Selección de archivo**: `run_step` ya sortea, para cada trial, UNA
+   fuente al azar de la lista (`sources[picker.integers(0, len(sources))]`
+   — `snr_curve.py:194`, código existente, sin cambios). Para FOSSA, la
+   lista tiene 19 fuentes en vez de las 12-15 de los otros arrays — mismo
+   mecanismo, más opciones.
+2. **Ventana local dentro de ese archivo**: `inject_and_verify_sized`
+   (`selftest.py:126-131`, también sin cambios) recorta una ventana
+   ALEATORIA de `min_len_n` muestras DENTRO de la fuente elegida, y
+   `snr_to_amplitude` calibra el SNR contra el RMS de ESA ventana local
+   — el mismo mecanismo §0b, sin excepción para FOSSA.
 
-Esto reemplaza la Opción B/B-lite de la revisión anterior — es más
-simple que ambas y no tiene el riesgo de rendimiento de `npTDMS` que
-tenían. Confirmá si estás de acuerdo con este cambio de diseño.
+**Lo único que cambia para FOSSA es CÓMO llegan los datos a la lista de
+`sources`, no qué hace el pipeline con ellos.** `gather_noise_sources`
+hoy carga TODOS los archivos de la lista en RAM de una vez — con K=19
+de FOSSA (~0.7GB c/u) eso son 13.3GB simultáneos, inviable. La solución
+es una variante "lazy" de `gather_noise_sources` que guarda las RUTAS
+de los 19 archivos en la lista de fuentes en vez de arrays ya cargados,
+y difiere el `load_file` real al momento en que `inject_and_verify_sized`
+necesita esa fuente para un trial — cargando SOLO el archivo elegido en
+el paso 1, liberándolo después. Nunca cruza el borde entre archivos (la
+ventana del paso 2 vive enteramente dentro del archivo del paso 1) — por
+eso los huecos de grabación (§1, evidencia de 79 min para 19 archivos)
+no importan: no hace falta asumir contigüidad para nada, ni verificarla.
+
+**Verificación del piso contra el archivo de 60s — con la fórmula
+exacta de `inject_and_verify_sized`, no la aproximación**: el piso
+depende de `v_app` (sorteado por trial en `V_APP_RANGE_MPS=(2000,6500)`
+m/s) porque el término de moveout es `aperture_m / v_app`. Con
+aperture=23,300m, `seismic_v_min_mps=1500`, `warmup_s=8.8s`
+(`lta_s=8.0+gap_s=0.4+sta_s=0.4`), wavelet Ricker `dur_s=0.8s` (default
+de `synth.ricker` — el `6.0` del código es la frecuencia central, no la
+duración; aclarado para no repetir el error de lectura):
+
+| `v_app` sorteado | piso exacto | margen en archivo de 60s |
+|---|---|---|
+| 2000 m/s (el más lento, peor caso) | **56.317s** | **3.683s** |
+| 3200 m/s | 51.948s | 8.052s |
+| 4500 m/s | 49.844s | 10.156s |
+| 6500 m/s (el más rápido) | 48.251s | 11.749s |
+
+**Respuesta directa a tu pregunta — NO, no cabe holgado en el peor
+caso.** El piso SIEMPRE cabe (60s > 56.317s en el peor caso, ningún
+trial se descarta por ventana insuficiente — `n_t > min_len_n` se
+cumple con margen positivo en todos los casos), pero el margen de
+sorteo dentro de un mismo archivo va de 3.68s (v_app lento) a 11.75s
+(v_app rápido), no es generoso en el extremo lento. La variedad real
+entre los 140 trials viene predominantemente de CUÁL de los 19 archivos
+se sortea (mecanismo existente, sin cambios), no de dónde cae la
+ventana dentro de un archivo dado — eso es cierto para FOSSA en mayor
+medida que para arrays con pools de archivos más largos (ej. el
+`.npz` de Stanford-1 en F1.1 tenía 900s en un solo archivo, margen de
+~840s). No lo resuelvo acá — es tu decisión si 3.68s de margen en el
+peor caso es aceptable tal cual, o si preferís otra cosa (ej. bajar K
+para gastar menos y compensar con algo distinto, o aceptarlo con esta
+cifra documentada). Confirmá antes de que esto se implemente en F1.4.
 
 ## 2. Valencia
 
@@ -249,6 +275,15 @@ bajo el umbral (empate: el que empieza más temprano). K_min proporcional
 a ~10× el piso propio de cada array. Rama terminal: pool completo +
 flag de deriva explícito, nunca en silencio. (Detalle completo y
 justificación: commit anterior.)
+
+**Confirmado explícitamente para FOSSA, dado el hallazgo de huecos de
+§1**: el chequeo opera sobre la serie de RMS por archivo del pool (19
+valores, uno por archivo), **sin asumir contigüidad temporal entre
+ellos en ningún punto** — ni para calcular la serie (cada RMS es del
+archivo completo, no de un tramo cruzando bordes) ni para el algoritmo
+de subconjunto contiguo (que opera sobre el ÍNDICE de los archivos en
+la lista ordenada cronológicamente, no sobre su separación real en
+tiempo). Los huecos de grabación no rompen nada de este chequeo.
 
 ## 8. Loaders necesarios — resumen para F1.4
 

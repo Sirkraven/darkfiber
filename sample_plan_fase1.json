@@ -19,7 +19,8 @@
     "action_threshold": "max/min RMS por archivo > 3.0x",
     "algorithm": "subconjunto contiguo mas largo bajo el umbral; empate -> mas temprano cronologicamente",
     "k_min_basis": "~10x el piso de ruido propio de cada array, redondeado a archivos enteros",
-    "terminal_branch": "pool completo + flag de deriva explicito, nunca silencioso"
+    "terminal_branch": "pool completo + flag de deriva explicito, nunca silencioso",
+    "no_contiguity_assumed_confirmed_for_FOSSA": "opera sobre la serie de RMS por archivo (19 valores, uno por archivo completo, no por tramo cruzando bordes) y sobre el INDICE de archivos en la lista ordenada cronologicamente (no sobre su separacion real en tiempo) -- los huecos de grabacion no rompen nada de este chequeo"
   },
   "arrays": {
     "FOSSA": {
@@ -51,12 +52,21 @@
       "loader": {
         "type": "TDMS nuevo (npTDMS)",
         "status": "diseñado, no implementado -- F1.4",
-        "reading_scheme_REVISED": {
-          "reason": "evidencia de huecos (gap_evidence) invalida el supuesto de contigueidad estricta que requeria la Opcion B/B-lite de la revision anterior (lectura parcial cruzando bordes de archivo)",
-          "new_design": "lazy single-file-per-trial: cada trial sortea 1 de los K=19 archivos, carga SOLO ese archivo completo bajo demanda (~0.7GB), saca su ventana local de adentro (jitter ~3.7s como cualquier archivo individual), descarta el array despues",
-          "why_simpler": "evita toda la complejidad de lectura parcial/cruce de bordes de npTDMS (ya no hace falta verificar su rendimiento para eso); variedad de muestreo viene de CUAL archivo se sortea (19 opciones, ~7.4 trials/archivo en promedio), no de cruzar bordes",
-          "implementation_note": "requiere una variante 'lazy' de gather_noise_sources que guarda rutas de archivo en la lista de fuentes en vez de arrays ya cargados, difiere el load_file real a inject_and_verify_sized -- la version actual carga TODO en RAM de una (K*0.7GB=13.3GB simultaneos con K=19, confirmado inviable, no opcional el cambio)",
-          "replaces": "Opcion B (lectura parcial cross-file) y B-lite (chunked rotation) de la revision anterior"
+        "reading_scheme_CORRECTED": {
+          "correction_note": "la revision anterior decia 'archivo completo por trial', redaccion ambigua que sonaba a cambio de mecanismo -- NO lo era, pero quedo mal explicado. El mecanismo NO cambia respecto a los 4 arrays ya medidos.",
+          "mechanism_unchanged": "dos etapas identicas a ridgecrest/arcata/monterey/stanford: (1) run_step sortea 1 fuente al azar de la lista (snr_curve.py:194, codigo existente, sin cambios) -- para FOSSA la lista tiene 19 fuentes en vez de 12-15; (2) inject_and_verify_sized (selftest.py:126-131, sin cambios) recorta una ventana local aleatoria DENTRO de esa fuente, snr_to_amplitude calibra contra el RMS de esa ventana local -- mismo mecanismo #0b, sin excepcion para FOSSA",
+          "only_actual_change": "COMO llegan los datos a la lista de sources, no que hace el pipeline con ellos -- gather_noise_sources hoy carga TODOS los archivos en RAM de una (K=19*0.7GB=13.3GB simultaneos, inviable). Variante 'lazy': la lista de sources guarda RUTAS en vez de arrays cargados, el load_file real se difiere al momento en que inject_and_verify_sized necesita esa fuente, cargando SOLO el archivo elegido en la etapa 1 y liberandolo despues",
+          "never_crosses_file_boundary": "la ventana de la etapa 2 vive enteramente dentro del archivo de la etapa 1 -- por eso los huecos de grabacion (ver gap_evidence) no importan, no hace falta asumir ni verificar contigueidad para nada",
+          "exact_floor_verification": {
+            "method": "formula exacta de inject_and_verify_sized/pipeline_margin_s (no la aproximacion 13.6+0.001833*aperture_m), con aperture_m=23300, seismic_v_min_mps=1500, warmup_s=8.8 (lta_s 8.0 + gap_s 0.4 + sta_s 0.4), wavelet Ricker dur_s=0.8 (default de synth.ricker -- el '6.0' del codigo es la frecuencia central, no la duracion)",
+          "table_v_app_vs_margin_in_60s_file": [
+            {"v_app_mps": 2000, "min_len_s_exact": 56.317, "margin_s": 3.683, "note": "peor caso -- v_app mas lento sorteable"},
+            {"v_app_mps": 3200, "min_len_s_exact": 51.948, "margin_s": 8.052},
+            {"v_app_mps": 4500, "min_len_s_exact": 49.844, "margin_s": 10.156},
+            {"v_app_mps": 6500, "min_len_s_exact": 48.251, "margin_s": 11.749, "note": "mejor caso -- v_app mas rapido sorteable"}
+          ],
+            "conclusion": "el piso SIEMPRE cabe (60s > 56.317s incluso en el peor caso -- ningun trial se descarta por ventana insuficiente), pero NO es holgado en el extremo lento: margen 3.68s-11.75s segun que v_app se sortee para ese trial. Variedad entre los 140 trials viene predominantemente de CUAL de los 19 archivos se sortea, no de donde cae la ventana dentro de un archivo dado -- mas limitado que arrays con pools de un solo archivo largo (ej. Stanford-1 en F1.1, 900s en un archivo, margen ~840s). Decision pendiente del usuario: aceptar esta cifra tal cual, o ajustar algo (ej. K) -- no resuelto unilateralmente."
+          }
         }
       }
     },
