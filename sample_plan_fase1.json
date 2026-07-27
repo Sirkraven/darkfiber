@@ -6,6 +6,55 @@
     "consequence": "nombres de display de esa captura (FOSA, LaFargeConco, DAS-Mes-02.2023, PREVER, Licencia.txt) no se tratan como confiables -- solo los paths literales (Camino) y nombres tecnicos dentro de ellos",
     "PREVER_resolution": "PREVER = FORESEE, identidad confirmada por mecanismo de traduccion ('foresee' -> 'prever'), specs de archivo aun pendientes de captura sin traduccion"
   },
+  "calibration_mechanism": {
+    "result": "LOCAL",
+    "trace": [
+      "snr_curve.run_trial -> selftest.inject_and_verify_sized(source['noise'], ...) -- recibe el pool completo",
+      "selftest.py:126-128 -- rng.integers elige un offset, window = noise[:, start:start+min_len_n] -- ventana LOCAL, todavia sin calibrar",
+      "selftest.py:129-131 -- esa window (no el pool) se pasa como live_buffer a inject_and_verify",
+      "selftest.py:39,44 -- data = live_buffer.copy() (== window); amp = snr_to_amplitude(snr, data, wav)",
+      "synth.py:237,258 -- snr_to_amplitude usa noise_rms(noise_window) sobre 'data', que ES la ventana local del trial, no un RMS pooled/global"
+    ],
+    "consequence": "la deriva de RMS entre archivos NO corrompe la calibracion por trial (cada uno es exactamente SNR=X respecto a su propia ventana, por construccion). El chequeo de estacionariedad mide homogeneidad de regimen, no validez de medicion. Claim final: 'SNR50 medido contra la ventana de ruido X del sitio', igual que los 4 arrays ya medidos."
+  },
+  "stationarity_criterion": {
+    "applies_to": ["FOSSA", "Valencia", "Stanford_2", "FORESEE"],
+    "metric": "serie temporal de noise_rms() por archivo/fuente (ya en banda de analisis via gather_noise_sources) + spread por cuartiles de canal (descriptivo, no gatilla accion)",
+    "empirical_characterization_4_arrays_already_measured": {
+      "method": "gather_noise_sources + synth.noise_rms sobre los mismos archivos reales ya usados en cada medicion -- solo lectura, cero cambios de codigo, cero re-corridas, Bloque A intacto",
+      "ridgecrest_north": {"n_sources": 40, "cv": 1.913, "max_over_min": 39.9},
+      "arcata": {"n_sources": 15, "cv": 0.654, "max_over_min": 10.1},
+      "monterey_bay": {"n_sources": 15, "cv": 1.982, "max_over_min": 60.5},
+      "caveat": "estos valores miden variabilidad ENTRE SESIONES separadas por meses/anos (ej. arcata: 15 archivos entre 2022-12-26 y 2024-12-21), no variabilidad DENTRO de una sesion continua de minutos como el caso de FOSSA -- no es un ancla numerica directa, pero confirma que alta variabilidad no es descalificante bajo el mecanismo LOCAL (las 3 curvas ya publicadas y aceptadas se midieron sobre pools con CV 65%-198%)"
+    },
+    "action_threshold": {
+      "value": "max/min RMS por archivo > 3.0x dentro del pool",
+      "justification": [
+        "mecanismo LOCAL (ver calibration_mechanism) implica bajo riesgo de la accion (subsetting no destructivo, nunca 'medir sobre datos corruptos') -- justifica un umbral sensible",
+        "3.0x es deliberadamente MENOR que el piso mas bajo observado entre-sesiones en los 3 arrays ya aceptados (10.1x en arcata) -- un salto de regimen dentro de una sola sesion continua de ~20min que igualara siquiera el caso entre-sesiones mas suave ya tolerado seria razonablemente sorprendente",
+        "no hay derivacion estadistica de primeros principios mas fina disponible sin caracterizar el tiempo de correlacion del ruido real de FOSSA -- reconocido explicitamente, no se aparenta mas precision de la que hay"
+      ]
+    },
+    "algorithm_if_triggered": "subconjunto contiguo mas largo del pool cuyo propio max/min interno sea <=3.0x; empate en longitud -> el que empieza mas temprano cronologicamente (anti-cherry-picking, nunca el de menor CV)",
+    "k_min_fossa": 10,
+    "k_min_fossa_duration_s": 600,
+    "terminal_branch": "si ni el subconjunto contiguo mas largo llega a K_min, se mide sobre el pool COMPLETO con flag de deriva explicito en el JSON de salida y en la nota tecnica -- nunca en silencio, nunca 'inmedible'"
+  },
+  "int16_verification": {
+    "path_a_pipeline_correctness": {
+      "established_contract": "replay.load_file docstring (replay.py:39-40): 'Devuelve (data[canales,muestras] float32, fs, dx, attrs)' -- ya cumplido para .npz (replay.py:63: np.asarray(z[key], dtype=np.float32)) sin importar dtype de origen",
+      "requirement_for_tdms_loader": "debe seguir el mismo contrato: upcast a float32 INMEDIATAMENTE al cargar, antes de que gather_noise_sources/inject_and_verify_sized toquen el array",
+      "risk_if_broken": "add_plane_wave (synth.py:71) hace data[i,s:s+w] += a*wavelet in-place -- si data siguiera siendo int16, NumPy trunca el resultado a entero; a SNR=1 (escalon mas fragil) la senal completa podria redondearse a cero silenciosamente",
+      "tests_designed_not_implemented": [
+        "test_tdms_loader_upcasts_to_float32 -- analogo a test_npz_loader_shape_dtype_fs_dx",
+        "test_low_snr_injection_survives_int16_source_quantization -- fixture sintetica int16 (_write_tdms), inyeccion a SNR=1, verifica data_despues-data_antes no-nulo y con la forma/escala esperada del wavelet, no truncado a cero ni a pasos enteros -- puede escribirse y correrse hoy con datos sinteticos, queda para F1.4 junto con el loader mismo"
+      ]
+    },
+    "path_b_recording_headroom": {
+      "description": "fraccion de muestras reales con abs(valor) > 0.95*32767 en los K=19 archivos descargados -- propiedad del sitio/instrumento (si el interrogador ya clipeaba transientes fuertes), distinta del path (a)",
+      "when": "post-descarga, parte de la secuencia pre-registrada (paso 4 de 6), no calculable sin los archivos reales"
+    }
+  },
   "common_params": {
     "snr_steps": [1.0, 2.0, 3.0, 5.0, 8.0, 12.0, 20.0],
     "n_per_step": 20,
@@ -44,6 +93,19 @@
       "min_len_s": 56.3,
       "min_len_s_superseded_value": 57.6,
       "min_len_s_supersede_note": "57.6s aparecio en un mensaje anterior (censo v1, pre-F1.2b) usando un conteo de canales redondeado (~12000) -- superseded, no vigente. 56.3s (aperture=23300m de Tabla 1) es el valor correcto.",
+      "n_channels_status": "HIPOTESIS por aritmetica inversa, no confirmada contra manifiesto real -- ver chanmap_file",
+      "chanmap_file": {
+        "path": "/FOSSA/DASchanmap_westsac_2017.csv",
+        "size_kb": 268,
+        "purpose": "fuente real de conteo de canales y spacing -- el 11648 actual se recalcula si el chanmap da un numero distinto (ej. canales buenos vs totales, como paso con SCEDC/Ridgecrest: 1250 totales/1150 buenos)",
+        "added_to_transfer_list": true
+      },
+      "comcat_screening": {
+        "window_utc": "2017-09-06 ~15:54-16:14",
+        "checked": true,
+        "method": "USGS ComCat fdsnws-event API, dia completo 2017-09-06, radio 300km de Sacramento/Woodland CA, M>=2.0 (mas conservador que el M>=3 pre-registrado)",
+        "result": "LIMPIO -- 5 eventos ese dia en todo el radio (M2.07-M2.6), el mas cercano en tiempo a 15:54-16:14 UTC esta a mas de 3 horas (11:48 UTC y 18:27 UTC). Ningun evento cae dentro ni cerca de la ventana -- se usa completa como ruido, sin --exclude-s"
+      },
       "budget_options": {
         "K10": {"files": 10, "duration_s": 600, "margin_x": 10.66, "size_gb": 6.99},
         "K15": {"files": 15, "duration_s": 900, "margin_x": 15.98, "size_gb": 10.48},
@@ -122,11 +184,20 @@
     }
   },
   "transfer_list": [
-    {"n": 1, "path": "/FOSSA/Data/westSac_<PRIMEROS 19 TIMESTAMPS CONSECUTIVOS>.tdms", "count": 19, "size_gb_total": 13.28, "status": "patron confirmado, timestamps exactos pendientes"},
-    {"n": 2, "path": "/Valencia/Data/<PRIMER SR_Valencia_*_UTC DISPONIBLE>/..._10mins.h5", "count": 3, "consecutive": true, "size_gb_total": 5.34, "status": "patron confirmado, timestamps exactos pendientes"},
-    {"n": 3, "path": "/Stanford-2/... (patron a confirmar)", "size_gb": 0.25, "status": "pendiente de captura sin traduccion"},
-    {"n": 4, "path": "/FORESEE/... (ruta real a confirmar)", "status": "identidad confirmada, patron pendiente de captura sin traduccion"},
-    {"n": 5, "path": "archivo(s) de licencia/citacion -- nombre real a reconfirmar", "status": "pendiente, ver ui_translation_warning"}
+    {"n": 1, "path": "/FOSSA/Data/westSac_<PRIMEROS 19 TIMESTAMPS, 2017-09-06 ~15:54-16:14 UTC>.tdms", "count": 19, "size_gb_total": 13.28, "status": "patron y ventana confirmados (ComCat limpio), timestamps exactos pendientes"},
+    {"n": 2, "path": "/FOSSA/DASchanmap_westsac_2017.csv", "size_kb": 268, "status": "nuevo en esta revision, listo"},
+    {"n": 3, "path": "/Valencia/Data/<PRIMER SR_Valencia_*_UTC DISPONIBLE>/..._10mins.h5", "count": 3, "consecutive": true, "size_gb_total": 5.34, "status": "patron confirmado, timestamps exactos pendientes"},
+    {"n": 4, "path": "/Stanford-2/... (patron a confirmar)", "size_gb": 0.25, "status": "pendiente de captura sin traduccion"},
+    {"n": 5, "path": "/FORESEE/... (ruta real a confirmar)", "status": "identidad confirmada, patron pendiente de captura sin traduccion"},
+    {"n": 6, "path": "archivo(s) de licencia/citacion -- nombre real a reconfirmar", "status": "pendiente, ver ui_translation_warning"}
+  ],
+  "fossa_sequence_preregistered": [
+    "1. Descargar K=19 westSac_*.tdms (~13.28GB) + DASchanmap_westsac_2017.csv (268KB)",
+    "2. Confirmar canal-count/spacing reales contra el chanmap, recalcular piso si difiere de 11648",
+    "3. Chequeo de estacionariedad (ver stationarity_criterion)",
+    "4. Headroom de grabacion int16 (ver int16_verification.path_b_recording_headroom)",
+    "5. Piloto: 1 escalon SNR=8, n=20 trials, esquema de lectura Opcion B, medir runtime_s real",
+    "6. Decision post-piloto: completar 140 o decimar espacialmente (documentado si se aplica)"
   ],
   "budget_summary": {
     "FOSSA_gb": 13.28,

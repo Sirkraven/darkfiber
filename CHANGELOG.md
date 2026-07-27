@@ -8,6 +8,51 @@ something to hide.
 
 ### Added
 
+- **F1.3 pre-registration: verified the SNR calibration mechanism is
+  LOCAL per trial** (traced with exact code citations:
+  `selftest.py:126-131` slices a random local window from the noise
+  pool *before* any calibration happens; `synth.py:237,258`'s
+  `snr_to_amplitude` computes `noise_rms()` over that same local window,
+  never a pooled/global statistic) — meaning noise drift across a file
+  pool cannot corrupt any individual trial's SNR (each is exactly
+  SNR=X against its own window, by construction). This resolved what the
+  FOSSA stationarity check is actually for: regime-homogeneity of the
+  resulting curve, not measurement validity — the same scoping already
+  implicit in the 4 already-measured arrays' claims.
+  Ran a **read-only characterization of RMS drift on the 4 already-
+  measured arrays' real noise pools** (no re-runs, no code changes,
+  Bloque A untouched) to ground FOSSA's stationarity threshold instead
+  of picking one arbitrarily: found CV of 65%-198% (max/min ratio up to
+  60×) across the 3 arrays checked — driven by cross-*session* gaps
+  spanning months to years, not something directly comparable to
+  FOSSA's within-one-20-minute-session case, but concrete evidence that
+  high pooled-noise variability alone doesn't invalidate an already-
+  published SNR50 under the LOCAL mechanism. Proposed action threshold:
+  max/min per-file RMS > 3.0× within FOSSA's own pool — deliberately
+  well below the smallest cross-session spread already tolerated
+  (10.1×), with the longest-contiguous-subset algorithm and a K_min=10
+  floor / explicit-drift-flag terminal branch (never silent, never
+  "unmeasurable") specified precisely.
+  **FOSSA's `n_channels=11,648` downgraded from confirmed to hypothesis**
+  pending the real channel manifest (`DASchanmap_westsac_2017.csv`,
+  268KB, added to the transfer list) — same caution SCEDC's Ridgecrest
+  already taught this project (1,250 total vs. 1,150 "good" channels).
+  Specified two distinct int16 checks for the not-yet-written TDMS
+  loader: (a) a pipeline-correctness requirement, grounded in
+  `replay.load_file`'s own documented contract (`replay.py:39-40`,
+  already honored for `.npz` at line 63) that any loader must upcast to
+  float32 immediately — traced exactly how skipping this would silently
+  truncate a low-SNR injection to zero via `add_plane_wave`'s in-place
+  `+=` (`synth.py:71`) on an int16 buffer, and designed (not
+  implemented) the SNR=1 quantization-survival test that guards it; (b)
+  a separate, unrelated recording-headroom check (fraction of raw
+  samples near ±32767) deferred to after real download, since it's a
+  site/instrument property, not a pipeline bug. Checked USGS ComCat
+  directly for FOSSA's proposed window (2017-09-06, ~15:54-16:14 UTC,
+  300km/M≥2.0, stricter than the pre-registered M≥3) — clean, nothing
+  within 3 hours of the window, no `--exclude-s` needed. Nothing
+  downloaded or run.
+
 - **F1.3 pre-registration correction: FOSSA's real format and structure**,
   plus closing the FORESEE/"PREVER" identity question. The prior commit's
   Globus reconnaissance had passed through a translated UI (evidence:
