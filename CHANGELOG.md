@@ -8,6 +8,44 @@ something to hide.
 
 ### Added
 
+- **F1.4: new `replay.load_hdf5_generic` loader (FORESEE, Valencia) +
+  confirmed `convert_stanford_sgy.read_segy()` needs zero changes for
+  Stanford-2** — loaders and tests only, no SNR curves run, per explicit
+  instruction. Both verified directly against Ola 1's real downloaded
+  files, not just synthetic fixtures.
+  `load_hdf5_generic` is deliberately separate from `load_quakeflow_h5`:
+  the latter silently defaults `dt_s`/`dx_m` when attrs are missing,
+  which turned out not to be a hypothetical risk — the real FORESEE file
+  (`FORESEE_UTC_20190404_194804.hdf5`) carries **no attrs at all**, at
+  either the file or dataset level. The new loader requires `fs`/`dx`
+  explicitly (`SystemExit` if missing, same contract as `.npz`), never
+  reads attrs, and shares one implementation between FORESEE and
+  Valencia via an optional `key` (tries `"raw"` — FORESEE's real dataset
+  name — then falls back to the first 2D dataset found).
+  Opening the real file also corrected two things this phase's earlier
+  arithmetic had gotten wrong from an unverified dtype assumption:
+  FORESEE's real dtype is **float16** (not float32), and real per-file
+  duration is **~600s (10 min)**, not the ~300s estimated earlier — a
+  third distinct source dtype this project has now handled (float32
+  everywhere else, int16 for FOSSA, float16 for FORESEE), and a much
+  more comfortable sampling margin than assumed. 2,137 channels is now
+  confirmed directly (HDF5 shape matches `foresee_ch_loc.txt`'s exact
+  line count) rather than inferred from file-size arithmetic.
+  For Stanford-2, ran `read_segy()` directly against the real
+  `cbt_processed_20200301_065859.550+0000.sgy`: 1250 channels, 250Hz,
+  exactly 60.0s, format code 5 — matches without any code change. Raw
+  sample magnitudes (~±205,000) confirm it's still unwrapped optical
+  phase, so the phase→strain-rate derivative step is genuinely needed
+  here too, not just presumed by interrogator-family analogy. The real
+  geometry CSV also corrected the "channels 400-750" figure to the
+  actual **399-750** (352 channels) and confirmed, via real haversine
+  distance on the GPS coordinates, that the segment is genuinely near-
+  linear (path length only 4.5% longer than the straight-line distance)
+  — evidence, not just the paper's prose.
+  8 new tests (6 for `load_hdf5_generic`, 4 confirming `read_segy()`
+  against Stanford-2-real parameters via synthetic fixtures for CI) —
+  pytest 34/34 (up from 24), `darkfiber-validate` green, ruff/mypy clean.
+
 - **F1.3 pre-registration correction: FOSSA's lazy-loading design does
   not change the SNR calibration mechanism** — the prior commit's "one
   whole file per trial" phrasing was ambiguous enough to read as a

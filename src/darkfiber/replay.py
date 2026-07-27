@@ -65,6 +65,58 @@ def load_file(
     raise SystemExit(f"{path}: extensión no soportada (se espera .h5/.hdf5/.npz)")
 
 
+def load_hdf5_generic(
+    path: str, fs: float | None = None, dx: float | None = None, key: str | None = None
+) -> tuple[np.ndarray, float, float, dict]:
+    """Carga un HDF5 genérico -- NO QuakeFlow (ej. FORESEE, Valencia, PubDAS
+    en general). Devuelve (data[canales, muestras] float32, fs, dx, attrs).
+
+    A propósito NO reusa `load_quakeflow_h5`: esa función tiene defaults
+    silenciosos si faltan los attrs (`dt_s`->0.01, `dx_m`->8.0) -- correcto
+    para QuakeFlow (que sí trae esos attrs por convención), pero peligroso
+    acá, donde no hay ninguna convención de attrs garantizada. Confirmado
+    en el archivo real de FORESEE (`FORESEE_UTC_20190404_194804.hdf5`):
+    ni el archivo ni el dataset `raw` traen NINGÚN attr -- si este loader
+    intentara leer `dt_s`/`dx_m` con default, asumiría fs=100Hz/dx=8m en
+    silencio (el default de QuakeFlow) contra el fs=125Hz/dx=2m real de
+    FORESEE, un error silencioso de sitio completo. `fs`/`dx` son
+    OBLIGATORIOS acá, mismo contrato que `.npz` en `load_file` --
+    `SystemExit` si faltan, nunca asumidos.
+
+    `key`: nombre del dataset a leer. Si no se da, prueba `"raw"` primero
+    (la convención observada en el archivo real de FORESEE), después el
+    primer dataset 2D que encuentre (mismo fallback defensivo que
+    `load_quakeflow_h5`) -- sirve tanto para FORESEE como para Valencia
+    sin necesitar dos loaders separados, mientras ninguno de los dos use
+    una convención de nombre distinta a lo ya visto.
+    """
+    if fs is None or dx is None:
+        raise SystemExit(
+            "Para HDF5 genérico hacen falta --fs y --dx explícitos "
+            "(sin convención de attrs confiable, a diferencia de QuakeFlow)."
+        )
+    import h5py
+
+    with h5py.File(path, "r") as fh:
+        if key is not None:
+            if key not in fh or not isinstance(fh[key], h5py.Dataset):
+                raise SystemExit(
+                    f"{path}: no se encontró el dataset '{key}' (claves: {list(fh.keys())})"
+                )
+            ds = fh[key]
+        elif "raw" in fh and isinstance(fh["raw"], h5py.Dataset) and fh["raw"].ndim == 2:
+            ds = fh["raw"]
+        else:
+            candidates = [k for k in fh if isinstance(fh[k], h5py.Dataset) and fh[k].ndim == 2]
+            if not candidates:
+                raise SystemExit(
+                    f"{path}: no se encontró un dataset 2D (claves: {list(fh.keys())})"
+                )
+            ds = fh[candidates[0]]
+        data = np.asarray(ds[()], dtype=np.float32)
+    return data, fs, dx, {}
+
+
 def iter_chunks(
     data: np.ndarray, fs: float, chunk_s: float = DEFAULT_CHUNK_S
 ) -> Iterator[np.ndarray]:

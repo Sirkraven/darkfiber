@@ -1,7 +1,15 @@
 {
-  "status": "FINAL_INSTANTIATED_PENDING_COMMIT_APPROVAL",
-  "note": "Los 4 arrays tienen estructura real confirmada (capturas sin traduccion). Nada se descarga hasta aprobacion del commit y disparo manual en Globus (endpoint alejandro-darkfiber).",
+  "status": "F1.4_LOADERS_DONE_FORESEE_STANFORD2",
+  "note": "Ola 1 descargada (FORESEE, Stanford-2 -- 10 archivos c/u, medicion pre-registrada + reserva declarada). F1.4: loaders escritos, probados contra archivos reales, 34/34 tests verdes. NO se corrio ninguna curva SNR50 -- solo loaders y tests, por instruccion explicita. Valencia = Ola 2, pendiente de disparo.",
   "globus_endpoint": "alejandro-darkfiber",
+  "download_status": {
+    "wave_1_downloaded": true,
+    "FOSSA": "solo metadata (chanmap + licencia), sin .tdms todavia",
+    "FORESEE": "10 archivos .hdf5 (2 medicion pre-registrada + 8 reserva declarada, no entran a la corrida)",
+    "Stanford_2": "10 archivos .sgy (4 medicion pre-registrada + 6 reserva declarada, no entran a la corrida)",
+    "Valencia": "solo metadata (geometrias + licencia), sin .hdf5 todavia -- Ola 2 pendiente de disparo",
+    "reserve_files_policy": "la medicion usa EXACTAMENTE los archivos de este documento -- si el chequeo de estacionariedad rechaza alguno, se avisa antes de sustituir por uno de reserva (desviacion del pre-registro, requiere aprobacion explicita)"
+  },
   "common_params": {
     "snr_steps": [1.0, 2.0, 3.0, 5.0, 8.0, 12.0, 20.0],
     "n_per_step": 20,
@@ -105,7 +113,7 @@
       }
     },
     "Stanford_2": {
-      "status": "instanciado_final",
+      "status": "F1.4_CERRADO",
       "real_structure": "/Stanford-2-Sandhill-Road/Data/<YYYYMMDD>/",
       "first_file": "cbt_processed_20200301_065859.550+0000.sgy",
       "first_file_folder": "20200301",
@@ -114,16 +122,30 @@
       "k_files": 4,
       "declared_size_gb": 0.30,
       "format": "SEG-Y",
-      "arithmetic_verification": {
-        "n_channels": 1250,
-        "fs_hz": 250,
-        "computed_duration_s": 59.997,
-        "note": "confirma 1250 canales (array completo, no el subrango 400-750) y 250Hz via header SEG-Y real, consistente con Tabla 1/FDSN"
+      "real_file_verification": {
+        "method": "read_binary_header + read_segy corridos directo contra el archivo real descargado (Ola 1)",
+        "sample_interval_us": 4000,
+        "samples_per_trace": 15000,
+        "format_code": 5,
+        "data_shape": [1250, 15000],
+        "fs_hz": 250.0,
+        "duration_s": 60.0,
+        "sample_value_range": [-205734.7, 205190.7],
+        "value_range_note": "magnitud consistente con fase optica desenrollada, no strain-rate -- CONFIRMA (no solo presume) que la derivada por default de convert_stanford_sgy.py hace falta aca tambien"
       },
       "geometry_file": "/Stanford-2-Sandhill-Road/Stanford-2-Sandhill-Road-geometry.csv",
-      "recommended_segment_range": "canales 400-750 (a verificar contra geometry.csv real antes de correr)",
-      "aperture_m_recommended": 2856.0,
-      "min_len_s_recommended": 18.8,
+      "geometry_real_verification": {
+        "n_rows": 352,
+        "channel_range": [399, 750],
+        "channel_range_note": "352 canales contiguos confirmados, 399-750 (no 400-750 -- corrimiento de a uno respecto al numero citado del paper)",
+        "median_spacing_m": 7.87,
+        "path_length_m": 2847.07,
+        "straight_line_distance_m": 2723.92,
+        "path_to_straight_ratio": 1.045,
+        "linearity_conclusion": "CONFIRMADO con evidencia geometrica real (no solo citado del paper): el segmento es genuinamente casi lineal, solo 4.5% mas largo que la distancia recta extremo-a-extremo"
+      },
+      "aperture_m_recommended": 2847.07,
+      "min_len_s_recommended": 18.82,
       "license_file": "/Stanford-2-Sandhill-Road/ODBL_license.txt",
       "comcat": {
         "window_utc": "2020-03-01 ~06:59",
@@ -133,14 +155,16 @@
         "result": "LIMPIO -- 1 evento M2.2 (Danville CA) a las 16:09:34 UTC, >9h de distancia de la ventana"
       },
       "loader": {
-        "type": "REUSA convert_stanford_sgy.py / read_segy() sin cambios",
-        "status": "ya existe, no requiere trabajo nuevo de F1.4",
+        "type": "REUSA convert_stanford_sgy.py / read_segy() sin cambios de codigo",
+        "status": "F1.4 cerrado -- verificado contra archivo real, no requirio codigo nuevo",
         "why_reuse_works": "read_segy() (convert_stanford_sgy.py:47-67) ya es generico -- lee sample_interval_us/samples_per_trace/data_format_code del header binario SEG-Y real, nunca asume, falla si format_code != 5. Mismo nombre de archivo (cbt_processed_*) que Stanford-1, mismo interrogador ODH-3.",
-        "verification_needed_not_new_test": "confirmar en el primer archivo real si la derivada fase-optica->strain-rate que aplica convert_stanford_sgy.py por default tambien hace falta aca -- presumible (mismo tipo de interrogador) pero no asumido a ciegas"
+        "test_file": "tests/test_convert_stanford_sgy.py",
+        "test_count": 4,
+        "test_coverage": "header binario real reflejado sin asumir (parametros reales: 1250 canales, sample_interval=4000us); shape/dtype/fs exactos contra fixture sintetica; rechazo fuerte de format_code!=5; fs derivado del header (no hardcodeado, verificado con sample_interval distinto)"
       }
     },
     "FORESEE": {
-      "status": "instanciado_final",
+      "status": "F1.4_CERRADO",
       "real_structure": "/FORESEE/Data/<YYYYMM>/",
       "first_file": "FORESEE_UTC_20190404_194804.hdf5",
       "first_file_folder": "201904",
@@ -149,20 +173,35 @@
       "k_files": 2,
       "declared_size_gb": 0.64,
       "format": "HDF5",
-      "channel_count_discrepancy_RESOLVED": {
-        "prior_ambiguity": "F1.2b dejo abierta la discrepancia entre 2137 (calibrado/tap-test) y ~2450 (nominal CL/CS)",
-        "arithmetic_check": {
-          "n_ch_2137_duration_s": 300.56,
-          "n_ch_2450_duration_s": 262.16,
-          "conclusion": "2137 da ~5.009 min, coincide de forma mucho mas limpia con el patron de carpeta mensual que 2450 -- se usa 2137 como valor correcto, resuelto con evidencia del archivo real"
-        }
+      "real_file_verification": {
+        "method": "h5py abierto directo contra el archivo real descargado (Ola 1)",
+        "dataset_name": "raw",
+        "data_shape": [2137, 75000],
+        "dtype_real": "float16",
+        "dtype_note": "CORRECCION: F1.2b/F1.3 habian asumido float32 para el calculo de duracion -- el dtype real es float16, mas chico, lo que cambia la duracion implicita",
+        "attrs_file_level": {},
+        "attrs_dataset_level": {},
+        "attrs_note": "CONFIRMA que el riesgo de default silencioso de load_quakeflow_h5 era real, no hipotetico -- este archivo no trae NINGUN attr",
+        "fs_from_timestamp_diffs": 125.0016,
+        "duration_s_from_timestamp": 599.98,
+        "duration_correction": "corregido de ~300s (5 min, con el dtype float32 asumido) a ~600s (10 min, real) -- mejora mucho el margen de sorteo respecto a lo estimado (K=2 x 600s = 1200s contra un piso de ~21s, sin ninguna de las tensiones de FOSSA)"
+      },
+      "channel_count_discrepancy_RESOLVED_directly": {
+        "prior_status": "F1.2b/F1.3 lo habian resuelto por aritmetica inversa (2137 vs 2450)",
+        "now": "confirmado DIRECTAMENTE: shape del HDF5 real = (2137, 75000); foresee_ch_loc.txt real = 2137 lineas exactas -- coinciden entre si, ya no es una inferencia"
       },
       "n_channels": 2137,
-      "spacing_m": 2.0,
+      "spacing_m_nominal": 2.0,
+      "geometry_real_verification": {
+        "method": "haversine sobre las 2137 coordenadas lat/lon reales de foresee_ch_loc.txt",
+        "median_spacing_m": 2.013,
+        "path_length_m": 4303.4,
+        "min_spacing_m": 0.0,
+        "min_spacing_note": "un par de canales en posicion coincidente -- posiblemente cerca del empalme de fibra en el canal ~1340 mencionado en Zhu et al. 2021, no bloqueante"
+      },
       "fs_hz_override": 125.0,
-      "aperture_m_recalculated": 4272.0,
-      "min_len_s_recalculated": 21.4,
-      "min_len_s_previous_table1_based": 22.6,
+      "aperture_m_recalculated": 4303.4,
+      "min_len_s_recalculated": 21.49,
       "chanmap_file": "/FORESEE/foresee_ch_loc.txt",
       "chanmap_size_kb": 72.65,
       "license_file": "/FORESEE/ODBL_license.txt",
@@ -174,17 +213,29 @@
         "result": "LIMPIO -- 0 eventos en todo el dia"
       },
       "loader": {
-        "type": "comparte el HDF5 generico nuevo con Valencia (ver Valencia.loader)",
-        "status": "diseñado, no implementado -- F1.4",
-        "override_values": {"fs": 125, "dx": 2.0}
+        "type": "comparte replay.load_hdf5_generic con Valencia",
+        "status": "F1.4 cerrado -- implementado y verificado contra archivo real",
+        "override_values": {"fs": 125.0, "dx": 2.0},
+        "real_file_check": "load_hdf5_generic(path, fs=125.0, dx=2.0) da shape=(2137,75000), dtype=float32 (upcast confirmado desde float16 real), attrs={}. SystemExit sin fs/dx confirmado contra el archivo real tambien."
       }
     }
   },
-  "shared_hdf5_loader_test": {
-    "name": "test para el loader HDF5 generico (Valencia + FORESEE)",
-    "analog_to": "test_npz_loader_shape_dtype_fs_dx + test_npz_requires_explicit_fs_dx",
-    "coverage": "SystemExit si fs/dx faltan (nunca asumidos), shape/dtype correctos contra fixtures sinteticas para ambos casos, parametrizado en un solo archivo de test -- no dos loaders separados",
-    "status": "no implementado en este commit -- tarea de F1.4 junto con el loader mismo"
+  "hdf5_generic_loader": {
+    "function": "replay.load_hdf5_generic(path, fs, dx, key=None)",
+    "status": "IMPLEMENTADO -- F1.4",
+    "why_not_reuse_load_quakeflow_h5": "load_quakeflow_h5 defaultea dt_s->0.01/dx_m->8.0 en silencio si faltan los attrs -- confirmado peligroso, no solo hipotetico: el archivo real de FORESEE no trae NINGUN attr",
+    "contract": "fs/dx OBLIGATORIOS (SystemExit si faltan), key opcional (default: prueba 'raw' primero, si no el primer dataset 2D), nunca lee attrs",
+    "shared_by": ["FORESEE", "Valencia (pendiente de confirmar convencion de key cuando se descargue en Ola 2)"],
+    "test_file": "tests/test_replay_hdf5_generic.py",
+    "test_count": 6,
+    "test_coverage": "SystemExit en las 3 combinaciones de fs/dx faltante; attrs presentes pero ignorados a proposito; shape/dtype/upcast via clave 'raw' default; fallback a primer dataset 2D; key explicito inexistente falla fuerte; supervivencia de inyeccion SNR=1 sobre datos float16-de-origen tras el upcast"
+  },
+  "verification_suite_f1_4": {
+    "pytest": "34 passed (up from 24 -- 6 new tests for load_hdf5_generic, 4 new tests for convert_stanford_sgy real-param confirmation)",
+    "darkfiber_validate": "100% recall gauge, green",
+    "ruff_check": "all checks passed",
+    "ruff_format": "clean",
+    "mypy": "22 source files, no issues"
   },
   "budget_summary": {
     "FOSSA_gb": 13.29,

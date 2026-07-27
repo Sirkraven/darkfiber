@@ -1,17 +1,28 @@
-# Sample plan pre-registrado — F1.3 (SNR50, extensión a más instalaciones)
+# Sample plan pre-registrado — F1.3/F1.4 (SNR50, extensión a más instalaciones)
 
-**Fecha de registro:** instanciación final con capturas reales sin
-traducción de los 4 arrays. Nada se descarga hasta que apruebes este
-commit y dispares las transferencias en Globus (endpoint
-`alejandro-darkfiber`).
+**Fecha de registro:** F1.4 (loaders) cerrado para FORESEE y Stanford-2.
+FOSSA (TDMS) y Valencia (comparte loader HDF5 con FORESEE) quedan para
+cuando se descarguen sus datos — Valencia es Ola 2, a disparar cuando
+esto se apruebe. **No se corrió ninguna curva SNR50 todavía — F1.4 es
+solo loaders + tests, por instrucción explícita.**
 
 ## 0. Estado
 
-Los 4 arrays (FOSSA, Valencia, Stanford-2, FORESEE) tienen ahora
-estructura real confirmada — nombres de archivo literales (primero de
-cada secuencia), formato, tamaño por archivo. **Estos archivos SON el
-primer segmento cronológico — no hay cherry-pick, se instancia la regla
-ya pre-registrada, no se elige a mano.**
+**Ola 1 descargada** en `D:\darkfiber\data\` (subcarpetas por array):
+FORESEE (10 archivos .hdf5 — 2 son la medición pre-registrada, 8 son
+reserva declarada, no entran a la corrida), Stanford-2 (10 archivos
+.sgy — 4 medición + 6 reserva), FOSSA (solo metadata: chanmap +
+licencia, sin `.tdms` todavía), Valencia (solo metadata: geometrías +
+licencia, sin `.hdf5` todavía). **La medición usa exactamente los
+archivos de este documento — si el chequeo de estacionariedad rechaza
+alguno, se avisa antes de sustituir por uno de reserva (desviación del
+pre-registro, requiere aprobación explícita, no se resuelve sola).**
+
+Los 4 arrays tienen estructura real confirmada — nombres de archivo
+literales (primero de cada secuencia), formato, tamaño por archivo.
+**Estos archivos SON el primer segmento cronológico — no hay
+cherry-pick, se instancia la regla ya pre-registrada, no se elige a
+mano.**
 
 ## 1. FOSSA
 
@@ -174,25 +185,42 @@ a pasar explícitamente (de Tabla 1, PubDAS, ya conocidos):
   día (M2.2, Danville CA, 16:09:34 UTC) — **más de 9 horas de distancia**
   de la ventana (06:58:59 UTC). Ventana limpia, sin `--exclude-s`.
 
-### 3a. Loader — REUSA `convert_stanford_sgy.py`/`read_segy()` tal cual, sin cambios
+### 3a. Loader — F1.4 CERRADO: REUSA `convert_stanford_sgy.py`/`read_segy()` tal cual, verificado contra el archivo real
 
-Verificación aritmética del archivo real: 75.30 MB, descontando
-overhead SEG-Y (1250 canales × 240B header + 3,600B de headers de
-archivo = 303,600 bytes), 1250 canales × 250Hz × 4 bytes (float32) da
-**59.997s ≈ 60.00s exactos** — confirma 1250 canales (el array
-completo, no el subrango 400-750, que se aplica después en análisis) y
-250Hz, consistente con todo lo ya sabido de Tabla 1/FDSN.
+**Corrido contra el archivo real** (`cbt_processed_20200301_065859.550+0000.sgy`,
+Ola 1): `read_binary_header` da `sample_interval_us=4000, samples_per_trace=15000,
+format_code=5`; `read_segy()` devuelve `data.shape=(1250, 15000)`,
+`fs=250.0`, duración exacta `60.0s` — coincide con la verificación
+aritmética previa, ahora confirmado directamente, no solo por cálculo.
+**Sin cambios de código** — `read_segy()` (`convert_stanford_sgy.py:47-67`)
+ya es genérico (lee todo del header real, nunca asume), mismo archivo,
+misma convención de nombre (`cbt_processed_*`) que Stanford-1.
 
-`read_segy()` (`convert_stanford_sgy.py:47-67`) ya es genérico — lee
-`sample_interval_us`/`samples_per_trace`/`data_format_code` del header
-binario SEG-Y real, no asume nada, falla si el format code no es 5
-(IEEE float32). **Mismo archivo, misma convención de nombre
-(`cbt_processed_*`) que Stanford-1 (ya usado en F1.1)** — no hace falta
-un loader nuevo. Único punto a confirmar en el primer archivo real (no
-un test nuevo, una verificación puntual): si la derivada
-fase-óptica→strain-rate que aplica `convert_stanford_sgy.py` por
-default también hace falta acá (mismo tipo de interrogador ODH-3,
-presumible pero no asumido a ciegas).
+Valores de la muestra real: rango aproximado -205,735 a +205,191,
+magnitud consistente con **fase óptica desenrollada, no strain-rate
+todavía** — confirma (no solo presume) que la derivada
+fase→strain-rate por default de `convert_stanford_sgy.py` también hace
+falta acá, mismo comportamiento que Stanford-1.
+
+**Geometría real** (`Stanford-2-Sandhill-Road-geometry.csv`, 352 filas):
+cubre exactamente canales **399-750** (no 400-750 — ligero corrimiento
+de a uno respecto al número citado del paper), contiguos, confirmado.
+Distancia haversine acumulada entre canales consecutivos:
+**2,847.07m** de longitud de trayecto real, spacing mediano **7.87m**
+(cerca del 8.16m nominal — diferencia esperable entre GPS real y spec).
+Razón trayecto-real/distancia-recta = **1.045** — el segmento es
+genuinamente casi lineal (4.5% más largo que la línea recta
+extremo-a-extremo), **confirmado con evidencia geométrica real, no solo
+citado del paper**. Piso de ruido recalculado con la apertura real:
+13.6+0.001833×2,847.07=**18.82s** (vs. 18.8s ya estimado — coincide).
+
+**Test nuevo** (`tests/test_convert_stanford_sgy.py`, 4 tests): header
+binario real reflejado sin asumir (parámetros de Stanford-2: 1250
+canales, sample_interval=4000µs), shape/dtype/fs exactos contra una
+fixture sintética con esos mismos parámetros, rechazo fuerte de
+`format_code != 5`, y `fs` derivado del header (no hardcodeado,
+verificado con un sample_interval distinto). **F1.4 de Stanford-2
+cerrado — no hace falta loader nuevo.**
 
 ## 4. FORESEE
 
@@ -206,41 +234,80 @@ presumible pero no asumido a ciegas).
   State College PA (40.79°N, 77.86°O), M≥2.0. **Cero eventos en todo
   el día.** Ventana limpia, sin `--exclude-s`.
 
-### 4a. Discrepancia de canales (F1.2b) — resuelta por aritmética del archivo real
+### 4a. F1.4 CERRADO — discrepancia de canales resuelta directo del archivo real, no solo por aritmética
 
-F1.2b había dejado abierta una discrepancia: 2,137 canales geolocalizados
-por tap test (texto de Zhu et al. 2021) vs. ~2,450 nominales (CL/CS de
-Tabla 1). Con el tamaño real del archivo (321.15 MB, fs=125Hz alojado,
-float32):
+Abierto el archivo real (`FORESEE_UTC_20190404_194804.hdf5`, Ola 1) con
+`h5py`: dataset `raw`, shape **`(2137, 75000)`**, dtype **`float16`**
+(no float32 como se había asumido en el cálculo de F1.2b/F1.3 —
+corregido acá). `foresee_ch_loc.txt` (geometría real): **2,137 líneas
+exactas** — coincide con el shape del HDF5, canal por canal. **2,137
+confirmado directamente, no solo por aritmética inversa.** El archivo y
+el dataset `raw` **no traen NINGÚN attr** (ni `dt_s`/`dx_m` ni ningún
+otro nombre) — confirma que el riesgo de default silencioso de
+`load_quakeflow_h5` (§2a) era real, no hipotético.
 
-| Hipótesis n_ch | Duración implícita |
-|---|---|
-| 2,137 | **300.56s ≈ 5.009 min** |
-| 2,450 | 262.16s ≈ 4.369 min |
+**Corrección de la estimación de duración**: con el dtype real
+(float16, 2 bytes) en vez del float32 asumido, la duración real por
+archivo es **~600s (10 minutos)**, no ~300s (5 minutos) como daba el
+cálculo anterior con el dtype equivocado. Confirmado por dos vías
+independientes: (a) `75000 muestras / fs` con `fs` derivado de los
+deltas reales del dataset `timestamp` (`np.diff`, mediana =
+0.0079999s → fs=125.0016Hz, prácticamente 125Hz exacto) da 599.98s;
+(b) `2137×75000×2 bytes + 75000×8 bytes (timestamp float64) ≈
+321,150,000 bytes`, coincide con el tamaño real del archivo
+(321,152,048 bytes) casi exacto. **Esto hace el margen de sorteo de
+FORESEE mucho más cómodo de lo que se había estimado** — con K=2
+archivos de ~600s cada uno (1,200s totales) contra un piso de ~21s, el
+margen es de cientos de segundos, sin ninguna de las tensiones que sí
+tiene FOSSA (§1c).
 
-2,137 da casi exactamente 5 minutos — coincide con el patrón de carpeta
-mensual (`<YYYYMM>`) de forma mucho más limpia que 2,450. **Uso 2,137
-como el valor correcto**, resolviendo la discrepancia con evidencia del
-archivo real, no dejándola abierta. Piso de ruido recalculado:
-aperture=(2,137-1)×2m=4,272m → **21.4s** (vs. 22.6s con la aperture de
-Tabla 1/CL=4,900m — diferencia menor, no cambia ninguna decisión de
-presupuesto).
+**Apertura real** (haversine sobre `foresee_ch_loc.txt`, 2,137 puntos
+lat/lon): longitud de trayecto acumulada **4,303.4m**, spacing mediano
+**2.01m** (coincide con el 2.0m ya usado). Piso de ruido recalculado
+con esta apertura real: 13.6+0.001833×4,303.4=**21.49s** (vs. 21.4s con
+la aproximación (n-1)×dx, prácticamente igual — no cambia nada).
 
-### 4a-bis. Loader — comparte el HDF5 genérico nuevo con Valencia (§2a)
+**Nota nueva, no anticipada**: `float16` es un tercer dtype de origen
+distinto a todo lo visto hasta ahora en el proyecto (float32 en la
+mayoría, int16 en FOSSA, ahora float16 en FORESEE) — mismo tipo de
+cuidado que int16: el loader debe upcastear a float32 INMEDIATAMENTE,
+nunca hacer aritmética en float16 (precisión de ~3 dígitos
+significativos, mantisa de 10 bits). A diferencia de int16, no hay
+riesgo de truncar-a-cero en la inyección (float16 tiene exponente
+flotante, no trunca fracciones a 0 como un entero) — pero SÍ hay una
+pérdida de precisión ya presente en el dato de origen (decisión de
+quien preparó el HDF5 de PubDAS, para ahorrar espacio) que ningún
+loader puede recuperar — una propiedad del dato, no un bug de pipeline
+a corregir, señalado igual que el headroom de grabación de FOSSA.
 
-Mismo problema (`load_quakeflow_h5` no aplica sin riesgo), misma
-solución: loader HDF5 genérico con fs/dx obligatorios. Para FORESEE:
-`fs=125` (alojado), `dx=2.0`. Un solo loader nuevo sirve a los dos
-arrays (Valencia y FORESEE) — no hace falta uno por array, es el mismo
-contrato genérico con distintos valores de override.
+### 4b. Loader — `load_hdf5_generic`, implementado y verificado contra el archivo real
 
-### 4b. Test único para el loader HDF5 genérico (Valencia + FORESEE)
+Nueva función `replay.load_hdf5_generic(path, fs, dx, key=None)`
+(`replay.py`), **a propósito separada de `load_quakeflow_h5`**: `fs`/`dx`
+OBLIGATORIOS (`SystemExit` si faltan, mismo contrato que `.npz`), nunca
+lee attrs (ni falta que hace — FORESEE no trae ninguno). `key`: si no
+se da, prueba `"raw"` primero (la convención real observada en
+FORESEE), después el primer dataset 2D que encuentre — **un solo
+loader sirve a Valencia y FORESEE**, no hace falta uno por array,
+mientras ninguno de los dos use una convención de nombre distinta a lo
+ya visto (a confirmar cuando Valencia se descargue en Ola 2).
 
-Análogo a `test_npz_loader_shape_dtype_fs_dx` + `test_npz_requires_explicit_fs_dx`:
-`SystemExit` si fs/dx faltan (nunca asumidos), shape/dtype correctos
-contra fixtures sintéticas para ambos casos (parametrizado, un solo
-archivo de test, no dos loaders separados). No implementado en este
-commit — tarea de F1.4, junto con el loader mismo.
+**Verificado contra el archivo real** (no solo la fixture sintética):
+`load_hdf5_generic(path, fs=125.0, dx=2.0)` da `data.shape=(2137, 75000)`,
+`data.dtype=float32` (upcast confirmado desde el float16 real),
+`attrs={}`. Sin `fs`/`dx`, `SystemExit` confirmado contra el archivo
+real también, no solo sintético.
+
+**6 tests nuevos** (`tests/test_replay_hdf5_generic.py`): `SystemExit`
+sin fs/dx (las 3 combinaciones: sin ninguno, solo fs, solo dx); attrs
+presentes pero ignorados a propósito (el loader nunca los lee, ni con
+nombres distintos a la convención QuakeFlow); shape/dtype/upcast vía
+la clave `"raw"` por default (fixture float16, igual que el real);
+fallback al primer dataset 2D si `"raw"` no existe; `key` explícito
+inexistente falla fuerte (no cae en silencio al fallback); y
+supervivencia de una inyección a SNR=1 sobre datos float16-de-origen
+sin degradarse tras el upcast (mismo tipo de chequeo que el int16 de
+FOSSA, ahora para el tercer dtype). **F1.4 de FORESEE cerrado.**
 
 ## 5. Presupuesto final
 
