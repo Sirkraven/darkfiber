@@ -9,6 +9,55 @@ podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
 (ese es trabajo declarado y concreto; esto es más crudo, todavía sin
 decidir si es trabajo).
 
+## 2026-07-27 — Deriva de RMS entre archivos, 4 arrays ya medidos: CV 65-198%, spread hasta 60×
+
+**Hallazgo, no experimento diseñado — surge de construir el criterio de
+estacionariedad para F1.3** (ver `sample_plan_fase1.md` §2). Caracterización
+de solo lectura (`gather_noise_sources` + `synth.noise_rms` sobre los
+mismos archivos reales ya usados en cada medición — cero re-corridas,
+cero cambios de código, Bloque A intacto): la serie temporal de RMS
+por archivo/fuente del pool de ruido de cada array ya medido varía
+muchísimo más de lo que hubiera asumido a priori.
+
+| Array | n fuentes | CV (std/mean) | max/min RMS |
+|---|---|---|---|
+| ridgecrest_north | 40 | 1.913 | 39.9× |
+| arcata | 15 | 0.654 | 10.1× |
+| monterey_bay | 15 | 1.982 | 60.5× |
+
+**Por qué importa para leer SNR50 correctamente**: el mecanismo de
+calibración de SNR es LOCAL por trial, no global/pooled — verificado con
+cita de código en `sample_plan_fase1.md` §0b (`selftest.py:126-131`,
+`synth.py:237,258`): cada trial calcula `noise_rms()` sobre SU PROPIA
+ventana sorteada, nunca sobre el pool completo. Esto significa que
+SNR50 es, por construcción, un **piso de estructura de ruido invariante
+a la escala absoluta del pool** — cada inyección es exactamente SNR=X
+relativo a su propio entorno inmediato, sin importar si ese entorno
+viene de un archivo "fuerte" o "débil" del pool. La consecuencia
+práctica: la serie de 4 SNR50 (1.6/2.5/5.9/7.73) sigue siendo
+comparable entre arrays PESE a que sus pools individuales tengan una
+heterogeneidad interna enorme (65%-198% de CV) — la heterogeneidad no
+contamina la medición, solo amplía el rango de condiciones que la curva
+termina promediando. Sin este mecanismo verificado, la magnitud de esta
+deriva sería motivo de alarma real; con él, es un dato esperable de
+"ruido real de sitio a lo largo de sesiones muy separadas en el
+tiempo", no un indicio de medición rota.
+
+**Nota adicional, no buscada pero relevante**: el chequeo de
+estacionariedad propuesto para los arrays nuevos de F1.3 (serie de RMS
+archivo-a-archivo, umbral 3.0×) cubre implícitamente contaminación
+telesísmica no detectada de la ventana de ruido — un arribo telesísmico
+real dentro de un archivo se manifestaría como un salto anómalo de RMS
+en la serie, exactamente lo que el chequeo ya está mirando. No es un
+chequeo separado a diseñar, es un efecto secundario gratuito del mismo
+mecanismo.
+
+No se diseña ningún experimento para esto ahora — queda registrado como
+contexto de interpretación para F1.6, donde la serie completa (7-8
+arrays) permitiría ver si el CV intra-pool correlaciona con algo (ej.
+con la dispersión del propio SNR50 entre arrays, o con el ambiente de
+instalación).
+
 ## 2026-07-24 — SNR50 de ridgecrest_north: idéntico bajo threshold 4.0 y 8.0
 
 **Observación, no experimento — a revisitar en F1.6 con N mayor.**
