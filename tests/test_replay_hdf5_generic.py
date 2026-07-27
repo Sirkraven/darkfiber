@@ -111,3 +111,54 @@ def test_low_snr_injection_survives_float16_source(hdf5_path):
     # (N_CH=6, dx=2 -> apertura=10m, piso trivial) -- alcanza con N_T.
     result = inject_and_verify_sized(data, geom, t0cfg, coh_cfg, v_app_mps=3200.0, snr=1.0, seed=0)
     assert result is not None, "la ventana debería ser suficiente para esta apertura chica"
+
+
+def test_injection_arithmetic_never_rounds_through_float16(hdf5_path):
+    """Prueba más estricta que la anterior: no solo que la detección
+    sobreviva, sino que la ARITMÉTICA de inyección (wavelet + suma con
+    ruido) nunca pasa por float16 en ningún punto intermedio -- pedido
+    explícito tras el hallazgo de float16 en FORESEE (misma preocupación
+    que el int16 de FOSSA, pero por REDONDEO en vez de truncamiento a
+    cero: float16 tiene ~3 dígitos de precisión y rango dinámico chico).
+
+    Método: si algún paso de `add_plane_wave` redondeara internamente a
+    float16, cada valor inyectado caería EXACTO en la grilla discreta de
+    float16 (round-trip float16->float32 sin cambio). Con aritmética
+    real en float32 (o superior, como usa `noise_rms`/`wavelet_rms` en
+    float64), los valores inyectados son continuos y prácticamente NUNCA
+    caen justo en esa grilla -- una coincidencia exacta en el 100% de
+    las muestras solo pasa si hubo cuantización real, no por azar."""
+    from darkfiber.synth import add_plane_wave, ricker, snr_to_amplitude
+
+    data, fs, dx, _ = load_hdf5_generic(hdf5_path, fs=FS, dx=DX)
+    assert data.dtype == np.float32, (
+        "el loader debe upcastear a float32 antes de que nada más toque el array"
+    )
+
+    before = data.copy()
+    wav = ricker(6.0, fs)  # 6.0 = frecuencia central, dur_s=0.8 default
+    # RMS de ruido/wavelet ya se calculan en float64 dentro de synth.py
+    # (noise_rms/wavelet_rms hacen .astype(np.float64) explícito) --
+    # confirmado leyendo el código, no asumido; acá solo se ejercita.
+    amp = snr_to_amplitude(1.0, data, wav)  # SNR=1, el escalón más frágil
+    add_plane_wave(data, fs, dx, v_app_mps=3200.0, t0_s=20.0, wavelet=wav, amp=amp, seed=0)
+
+    assert data.dtype == np.float32, "la inyección no debe cambiar el dtype del buffer"
+    diff = data - before
+    injected = diff[diff != 0]
+    assert injected.size > 0, (
+        "la inyección no tocó ninguna muestra -- t0_s/ventana mal elegidos para este test"
+    )
+
+    # Si la aritmética hubiera pasado por float16 en algún punto, TODOS
+    # los valores inyectados serían un punto fijo de ida-y-vuelta por
+    # float16 (por definición: ya estarían en esa grilla). Con
+    # aritmética float32 real, la fracción que coincide exacto debe ser
+    # ~0 -- no una coincidencia posible con valores continuos reales.
+    roundtrip_f16 = injected.astype(np.float16).astype(np.float32)
+    exact_match_fraction = np.mean(injected == roundtrip_f16)
+    assert exact_match_fraction < 0.05, (
+        f"{exact_match_fraction:.1%} de los valores inyectados caen exactos en la "
+        "grilla de float16 -- sugiere que la aritmética de inyección pasó por "
+        "float16 en algún punto, no se mantuvo en float32 como debería"
+    )

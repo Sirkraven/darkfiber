@@ -8,6 +8,28 @@ something to hide.
 
 ### Added
 
+- **F1.4: stricter precision test for FORESEE's float16 source data** —
+  the existing `test_low_snr_injection_survives_float16_source` only
+  checked that detection succeeded; added
+  `test_injection_arithmetic_never_rounds_through_float16`, which checks
+  the actual injected values instead. If injection arithmetic had rounded
+  through float16 anywhere, every injected sample would land exactly on
+  float16's discrete grid (a float16→float32 round-trip would be a
+  no-op); with real float32 arithmetic, continuous values essentially
+  never land there by chance. On the real data: only ~1% of 384 injected
+  samples matched their own float16-rounded version, versus the 100%
+  match that quantization would produce. Backed by a code-level check
+  too: grepped `coherence.py` and `triage.py` for `float16`/`int16` —
+  zero hits; semblanza and STA/LTA both operate in float64, everything
+  else in float32. The SNR50 series now spans three distinct source
+  dtypes (int16 for FOSSA, float16 for FORESEE, float32 for everything
+  else including the freshly-confirmed Stanford-2/Valencia SEG-Y path) —
+  `snr_to_amplitude`'s scale-invariance is necessary but not sufficient
+  for cross-array comparability; this closes the gap with evidence
+  instead of leaving it as an assumption. Logged in
+  `docs/observaciones.md`. Valencia's dtype will get the same treatment
+  once Ola 2 downloads. pytest 35/35, ruff/mypy clean.
+
 - **F1.4: new `replay.load_hdf5_generic` loader (FORESEE, Valencia) +
   confirmed `convert_stanford_sgy.read_segy()` needs zero changes for
   Stanford-2** — loaders and tests only, no SNR curves run, per explicit

@@ -9,6 +9,53 @@ podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
 (ese es trabajo declarado y concreto; esto es más crudo, todavía sin
 decidir si es trabajo).
 
+## 2026-07-27 — Heterogeneidad de dtype de origen entre arrays: int16, float16, float32 — comparabilidad de SNR50 verificada, no asumida
+
+**Hallazgo, surge de F1.4 (loaders de FORESEE/Stanford-2).** La serie de
+SNR50 ahora cruza tres dtypes de origen distintos: `int16` (FOSSA,
+truncamiento por cuantización si se opera en el tipo original — riesgo
+de la señal completa redondeándose a cero a SNR bajo), `float16`
+(FORESEE, redondeo por precisión chica — ~3 dígitos significativos,
+rango dinámico chico — riesgo distinto: no trunca a cero, pero pierde
+precisión de forma silenciosa), y `float32` (todos los demás:
+ridgecrest_north, arcata, monterey_bay, stanford1_campus, Valencia,
+Stanford-2 — estos dos últimos porque `read_segy()` decodifica IEEE
+float32 directo del header SEG-Y).
+
+**Por qué esto no rompe la comparabilidad de la serie — verificado, no
+supuesto**: `synth.snr_to_amplitude` es invariante a escala (calibra
+`amp = target_snr × RMS(ruido)/RMS(wavelet)`, ambos RMS en float64 —
+`noise_rms`/`wavelet_rms` hacen `.astype(np.float64)` explícito,
+confirmado leyendo el código). Pero esa invariancia matemática solo es
+real si la aritmética de inyección (`add_plane_wave`) y la medición
+downstream (STA/LTA en `triage.py`, semblanza en `coherence.py`) de
+verdad ocurren en float32/float64 — nunca acumulando en el dtype de
+origen. Confirmado por dos vías independientes para cada dtype de
+riesgo (int16 en FOSSA, float16 en FORESEE — ambos loaders (`replay.py`)
+upcastean a float32 INMEDIATAMENTE al cargar, antes de que cualquier
+otra función toque el array):
+
+1. **Grep del código**: cero usos de `int16`/`float16` en `coherence.py`
+   y `triage.py` — semblanza en `dtype=np.float64`, STA/LTA cumsum en
+   `dtype=np.float64`, todo lo demás float32.
+2. **Test de precisión, no solo de detección** (`tests/test_replay_hdf5_generic.py::test_injection_arithmetic_never_rounds_through_float16`):
+   inyecta a SNR=1 (el escalón más frágil) sobre datos cargados de
+   float16, y verifica que los valores inyectados NO caen en la grilla
+   discreta de float16 (round-trip float16→float32 sin cambio) — con
+   datos reales, solo ~1% de las 384 muestras inyectadas coincidieron
+   por azar con su propia versión redondeada a float16; si la aritmética
+   hubiera pasado por float16 en algún punto, el 100% coincidiría por
+   definición. Mismo tipo de chequeo (supervivencia a SNR=1) ya existía
+   para el truncamiento de int16 de FOSSA (`test_low_snr_injection_survives_int16_source`,
+   commit anterior).
+
+**Conclusión**: la comparabilidad de SNR50 entre arrays con dtype de
+origen distinto está verificada con evidencia (grep + test de
+precisión), no asumida por la invariancia matemática de la fórmula
+sola. Pendiente: confirmar el dtype real de Valencia al cargarla en
+Ola 2 — si es otro float "raro" (float16 u otro), aplicar el mismo test
+de supervivencia antes de correr su curva.
+
 ## 2026-07-27 — Deriva de RMS entre archivos, 4 arrays ya medidos: CV 65-198%, spread hasta 60×
 
 **Hallazgo, no experimento diseñado — surge de construir el criterio de
