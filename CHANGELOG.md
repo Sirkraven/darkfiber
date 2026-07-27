@@ -8,6 +8,39 @@ something to hide.
 
 ### Added
 
+- **F1.3 pre-registration fully instantiated with real, untranslated
+  Globus captures for all 4 arrays** (FOSSA, Valencia, Stanford-2,
+  FORESEE) — literal first filenames, real per-file sizes, and a final
+  ~19.57GB budget (no more rate-based provisional estimates). Traced two
+  existing loaders before writing anything new: `load_quakeflow_h5`
+  (`run_on_quakeflow.py:114-134`) silently defaults `fs`/`dx` when attrs
+  are missing instead of failing — unsafe to reuse for Valencia/FORESEE,
+  whose HDF5 attrs schema is unverified, so a new generic HDF5 loader is
+  specified with the same required-override contract already used for
+  `.npz`. `convert_stanford_sgy.py`'s `read_segy()`, by contrast, is
+  already format-driven (reads sample rate and channel count from the
+  real SEG-Y header, never assumes) and needs no changes for Stanford-2
+  — confirmed by matching its real file size against the header
+  arithmetic (1250 channels × 250Hz × 60.00s, exact). Resolved F1.2b's
+  open FORESEE channel-count discrepancy (2137 vs. ~2450) the same way:
+  2137 channels reproduces the real file's 321.15MB almost exactly as a
+  clean 5-minute file; 2450 doesn't. FOSSA's real directory turned out
+  flat (not date-subfoldered as previously assumed) and its 19-file
+  span (79 minutes for 19 files) suggests real gaps in the sequence —
+  this invalidated the prior cross-file-boundary partial-read design, so
+  the noise-reading scheme was revised to something simpler and safer:
+  one whole file loaded per trial, chosen at random from the K=19 pool,
+  RAM-bounded to a single file at a time without needing to verify strict
+  inter-file contiguity at all. Ran USGS ComCat screening for all four
+  arrays' proposed windows (Valencia, Stanford-2, FORESEE, plus FOSSA
+  already checked) — all four clean, none need `--exclude-s`. Valencia's
+  license gap (open since F1.2b) closes: real capture shows
+  `ODBL_license.txt`. Valencia's submarine/land channel split, previously
+  an estimate from cable-length arithmetic, is now sourced directly from
+  two real geometry CSVs PubDAS ships for that array. Final Globus
+  transfer list: 28 files (19+3+4+2 data + 5 geometry/chanmap + 4
+  license). Nothing downloaded or run.
+
 - **F1.3 pre-registration: verified the SNR calibration mechanism is
   LOCAL per trial** (traced with exact code citations:
   `selftest.py:126-131` slices a random local window from the noise

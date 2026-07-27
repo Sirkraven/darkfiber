@@ -1,60 +1,7 @@
 {
-  "status": "INCOMPLETE_PENDING_CAPTURES",
-  "note": "FOSSA corregido y cerrado. Valencia sin cambios. Stanford-2/FORESEE pendientes de capturas sin traduccion de UI. Nada se descarga todavia.",
-  "ui_translation_warning": {
-    "issue": "el listado raiz usado en la revision previa venia de Globus con la UI traducida al espanol (evidencia: display 'Explosion1' vs Camino real /Data/Blast1/)",
-    "consequence": "nombres de display de esa captura (FOSA, LaFargeConco, DAS-Mes-02.2023, PREVER, Licencia.txt) no se tratan como confiables -- solo los paths literales (Camino) y nombres tecnicos dentro de ellos",
-    "PREVER_resolution": "PREVER = FORESEE, identidad confirmada por mecanismo de traduccion ('foresee' -> 'prever'), specs de archivo aun pendientes de captura sin traduccion"
-  },
-  "calibration_mechanism": {
-    "result": "LOCAL",
-    "trace": [
-      "snr_curve.run_trial -> selftest.inject_and_verify_sized(source['noise'], ...) -- recibe el pool completo",
-      "selftest.py:126-128 -- rng.integers elige un offset, window = noise[:, start:start+min_len_n] -- ventana LOCAL, todavia sin calibrar",
-      "selftest.py:129-131 -- esa window (no el pool) se pasa como live_buffer a inject_and_verify",
-      "selftest.py:39,44 -- data = live_buffer.copy() (== window); amp = snr_to_amplitude(snr, data, wav)",
-      "synth.py:237,258 -- snr_to_amplitude usa noise_rms(noise_window) sobre 'data', que ES la ventana local del trial, no un RMS pooled/global"
-    ],
-    "consequence": "la deriva de RMS entre archivos NO corrompe la calibracion por trial (cada uno es exactamente SNR=X respecto a su propia ventana, por construccion). El chequeo de estacionariedad mide homogeneidad de regimen, no validez de medicion. Claim final: 'SNR50 medido contra la ventana de ruido X del sitio', igual que los 4 arrays ya medidos."
-  },
-  "stationarity_criterion": {
-    "applies_to": ["FOSSA", "Valencia", "Stanford_2", "FORESEE"],
-    "metric": "serie temporal de noise_rms() por archivo/fuente (ya en banda de analisis via gather_noise_sources) + spread por cuartiles de canal (descriptivo, no gatilla accion)",
-    "empirical_characterization_4_arrays_already_measured": {
-      "method": "gather_noise_sources + synth.noise_rms sobre los mismos archivos reales ya usados en cada medicion -- solo lectura, cero cambios de codigo, cero re-corridas, Bloque A intacto",
-      "ridgecrest_north": {"n_sources": 40, "cv": 1.913, "max_over_min": 39.9},
-      "arcata": {"n_sources": 15, "cv": 0.654, "max_over_min": 10.1},
-      "monterey_bay": {"n_sources": 15, "cv": 1.982, "max_over_min": 60.5},
-      "caveat": "estos valores miden variabilidad ENTRE SESIONES separadas por meses/anos (ej. arcata: 15 archivos entre 2022-12-26 y 2024-12-21), no variabilidad DENTRO de una sesion continua de minutos como el caso de FOSSA -- no es un ancla numerica directa, pero confirma que alta variabilidad no es descalificante bajo el mecanismo LOCAL (las 3 curvas ya publicadas y aceptadas se midieron sobre pools con CV 65%-198%)"
-    },
-    "action_threshold": {
-      "value": "max/min RMS por archivo > 3.0x dentro del pool",
-      "justification": [
-        "mecanismo LOCAL (ver calibration_mechanism) implica bajo riesgo de la accion (subsetting no destructivo, nunca 'medir sobre datos corruptos') -- justifica un umbral sensible",
-        "3.0x es deliberadamente MENOR que el piso mas bajo observado entre-sesiones en los 3 arrays ya aceptados (10.1x en arcata) -- un salto de regimen dentro de una sola sesion continua de ~20min que igualara siquiera el caso entre-sesiones mas suave ya tolerado seria razonablemente sorprendente",
-        "no hay derivacion estadistica de primeros principios mas fina disponible sin caracterizar el tiempo de correlacion del ruido real de FOSSA -- reconocido explicitamente, no se aparenta mas precision de la que hay"
-      ]
-    },
-    "algorithm_if_triggered": "subconjunto contiguo mas largo del pool cuyo propio max/min interno sea <=3.0x; empate en longitud -> el que empieza mas temprano cronologicamente (anti-cherry-picking, nunca el de menor CV)",
-    "k_min_fossa": 10,
-    "k_min_fossa_duration_s": 600,
-    "terminal_branch": "si ni el subconjunto contiguo mas largo llega a K_min, se mide sobre el pool COMPLETO con flag de deriva explicito en el JSON de salida y en la nota tecnica -- nunca en silencio, nunca 'inmedible'"
-  },
-  "int16_verification": {
-    "path_a_pipeline_correctness": {
-      "established_contract": "replay.load_file docstring (replay.py:39-40): 'Devuelve (data[canales,muestras] float32, fs, dx, attrs)' -- ya cumplido para .npz (replay.py:63: np.asarray(z[key], dtype=np.float32)) sin importar dtype de origen",
-      "requirement_for_tdms_loader": "debe seguir el mismo contrato: upcast a float32 INMEDIATAMENTE al cargar, antes de que gather_noise_sources/inject_and_verify_sized toquen el array",
-      "risk_if_broken": "add_plane_wave (synth.py:71) hace data[i,s:s+w] += a*wavelet in-place -- si data siguiera siendo int16, NumPy trunca el resultado a entero; a SNR=1 (escalon mas fragil) la senal completa podria redondearse a cero silenciosamente",
-      "tests_designed_not_implemented": [
-        "test_tdms_loader_upcasts_to_float32 -- analogo a test_npz_loader_shape_dtype_fs_dx",
-        "test_low_snr_injection_survives_int16_source_quantization -- fixture sintetica int16 (_write_tdms), inyeccion a SNR=1, verifica data_despues-data_antes no-nulo y con la forma/escala esperada del wavelet, no truncado a cero ni a pasos enteros -- puede escribirse y correrse hoy con datos sinteticos, queda para F1.4 junto con el loader mismo"
-      ]
-    },
-    "path_b_recording_headroom": {
-      "description": "fraccion de muestras reales con abs(valor) > 0.95*32767 en los K=19 archivos descargados -- propiedad del sitio/instrumento (si el interrogador ya clipeaba transientes fuertes), distinta del path (a)",
-      "when": "post-descarga, parte de la secuencia pre-registrada (paso 4 de 6), no calculable sin los archivos reales"
-    }
-  },
+  "status": "FINAL_INSTANTIATED_PENDING_COMMIT_APPROVAL",
+  "note": "Los 4 arrays tienen estructura real confirmada (capturas sin traduccion). Nada se descarga hasta aprobacion del commit y disparo manual en Globus (endpoint alejandro-darkfiber).",
+  "globus_endpoint": "alejandro-darkfiber",
   "common_params": {
     "snr_steps": [1.0, 2.0, 3.0, 5.0, 8.0, 12.0, 20.0],
     "n_per_step": 20,
@@ -68,148 +15,201 @@
     "total_budget_gb": 40,
     "size_overrun_stop_threshold_pct": 20
   },
-  "exclusions": {
-    "Fairbanks": {"reason": "hospedado en PubDAS es exclusivamente activo (SOV nocturno)", "type": "metodologica"},
-    "LaFarge_Conco": {"reason": "Data/ = {Blast1,Blast2,ESS,HammerTap,MiniVibe}, sin carpeta de ruido pasivo", "type": "metodologica"},
-    "PoroTomo_DASH": {"reason": "71 segmentos de ~100m, sin tramo recto comparable", "type": "diseno_comparabilidad"},
-    "Stanford_3": {"reason": "misma fibra fisica que stanford1_campus (ya medido en F1.1)", "type": "duplicado_de_sitio_ya_medido"}
+  "stationarity_criterion": {
+    "action_threshold": "max/min RMS por archivo > 3.0x",
+    "algorithm": "subconjunto contiguo mas largo bajo el umbral; empate -> mas temprano cronologicamente",
+    "k_min_basis": "~10x el piso de ruido propio de cada array, redondeado a archivos enteros",
+    "terminal_branch": "pool completo + flag de deriva explicito, nunca silencioso"
   },
   "arrays": {
     "FOSSA": {
-      "status": "specs_reales_confirmadas",
-      "n_channels": 11648,
-      "spacing_m": 2.0,
-      "fs_hz": 500.0,
+      "status": "instanciado_final",
+      "real_structure": "/FOSSA/Data/ (carpeta plana, no subcarpetas por fecha -- correccion sobre revision anterior)",
+      "first_file": "westSac_170906155429.tdms",
+      "first_file_timestamp_utc": "2017-09-06T15:54:29Z",
+      "file_size_bytes": 699450000,
+      "file_size_mb": 699.45,
+      "k_files": 19,
+      "declared_size_gb": 13.29,
+      "gap_evidence": "rango dado (155429 a 171329) cubre 79 min, mas ancho que 19x60s=19min si fueran perfectamente contiguos -- evidencia de posibles huecos reales en la secuencia, no confirmado pero tampoco descartado",
+      "n_channels_hypothesis": 11648,
+      "n_channels_status": "hipotesis por aritmetica inversa, a confirmar contra DASchanmap_westsac_2017.csv",
       "dtype": "int16",
-      "dtype_note": "confirmado por verificacion aritmetica: 11648*500*2*60 = 698,880,000 bytes = 698.88MB, coincide con ~699MB observado -- primer candidato con dtype entero, los previos (Stanford, arcata, etc via npz/h5) eran float32",
       "format": "NI TDMS",
-      "format_correction": "revision previa decia HDF5 'decimator2_*.h5' 6.16GB/1h -- error de contaminacion con la estimacion especulativa de F1.2b, no confirmado con evidencia real en ese momento. Corregido acá con estructura real.",
-      "real_file_pattern": "/FOSSA/Data/westSac_<YYMMDDHHMMSS>.tdms",
-      "real_file_granularity_s": 60,
-      "real_file_size_mb": 699,
-      "observed_date": "2017-09-06",
-      "observed_date_note": "al menos un archivo con esta fecha observado -- no se asume que sea la unica fecha disponible",
       "aperture_m": 23300.0,
       "min_len_s": 56.3,
-      "min_len_s_superseded_value": 57.6,
-      "min_len_s_supersede_note": "57.6s aparecio en un mensaje anterior (censo v1, pre-F1.2b) usando un conteo de canales redondeado (~12000) -- superseded, no vigente. 56.3s (aperture=23300m de Tabla 1) es el valor correcto.",
-      "n_channels_status": "HIPOTESIS por aritmetica inversa, no confirmada contra manifiesto real -- ver chanmap_file",
-      "chanmap_file": {
-        "path": "/FOSSA/DASchanmap_westsac_2017.csv",
-        "size_kb": 268,
-        "purpose": "fuente real de conteo de canales y spacing -- el 11648 actual se recalcula si el chanmap da un numero distinto (ej. canales buenos vs totales, como paso con SCEDC/Ridgecrest: 1250 totales/1150 buenos)",
-        "added_to_transfer_list": true
-      },
-      "comcat_screening": {
+      "chanmap_file": "/FOSSA/DASchanmap_westsac_2017.csv",
+      "chanmap_size_kb": 268.55,
+      "license_file": "/FOSSA/licence.txt",
+      "license_size_kb": 15.72,
+      "license_note": "nombre en ingles britanico (no license.txt), contenido no leido, distinto del ODBL de los otros 3 arrays",
+      "comcat": {
         "window_utc": "2017-09-06 ~15:54-16:14",
-        "checked": true,
-        "method": "USGS ComCat fdsnws-event API, dia completo 2017-09-06, radio 300km de Sacramento/Woodland CA, M>=2.0 (mas conservador que el M>=3 pre-registrado)",
-        "result": "LIMPIO -- 5 eventos ese dia en todo el radio (M2.07-M2.6), el mas cercano en tiempo a 15:54-16:14 UTC esta a mas de 3 horas (11:48 UTC y 18:27 UTC). Ningun evento cae dentro ni cerca de la ventana -- se usa completa como ruido, sin --exclude-s"
+        "result": "LIMPIO",
+        "checked_previously": true
       },
-      "budget_options": {
-        "K10": {"files": 10, "duration_s": 600, "margin_x": 10.66, "size_gb": 6.99},
-        "K15": {"files": 15, "duration_s": 900, "margin_x": 15.98, "size_gb": 10.48},
-        "K19_recommended": {"files": 19, "duration_s": 1140, "margin_x": 20.25, "size_gb": 13.28}
-      },
-      "declared_size_gb": 13.28,
-      "declared_size_basis": "K=19, archivo real (699MB) x 19 -- recomendado por consistencia con el margen ~20x usado en Valencia",
-      "loader_status": "PENDIENTE -- requiere npTDMS en capa IO (F1.4), fs/spacing leidos de header TDMS + DASchanmap_westsac_2017.csv, nunca asumidos. Test unitario analogo a test_snr_curve.py, no implementado en este commit.",
-      "reading_scheme": {
-        "problem": "archivo de 60s vs piso de 56.3s deja ~3.7s de margen de sorteo por archivo individual -- insuficiente variedad si cada trial sortea dentro del mismo archivo. Concatenar K=19 archivos en RAM (13.3GB) no es viable.",
-        "option_A_full_concat": {"ram_cost_gb": "K*0.7 (7-14GB para K=10-19)", "viable": false, "reason": "no escala, RAM excesiva"},
-        "option_B_on_demand_recommended": {
-          "description": "por cada uno de los 140 trials, sortear offset sobre la linea de tiempo virtual completa (K*60s), leer solo esa ventana via lectura parcial de npTDMS, posiblemente cruzando el borde entre 2 archivos consecutivos",
-          "ram_per_trial_gb": "~0.66 (ventana de ~57s), dentro del limite de 2-3GB pedido",
-          "pros": "maxima variedad de muestreo (offset uniforme sobre toda la ventana descargada), RAM acotada y predecible, no penaliza K mas grande",
-          "cons_risk": "mas complejidad de implementacion (manejo de borde entre archivos, verificar contigueidad estricta de timestamps antes de tratar como stream unico), depende de que la lectura parcial de npTDMS sea eficiente en la practica -- no verificado todavia",
-          "recommended": true
-        },
-        "option_B_lite_contingency": {
-          "description": "concatenar en RAM solo un subconjunto chico contiguo (3-4 archivos, ~2.1-2.8GB), rotar por varios chunks a lo largo de los 140 trials, descartando cada uno antes de cargar el siguiente",
-          "use_case": "salvavidas si la lectura parcial de npTDMS no rinde bien en la implementacion real de F1.4"
-        },
-        "decision_pending_user": true
-      },
-      "access": "Globus (PubDAS)",
-      "primary_sources": [
-        "Spica et al. 2023 (PubDAS paper), Table 1 + §4.3",
-        "reconocimiento directo del usuario en Globus (estructura real corregida)"
-      ]
+      "loader": {
+        "type": "TDMS nuevo (npTDMS)",
+        "status": "diseñado, no implementado -- F1.4",
+        "reading_scheme_REVISED": {
+          "reason": "evidencia de huecos (gap_evidence) invalida el supuesto de contigueidad estricta que requeria la Opcion B/B-lite de la revision anterior (lectura parcial cruzando bordes de archivo)",
+          "new_design": "lazy single-file-per-trial: cada trial sortea 1 de los K=19 archivos, carga SOLO ese archivo completo bajo demanda (~0.7GB), saca su ventana local de adentro (jitter ~3.7s como cualquier archivo individual), descarta el array despues",
+          "why_simpler": "evita toda la complejidad de lectura parcial/cruce de bordes de npTDMS (ya no hace falta verificar su rendimiento para eso); variedad de muestreo viene de CUAL archivo se sortea (19 opciones, ~7.4 trials/archivo en promedio), no de cruzar bordes",
+          "implementation_note": "requiere una variante 'lazy' de gather_noise_sources que guarda rutas de archivo en la lista de fuentes en vez de arrays ya cargados, difiere el load_file real a inject_and_verify_sized -- la version actual carga TODO en RAM de una (K*0.7GB=13.3GB simultaneos con K=19, confirmado inviable, no opcional el cambio)",
+          "replaces": "Opcion B (lectura parcial cross-file) y B-lite (chunked rotation) de la revision anterior"
+        }
+      }
     },
     "Valencia": {
-      "status": "sin_cambios",
-      "n_channels_total": 2977,
-      "n_channels_submarine_only": 2430,
-      "channel_start_submarine_estimate": 548,
-      "spacing_m": 16.8,
-      "fs_hz_hosted": 250.0,
-      "format": "HDF5",
-      "aperture_m_submarine": 40811.0,
-      "min_len_s_submarine": 88.4,
-      "real_file_pattern": "/Valencia/Data/SR_Valencia_<ts>_UTC/SR_Valencia_..._10mins.h5",
-      "real_file_granularity_s": 600,
-      "real_file_size_gb": 1.78,
-      "files_needed": 3,
+      "status": "instanciado_final",
+      "real_structure": "/Valencia/Data/SR_Valencia_<ts>_UTC/",
+      "first_file": "SR_Valencia_2020-09-01_13-21-28_UTC",
+      "first_file_timestamp_utc": "2020-09-01T13:21:28Z",
+      "file_size_gb": 1.78,
+      "k_files": 3,
       "declared_size_gb": 5.34,
-      "implementation_note": "restriccion a canales submarinos requiere channel-slicing post-carga, no implementado todavia -- gap de F1.4",
-      "access": "Globus (PubDAS)"
+      "format": "HDF5",
+      "n_channels_total": 2977,
+      "spacing_m": 16.8,
+      "fs_hz_override": 250.0,
+      "geometry_files": {
+        "undersea": "/Valencia/DAS-1-geometry-Valencia-undersea.csv",
+        "onland": "/Valencia/DAS-1-geometry-Valencia-onland.csv"
+      },
+      "geometry_note": "CONFIRMA la restriccion submarina ya pre-registrada (canal ~548-2977) -- el split tierra/mar viene directo de PubDAS via estos 2 CSVs, ya no es una estimacion por aritmetica de distancia/spacing. Canal exacto de corte: contar filas en -onland.csv tras descarga.",
+      "license_file": "/Valencia/ODBL_license.txt",
+      "license_note": "CIERRA el gap de licencia abierto en F1.2b/F1.3 -- tipo ODBL confirmado por nombre de archivo, contenido exacto pendiente de lectura post-descarga",
+      "comcat": {
+        "window_utc": "2020-09-01 ~13:21",
+        "location": "39.2N 1.0E (area Valencia/Palma de Mallorca)",
+        "radius_km": 300,
+        "min_magnitude": 2.0,
+        "result": "LIMPIO -- 0 eventos en todo el dia"
+      },
+      "loader": {
+        "type": "HDF5 generico nuevo, compartido con FORESEE",
+        "status": "diseñado, no implementado -- F1.4",
+        "why_not_reuse_load_quakeflow_h5": "load_quakeflow_h5 (run_on_quakeflow.py:114-134) tiene defaults SILENCIOSOS si faltan attrs: _attr(attrs,'dt_s',0.01) y _attr(attrs,'dx_m',8.0) -- asume fs=100Hz/dx=8m en silencio en vez de fallar si el archivo no trae esos attrs exactos. Valencia no es QuakeFlow, sus attrs internos son desconocidos -- reusar este loader violaria la regla de nunca asumir fs/dx.",
+        "new_contract": "lee primer dataset 2D del HDF5 (mismo fallback defensivo), pero fs/dx son OBLIGATORIOS como override explicito (mismo contrato que .npz en replay.py, SystemExit si faltan)",
+        "override_values": {"fs": 250, "dx": 16.8}
+      }
     },
     "Stanford_2": {
-      "status": "pendiente_captura_sin_traduccion",
-      "n_channels_total": 1250,
-      "recommended_segment_range": "canales 400-750",
+      "status": "instanciado_final",
+      "real_structure": "/Stanford-2-Sandhill-Road/Data/<YYYYMMDD>/",
+      "first_file": "cbt_processed_20200301_065859.550+0000.sgy",
+      "first_file_folder": "20200301",
+      "first_file_timestamp_utc": "2020-03-01T06:58:59.550Z",
+      "file_size_mb": 75.30,
+      "k_files": 4,
+      "declared_size_gb": 0.30,
+      "format": "SEG-Y",
+      "arithmetic_verification": {
+        "n_channels": 1250,
+        "fs_hz": 250,
+        "computed_duration_s": 59.997,
+        "note": "confirma 1250 canales (array completo, no el subrango 400-750) y 250Hz via header SEG-Y real, consistente con Tabla 1/FDSN"
+      },
+      "geometry_file": "/Stanford-2-Sandhill-Road/Stanford-2-Sandhill-Road-geometry.csv",
+      "recommended_segment_range": "canales 400-750 (a verificar contra geometry.csv real antes de correr)",
       "aperture_m_recommended": 2856.0,
       "min_len_s_recommended": 18.8,
-      "declared_size_gb_provisional": 0.25,
-      "declared_size_basis": "estimado por tasa (Vol/T.span Tabla 1), NO por archivo real",
-      "action_requested": "mismo relevamiento sin traduccion que FOSSA/Valencia"
+      "license_file": "/Stanford-2-Sandhill-Road/ODBL_license.txt",
+      "comcat": {
+        "window_utc": "2020-03-01 ~06:59",
+        "location": "37.42N 122.17W (Stanford/Palo Alto)",
+        "radius_km": 300,
+        "min_magnitude": 2.0,
+        "result": "LIMPIO -- 1 evento M2.2 (Danville CA) a las 16:09:34 UTC, >9h de distancia de la ventana"
+      },
+      "loader": {
+        "type": "REUSA convert_stanford_sgy.py / read_segy() sin cambios",
+        "status": "ya existe, no requiere trabajo nuevo de F1.4",
+        "why_reuse_works": "read_segy() (convert_stanford_sgy.py:47-67) ya es generico -- lee sample_interval_us/samples_per_trace/data_format_code del header binario SEG-Y real, nunca asume, falla si format_code != 5. Mismo nombre de archivo (cbt_processed_*) que Stanford-1, mismo interrogador ODH-3.",
+        "verification_needed_not_new_test": "confirmar en el primer archivo real si la derivada fase-optica->strain-rate que aplica convert_stanford_sgy.py por default tambien hace falta aca -- presumible (mismo tipo de interrogador) pero no asumido a ciegas"
+      }
     },
     "FORESEE": {
-      "status": "identidad_confirmada_specs_pendientes",
-      "identity_resolution": "PREVER = FORESEE, confirmado por mecanismo de traduccion de UI",
-      "n_channels_calibrated": 2137,
-      "n_channels_nominal": 2450,
-      "aperture_m": 4900.0,
-      "min_len_s": 22.6,
-      "declared_size_gb_provisional": 0.42,
-      "declared_size_basis": "estimado por tasa (Vol/T.span Tabla 1), NO por archivo real",
-      "action_requested": "captura sin traduccion de la estructura real de archivos bajo el nombre tecnico real (a confirmar)"
+      "status": "instanciado_final",
+      "real_structure": "/FORESEE/Data/<YYYYMM>/",
+      "first_file": "FORESEE_UTC_20190404_194804.hdf5",
+      "first_file_folder": "201904",
+      "first_file_timestamp_utc": "2019-04-04T19:48:04Z",
+      "file_size_mb": 321.15,
+      "k_files": 2,
+      "declared_size_gb": 0.64,
+      "format": "HDF5",
+      "channel_count_discrepancy_RESOLVED": {
+        "prior_ambiguity": "F1.2b dejo abierta la discrepancia entre 2137 (calibrado/tap-test) y ~2450 (nominal CL/CS)",
+        "arithmetic_check": {
+          "n_ch_2137_duration_s": 300.56,
+          "n_ch_2450_duration_s": 262.16,
+          "conclusion": "2137 da ~5.009 min, coincide de forma mucho mas limpia con el patron de carpeta mensual que 2450 -- se usa 2137 como valor correcto, resuelto con evidencia del archivo real"
+        }
+      },
+      "n_channels": 2137,
+      "spacing_m": 2.0,
+      "fs_hz_override": 125.0,
+      "aperture_m_recalculated": 4272.0,
+      "min_len_s_recalculated": 21.4,
+      "min_len_s_previous_table1_based": 22.6,
+      "chanmap_file": "/FORESEE/foresee_ch_loc.txt",
+      "chanmap_size_kb": 72.65,
+      "license_file": "/FORESEE/ODBL_license.txt",
+      "comcat": {
+        "window_utc": "2019-04-04 ~19:48",
+        "location": "40.79N 77.86W (State College, PA)",
+        "radius_km": 300,
+        "min_magnitude": 2.0,
+        "result": "LIMPIO -- 0 eventos en todo el dia"
+      },
+      "loader": {
+        "type": "comparte el HDF5 generico nuevo con Valencia (ver Valencia.loader)",
+        "status": "diseñado, no implementado -- F1.4",
+        "override_values": {"fs": 125, "dx": 2.0}
+      }
     }
   },
-  "excluded_duplicate_reference": {
-    "Stanford_3": {
-      "real_file_pattern_observed": "/Stanford-3-ODH4/Data/ODH4-2017-SEGY/SGY_Stanford_Permanent_DT37_100Hz/cbt_processed_<ts>.sgy",
-      "real_file_size_mb": 18.73,
-      "note": "no se usa -- mismo sitio fisico que stanford1_campus, ver exclusions.Stanford_3 (documentado en commit anterior)"
-    }
+  "shared_hdf5_loader_test": {
+    "name": "test para el loader HDF5 generico (Valencia + FORESEE)",
+    "analog_to": "test_npz_loader_shape_dtype_fs_dx + test_npz_requires_explicit_fs_dx",
+    "coverage": "SystemExit si fs/dx faltan (nunca asumidos), shape/dtype correctos contra fixtures sinteticas para ambos casos, parametrizado en un solo archivo de test -- no dos loaders separados",
+    "status": "no implementado en este commit -- tarea de F1.4 junto con el loader mismo"
+  },
+  "budget_summary": {
+    "FOSSA_gb": 13.29,
+    "Valencia_gb": 5.34,
+    "Stanford_2_gb": 0.30,
+    "FORESEE_gb": 0.64,
+    "metadata_license_files_gb": 0.001,
+    "total_declared_gb": 19.57,
+    "ceiling_gb": 40,
+    "margin_gb": 20.43,
+    "user_estimate_gb": "~19.7",
+    "status": "FINAL -- los 4 arrays tienen archivo real, no quedan estimaciones por tasa"
   },
   "transfer_list": [
-    {"n": 1, "path": "/FOSSA/Data/westSac_<PRIMEROS 19 TIMESTAMPS, 2017-09-06 ~15:54-16:14 UTC>.tdms", "count": 19, "size_gb_total": 13.28, "status": "patron y ventana confirmados (ComCat limpio), timestamps exactos pendientes"},
-    {"n": 2, "path": "/FOSSA/DASchanmap_westsac_2017.csv", "size_kb": 268, "status": "nuevo en esta revision, listo"},
-    {"n": 3, "path": "/Valencia/Data/<PRIMER SR_Valencia_*_UTC DISPONIBLE>/..._10mins.h5", "count": 3, "consecutive": true, "size_gb_total": 5.34, "status": "patron confirmado, timestamps exactos pendientes"},
-    {"n": 4, "path": "/Stanford-2/... (patron a confirmar)", "size_gb": 0.25, "status": "pendiente de captura sin traduccion"},
-    {"n": 5, "path": "/FORESEE/... (ruta real a confirmar)", "status": "identidad confirmada, patron pendiente de captura sin traduccion"},
-    {"n": 6, "path": "archivo(s) de licencia/citacion -- nombre real a reconfirmar", "status": "pendiente, ver ui_translation_warning"}
+    {"n": 1, "category": "datos", "path": "/FOSSA/Data/westSac_170906155429.tdms + 18 siguientes cronologicamente", "count": 19, "size_gb": 13.29},
+    {"n": 2, "category": "datos", "path": "/Valencia/Data/SR_Valencia_2020-09-01_13-21-28_UTC/... + 2 siguientes cronologicamente", "count": 3, "size_gb": 5.34},
+    {"n": 3, "category": "datos", "path": "/Stanford-2-Sandhill-Road/Data/20200301/cbt_processed_20200301_065859.550+0000.sgy + 3 siguientes cronologicamente", "count": 4, "size_gb": 0.30},
+    {"n": 4, "category": "datos", "path": "/FORESEE/Data/201904/FORESEE_UTC_20190404_194804.hdf5 + 1 siguiente cronologicamente", "count": 2, "size_gb": 0.64},
+    {"n": 5, "category": "metadata", "path": "/FOSSA/DASchanmap_westsac_2017.csv", "size_kb": 268.55},
+    {"n": 6, "category": "metadata", "path": "/Valencia/DAS-1-geometry-Valencia-undersea.csv"},
+    {"n": 7, "category": "metadata", "path": "/Valencia/DAS-1-geometry-Valencia-onland.csv"},
+    {"n": 8, "category": "metadata", "path": "/Stanford-2-Sandhill-Road/Stanford-2-Sandhill-Road-geometry.csv"},
+    {"n": 9, "category": "metadata", "path": "/FORESEE/foresee_ch_loc.txt", "size_kb": 72.65},
+    {"n": 10, "category": "licencia", "path": "/FOSSA/licence.txt", "size_kb": 15.72},
+    {"n": 11, "category": "licencia", "path": "/Valencia/ODBL_license.txt"},
+    {"n": 12, "category": "licencia", "path": "/Stanford-2-Sandhill-Road/ODBL_license.txt"},
+    {"n": 13, "category": "licencia", "path": "/FORESEE/ODBL_license.txt"}
   ],
-  "fossa_sequence_preregistered": [
-    "1. Descargar K=19 westSac_*.tdms (~13.28GB) + DASchanmap_westsac_2017.csv (268KB)",
-    "2. Confirmar canal-count/spacing reales contra el chanmap, recalcular piso si difiere de 11648",
-    "3. Chequeo de estacionariedad (ver stationarity_criterion)",
-    "4. Headroom de grabacion int16 (ver int16_verification.path_b_recording_headroom)",
-    "5. Piloto: 1 escalon SNR=8, n=20 trials, esquema de lectura Opcion B, medir runtime_s real",
-    "6. Decision post-piloto: completar 140 o decimar espacialmente (documentado si se aplica)"
-  ],
-  "budget_summary": {
-    "FOSSA_gb": 13.28,
-    "FOSSA_gb_alt_K10": 6.99,
-    "Valencia_gb": 5.34,
-    "Stanford_2_gb_provisional": 0.25,
-    "FORESEE_gb_provisional": 0.42,
-    "total_declared_gb_with_K19": 19.29,
-    "total_declared_gb_with_K10_alt": 13.00,
-    "ceiling_gb": 40,
-    "user_estimate_gb": "15-22",
-    "cross_check": "ambos escenarios dentro del rango estimado por el usuario",
-    "final_number_pending": "Stanford-2 y FORESEE siguen siendo estimaciones por tasa, no archivo real -- total se cierra con precision cuando lleguen esas capturas"
+  "transfer_list_total_files": 28,
+  "transfer_list_note": "28 archivos totales (19+3+4+2 de datos + 5 metadata + 4 licencias) -- mas que el ~26 estimado por el usuario porque las 2 geometrias de Valencia se cuentan por separado. Ninguna transferencia disparada.",
+  "comcat_summary": {
+    "FOSSA": {"window_utc": "2017-09-06 ~15:54-16:14", "result": "LIMPIO"},
+    "Valencia": {"window_utc": "2020-09-01 ~13:21", "result": "LIMPIO"},
+    "Stanford_2": {"window_utc": "2020-03-01 ~06:59", "result": "LIMPIO (evento mas cercano a 9h+ de distancia)"},
+    "FORESEE": {"window_utc": "2019-04-04 ~19:48", "result": "LIMPIO"},
+    "all_clean_no_exclude_s_needed": true
   }
 }
