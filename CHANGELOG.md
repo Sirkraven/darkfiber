@@ -8,6 +8,37 @@ something to hide.
 
 ### Added
 
+- **F1.3 pre-registration for the SNR50 extension** (`sample_plan_fase1.md`/
+  `.json`), reconciling my paper-sourced draft with the user's own direct
+  Globus reconnaissance. Final selection: **FOSSA, Valencia (submarine
+  channels only), Stanford-2 (channels 400-750)** — FORESEE pending one
+  more check (its "PREVER" folder couldn't be independently confirmed as
+  FORESEE or as anything else). Three exclusions, each documented with
+  its own specific reason rather than lumped together: Fairbanks
+  (active-source-only hosted data), LaFarge-Conco (confirmed by direct
+  Globus listing — `Data/` is `{Blast1, Blast2, ESS, HammerTap,
+  MiniVibe}`, no separable passive-noise folder, stronger evidence than
+  the paper-based assumption in F1.2b), PoroTomo DASH (71 segments of
+  ~100m each, no linear run at a scale comparable to the other
+  candidates). Resolved a Stanford-2-vs-Stanford-3 question that turned
+  out to have the wrong premise: Stanford-3 shares its physical fiber
+  loop with Stanford-1 (already measured as `stanford1_campus` in F1.1),
+  not with Stanford-2 (a genuinely different site, Sand Hill Road/Palo
+  Alto) — sourced directly from the PubDAS paper's own Figure 6 caption.
+  Real per-file Globus granularity (FOSSA: 1h/6.16GB; Valencia:
+  10min/1.78GB) replaced the earlier rate-based volume estimates, cutting
+  the declared download budget from the prior draft's ~29.6GB down to
+  **~11.75GB** (FOSSA 6.16 + Valencia 5.34 + Stanford-2 ~0.25 GB
+  estimated, still pending its own file-pattern confirmation) — well
+  under the user's 40GB ceiling. Exact filenames aren't pre-registered
+  as literal values (no Globus access on this side to read the real
+  listing) — instead the deterministic *selection rule* (first
+  chronological file, ComCat-screened before running) is committed now,
+  with a short checklist for the user to apply it directly in Globus.
+  Nothing downloaded or run — commit is the pre-registration artifact
+  itself, gated behind the user's separate approval before any transfer
+  or measurement.
+
 - **F1.2b: spec verification for the F1.2 candidate census, closing every
   "no confirmado" field against a primary source before any candidate can
   reach F1.3.** Read-only, no DAS data downloaded. Recovered the actual

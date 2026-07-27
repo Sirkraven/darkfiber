@@ -1,0 +1,163 @@
+{
+  "status": "FINAL_PENDING_COMMIT_APPROVAL",
+  "note": "Consolidacion final tras reconocimiento real de Globus. Nada se descarga ni corre hasta aprobacion explicita del commit.",
+  "common_params": {
+    "snr_steps": [1.0, 2.0, 3.0, 5.0, 8.0, 12.0, 20.0],
+    "n_per_step": 20,
+    "v_app_range_mps": [2000.0, 6500.0],
+    "wavelet": "ricker",
+    "threshold": 4.0,
+    "noise_margin_s": 5.0,
+    "seed_mechanism": "hardcoded en snr_curve.py: np.random.default_rng(1000 + step_idx), identico en todo array/corrida",
+    "seed_values_by_step": [1000, 1001, 1002, 1003, 1004, 1005, 1006],
+    "noise_floor_formula": "13.6 + 0.001833 * aperture_m",
+    "total_budget_gb": 40,
+    "size_overrun_stop_threshold_pct": 20
+  },
+  "exclusions": {
+    "Fairbanks": {
+      "reason": "subconjunto alojado en PubDAS es exclusivamente activo (barridos SOV nocturnos) -- sin ruido ambiente pasivo confirmado en volumen suficiente",
+      "type": "metodologica"
+    },
+    "LaFarge_Conco": {
+      "reason": "confirmado en reconocimiento real de Globus: Data/ = {Blast1, Blast2, ESS, HammerTap, MiniVibe} -- las 5 subcarpetas son fuente activa, sin carpeta de ruido ambiente pasivo separable/descargable",
+      "type": "metodologica",
+      "evidence": "reconocimiento directo del usuario en Globus, mas fuerte que la suposicion del paper (F1.2b) de que habia ruido de camiones/cintas utilizable"
+    },
+    "PoroTomo_DASH": {
+      "reason": "71 segmentos contiguos de ~100m cada uno, sin tramo recto comparable a los otros candidatos (1.1-50km vs ~100m) -- cualquier subsegmento mediria a escala fisica 10-50x menor, la escala del arreglo pasaria a ser confound",
+      "type": "diseno_comparabilidad",
+      "source": "Wang et al. 2018 (GJI)"
+    },
+    "Stanford_3": {
+      "reason": "misma fibra fisica que Stanford-1 (stanford1_campus), ya medido en F1.1 (SNR50=7.73) -- confirmado en Spica et al. 2023, pie de Fig. 6: 'Stanford 1 and 3 recorded the same fiber loop on main campus but with different IUs'. No es duplicado de Stanford-2 (que es un sitio distinto, Sand Hill Road/Palo Alto) -- es duplicado de Stanford-1.",
+      "type": "duplicado_de_sitio_ya_medido"
+    }
+  },
+  "pending_not_blocking": {
+    "FORESEE": {
+      "status": "no aparecio en el listado raiz observado (DAS-Mes-02.2023, Fairbanks, PREVER, FOSA, LaFargeConco, Stanford-1/2/3, Valencia)",
+      "hypothesis_unresolved": "'PREVER' no se pudo verificar como FORESEE renombrado ni como dataset distinto -- no encontrado en ninguna fuente consultada (paper primario, DAS-RCN/awesome-das, busqueda general)",
+      "supporting_fact": "el paper primario (Spica et al. 2023) dice explicitamente que FORESEE es el dataset MAS GRANDE de PubDAS (29338 GB) -- llamativo si desaparecio sin dejar rastro",
+      "alternative_channel": "Zhu et al. 2021 menciona 'Penn State Data Commons' como canal de distribucion separado de PubDAS -- posible migracion",
+      "action_requested": "verificar contenido de la carpeta PREVER (fechas abr-2019/mar-2020, formato HDF5) o confirmar ausencia total",
+      "blocking": false
+    },
+    "Stanford_2_file_pattern": {
+      "status": "patron de carpeta/archivo real no confirmado -- no relevado como FOSSA/Valencia/Stanford-3",
+      "current_estimate_basis": "tasa Vol/T.span de Tabla 1 (PubDAS paper), no archivo real",
+      "action_requested": "mismo relevamiento que FOSSA/Valencia/Stanford-3 cuando sea posible",
+      "blocking": false
+    }
+  },
+  "arrays": {
+    "FOSSA": {
+      "n_channels": 11648,
+      "spacing_m": 2.0,
+      "gauge_length_m": 10.0,
+      "fs_hz_native": 500.0,
+      "format": "HDF5 (confirmado real en Globus -- corrige 'TDMS' especulado en F1.2b a partir de la tabla del paper)",
+      "aperture_m": 23300.0,
+      "min_len_s": 56.3,
+      "real_file_pattern": "/FOSSA/Data/<YYYYMMDD>/decimator2_<fecha>_<hora>.00.00_UTC.h5",
+      "real_file_granularity_s": 3600,
+      "real_file_size_gb": 6.16,
+      "files_needed": 1,
+      "files_needed_rationale": "1 hora = 3600s = ~64x el piso de ruido (56.3s), cubre de sobra el margen de 20x propuesto originalmente",
+      "selection_rule": "primera carpeta YYYYMMDD cronologicamente disponible, primer .h5 dentro -- valor literal no conocido, a completar por el usuario aplicando la regla en Globus",
+      "declared_size_gb": 6.16,
+      "access": "Globus (PubDAS)",
+      "license_check": "Licencia.txt (raiz, 373B) -- a leer tras transferencia",
+      "primary_sources": [
+        "Spica et al. 2023 (PubDAS paper), Table 1 + §4.3",
+        "Rodriguez Tribaldos & Ajo-Franklin 2021",
+        "reconocimiento directo del usuario en Globus (patron de archivo real)"
+      ],
+      "pilot_protocol": {
+        "single_step_snr": 8.0,
+        "single_step_n": 20,
+        "rationale": "ejercita el camino completo Tier0->coherencia->clasificacion en vez del rechazo temprano de escalones bajos",
+        "extrapolation": "runtime_140_estimado = runtime_escalon_unico * 7",
+        "sanity_check_range_hours": [2.0, 5.7],
+        "approved": true
+      }
+    },
+    "Valencia": {
+      "n_channels_total": 2977,
+      "n_channels_submarine_only": 2430,
+      "channel_start_submarine_estimate": 548,
+      "spacing_m": 16.8,
+      "gauge_length_m": 30.0,
+      "fs_hz_hosted": 250.0,
+      "fs_hz_native": 1000.0,
+      "format": "HDF5",
+      "aperture_m_submarine": 40811.0,
+      "min_len_s_submarine": 88.4,
+      "real_file_pattern": "/Valencia/Data/SR_Valencia_<ts>_UTC/SR_Valencia_..._10mins.h5",
+      "real_file_granularity_s": 600,
+      "real_file_size_gb": 1.78,
+      "files_needed": 3,
+      "files_needed_rationale": "ceil(1768s / 600s) = 3 archivos consecutivos = 1800s = 20.4x el piso submarino (88.4s)",
+      "selection_rule": "primeros 3 archivos SR_Valencia_*_10mins.h5 cronologicamente consecutivos -- valor literal no conocido, a completar por el usuario",
+      "declared_size_gb": 5.34,
+      "implementation_note": "restriccion a canales submarinos requiere channel-slicing post-carga, no implementado en snr_curve.py/replay.py todavia -- gap de F1.4, no bloqueante para el pre-registro",
+      "access": "Globus (PubDAS)",
+      "license_check": "Licencia.txt (raiz, 373B) -- probablemente cierra el gap; verificar si Valencia tiene archivo de licencia propio al navegar",
+      "primary_sources": [
+        "Spica et al. 2020 (Valencia-Islalink)",
+        "Spica et al. 2023 (PubDAS paper), Table 1 + §4.8",
+        "reconocimiento directo del usuario en Globus (patron de archivo real)"
+      ]
+    },
+    "Stanford_2": {
+      "n_channels_total": 1250,
+      "n_channels_recommended_segment": 350,
+      "recommended_segment_range": "canales 400-750",
+      "spacing_m": 8.16,
+      "gauge_length_m": 20.0,
+      "fs_hz_native": 250.0,
+      "format": "SEG-Y",
+      "aperture_m_recommended": 2856.0,
+      "min_len_s_recommended": 18.8,
+      "real_file_pattern": "NO CONFIRMADO -- extrapolado de Stanford-1 (mismo IU ODH-3): SEG-Y en bloques de 5 minutos segun validacion_real/NOTES.md",
+      "real_file_granularity_s_estimated": 300,
+      "files_needed_estimate": "~14-19 archivos (376s / 300s aprox), a confirmar con tamano real por archivo",
+      "declared_size_gb": 0.25,
+      "declared_size_basis": "estimado por tasa (Vol/T.span de Tabla 1), NO por archivo real -- pendiente de confirmacion",
+      "access": "Globus (PubDAS)",
+      "license_check": "ODBL_license.txt (carpeta Stanford-2) -- a leer tras transferencia",
+      "primary_sources": [
+        "FDSN network 9T (2019-2023)",
+        "Spica et al. 2023 (PubDAS paper), Table 1 + §4.6",
+        "Yuan et al. 2020",
+        "validacion_real/NOTES.md (convencion de 5min de Stanford-1, mismo IU)"
+      ]
+    }
+  },
+  "excluded_duplicate_reference": {
+    "Stanford_3": {
+      "real_file_pattern_observed": "/Stanford-3-ODH4/Data/ODH4-2017-SEGY/SGY_Stanford_Permanent_DT37_100Hz/cbt_processed_<ts>.sgy",
+      "real_file_size_mb": 18.73,
+      "real_file_granularity_s": 300,
+      "note": "no se usa -- mismo sitio fisico que stanford1_campus (ya medido en F1.1), ver exclusions.Stanford_3"
+    }
+  },
+  "transfer_list": [
+    {"n": 1, "path": "/FOSSA/Data/<PRIMER YYYYMMDD DISPONIBLE>/decimator2_<esa fecha>_<esa hora>.00.00_UTC.h5", "size_gb": 6.16, "status": "pendiente de valor literal"},
+    {"n": 2, "path": "/Valencia/Data/<PRIMER SR_Valencia_*_UTC DISPONIBLE>/..._10mins.h5", "count": 3, "consecutive": true, "size_gb_total": 5.34, "status": "pendiente de valor literal"},
+    {"n": 3, "path": "/Stanford-2/... (patron a confirmar)", "size_gb": 0.25, "status": "pendiente de patron de archivo"},
+    {"n": 4, "path": "/Licencia.txt", "size_bytes": 373, "status": "listo"},
+    {"n": 5, "path": "/Stanford-2/ODBL_license.txt", "status": "listo"}
+  ],
+  "budget_summary": {
+    "FOSSA_gb": 6.16,
+    "Valencia_gb": 5.34,
+    "Stanford_2_gb_estimated": 0.25,
+    "license_files_gb": 0.000001,
+    "total_declared_gb": 11.75,
+    "ceiling_gb": 40,
+    "margin_gb": 28.25,
+    "user_estimate_gb": "10-15",
+    "cross_check": "coincide con la estimacion del usuario"
+  }
+}
