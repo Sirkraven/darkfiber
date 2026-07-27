@@ -8,6 +8,38 @@ something to hide.
 
 ### Added
 
+- **F1.3 pre-registration correction: FOSSA's real format and structure**,
+  plus closing the FORESEE/"PREVER" identity question. The prior commit's
+  Globus reconnaissance had passed through a translated UI (evidence:
+  display showed "Explosión1" where the real path is `/Data/Blast1/`) —
+  several display-level names from that listing (`FOSA`, `LaFargeConco`,
+  `DAS-Mes-02.2023`, `PREVER`, `Licencia.txt`) are now flagged unreliable
+  and not re-used; only literal paths and technical filenames already
+  captured are trusted. `PREVER` = FORESEE, resolved by mechanism
+  ("foresee" → "prever" under Spanish translation) — identity confirmed,
+  exact file specs still pending an untranslated capture.
+  FOSSA itself was wrong in the prior commit: real structure is
+  `/FOSSA/Data/westSac_<timestamp>.tdms`, NI TDMS format, **60-second**
+  files (~699MB each) — not the HDF5/1-hour guess that had leaked in
+  from an earlier, unverified F1.2b estimate. Verified by direct
+  arithmetic (11,648ch × 500Hz × 2 bytes × 60s = 698.88MB, matching the
+  observed ~699MB almost exactly) — which also surfaces a new fact: FOSSA
+  is int16, the first candidate in this batch that isn't float32.
+  Recomputed FOSSA's download budget against real 60s file granularity
+  (K=19 files, ~13.3GB, ~20× the 56.3s noise floor) and worked through a
+  real engineering constraint the file size raised: a single 60s file
+  leaves only ~3.7s of jitter room per trial, but concatenating enough
+  files for real sampling variety is RAM-infeasible (7-14GB). Recommends
+  on-demand per-trial windowed reads via `npTDMS`'s partial-read API
+  (bounds RAM to ~0.66GB/trial, needs verifying in F1.4) over full
+  concatenation, with a chunked-rotation fallback noted as a contingency.
+  New loader work flagged for F1.4: `npTDMS`, reading fs/spacing from the
+  TDMS header and `DASchanmap_westsac_2017.csv`, never assumed, tested
+  like the existing `.npz` loader. Total declared budget: ~19.3GB with
+  the recommended FOSSA margin (~13.0GB with a cheaper alternative),
+  still pending Stanford-2 and FORESEE's own real-file captures before a
+  final number closes. Nothing downloaded or run.
+
 - **F1.3 pre-registration for the SNR50 extension** (`sample_plan_fase1.md`/
   `.json`), reconciling my paper-sourced draft with the user's own direct
   Globus reconnaissance. Final selection: **FOSSA, Valencia (submarine
