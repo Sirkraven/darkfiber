@@ -148,6 +148,60 @@ def load_hdf5_generic(
     return data, fs, dx, {}
 
 
+def load_tdms(
+    path: str, fs: float | None = None, dx: float | None = None
+) -> tuple[np.ndarray, float, float, dict]:
+    """Carga un TDMS de National Instruments -- FOSSA (PubDAS). Devuelve
+    (data[canales, muestras] float32, fs, dx, attrs).
+
+    **Benchmark de lectura parcial (F1.5), hecho contra un archivo real**
+    (`westSac_170906155429.tdms`, 698,880,000 bytes crudos, 11,648
+    canales x 30,000 muestras, int16): la lectura parcial por canal de
+    `npTDMS` en modo streaming (`TdmsFile.open()` + 11,648 llamadas a
+    `channel.read_data(offset, length)`, una por canal) tardó MÁS DE
+    120s sin terminar. La lectura completa eager (`TdmsFile.read()` +
+    apilar los 11,648 canales con `ch[:]`) tardó **14.6s** para el mismo
+    archivo. **La lectura parcial NO es más rápida acá** -- cada llamada
+    a `read_data()` en modo streaming aparenta re-parsear/buscar la
+    estructura del segmento TDMS de forma independiente, sin el
+    beneficio amortizado de un parseo único que sí tiene la lectura
+    eager. Por eso este loader SIEMPRE hace lectura completa del
+    archivo -- confirmado con evidencia (no elegido por default, y no
+    es lo que se había propuesto originalmente en el pre-registro).
+
+    Consecuencia para el esquema de muestreo de FOSSA (F1.3 §1c): en vez
+    de lectura parcial bajo demanda, el esquema real es "archivo
+    completo por trial" -- cada trial sortea 1 de los K archivos y
+    carga ESE archivo entero (~14.6s + ~1.4GB en RAM tras el upcast a
+    float32, liberado después) -- sigue acotado a 1 archivo en RAM a la
+    vez (nunca los K simultáneos), solo que el costo por trial es más
+    alto de lo que se había estimado con la lectura parcial que resultó
+    inviable. Ver `snr_curve.run_step_lazy_single_file` para la
+    implementación de este esquema.
+
+    `fs`/`dx` OBLIGATORIOS (mismo contrato que los demás loaders no-QuakeFlow
+    de este módulo) -- el TDMS real de FOSSA no trae `properties` útiles
+    (grupo y canales vienen con `properties={}` vacío, confirmado en el
+    archivo real).
+    """
+    if fs is None or dx is None:
+        raise SystemExit(
+            "Para TDMS hacen falta --fs y --dx explícitos (sin properties "
+            "confiables en el archivo real de FOSSA)."
+        )
+    from nptdms import TdmsFile
+
+    tdms = TdmsFile.read(path)
+    groups = tdms.groups()
+    if not groups:
+        raise SystemExit(f"{path}: TDMS sin grupos")
+    channels = groups[0].channels()
+    if not channels:
+        raise SystemExit(f"{path}: TDMS sin canales en el grupo '{groups[0].name}'")
+    data = np.stack([ch[:] for ch in channels]).astype(np.float32)
+    return data, fs, dx, {}
+
+
 def iter_chunks(
     data: np.ndarray, fs: float, chunk_s: float = DEFAULT_CHUNK_S
 ) -> Iterator[np.ndarray]:

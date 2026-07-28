@@ -57,6 +57,49 @@ something to hide.
   all three new arrays fell inside the already-observed range
   (1.6-7.73), not extending it at either end.
 
+- **F1.5: FOSSA TDMS loader + RAM-bounded pilot (full curve still pending
+  approval)** — `replay.load_tdms(path, fs, dx)`, a new loader for
+  National Instruments TDMS files (`nptdms.TdmsFile.read()`, eager full
+  read — confirmed against the real file: 11,648 channels × 30,000
+  samples, int16 upcast to float32, no usable embedded properties, so
+  fs/dx are required like the other non-QuakeFlow loaders). A
+  partial-read benchmark (`TdmsFile.open()` + streaming
+  `channel.read_data()`) was ruled out: >120s versus 14.6-22.4s for a
+  full eager read of the same file, so the design is "one whole file
+  loaded and discarded per trial," never partial/streaming reads.
+  Channel count/spacing confirmed directly against
+  `DASchanmap_westsac_2017.csv`: 11,648 channels (matching the
+  pre-registered hypothesis exactly), 2.0m median spacing. The int16
+  grid-precision test (same pattern as FORESEE's float16 one) confirms
+  injection arithmetic stays in float32/float64, never truncating
+  through the int16 grid. A read-only headroom check across all 19
+  files found zero clipping and zero near-ceiling samples (peak
+  ~19% of int16 full-scale). Twenty files were actually found on disk
+  (not 19), all exactly 60s apart with no gaps — the first 19
+  chronologically were used, matching the pre-registered K=19.
+  Since FOSSA's 19 files can't all be held in RAM at once (~1.4GB each
+  after the float32 upcast, ~26GB total), `stationarity_check()` gained
+  an optional `rms_series` parameter so a pre-computed RMS series
+  (from loading one file at a time via the new
+  `compute_rms_series_lazy()`) can be passed in directly; stationarity
+  came back clean (max/min RMS = 1.58×, all 19 files used, no reserve
+  substitution). A new `run_step_lazy_single_file()` mirrors `run_step()`
+  but loads one random file per trial and discards it immediately after,
+  for the same RAM-bounding reason. The pre-registered pilot (SNR=8,
+  n=20) ran under this scheme: 20/20 valid trials, recall 55.0%
+  [34.2%-74.2%], **runtime_s = 4204.4s (≈70.1 min)** — a ×7
+  extrapolation puts the full 140-trial curve at ≈8h10min, well outside
+  the 2-5.7h sanity range set by the other four measured arrays.
+  That number is flagged as unreliable, not accepted at face value: an
+  identical read-only 19-file pass (no trial computation at all) took
+  628.5s the first time and 7,597.8s the second — a 12× blowup on
+  literally the same work — pointing at something external (disk/AV
+  contention, thermal throttling, or similar) degrading over the
+  session rather than a real cost of the loader or the lazy-read design.
+  **The full 140-trial FOSSA curve was not run** — pending an explicit
+  decision (run it anyway, decimate spatially with the choice
+  documented, or re-measure the pilot under cleaner conditions first).
+
 - **F1.4: stricter precision test for FORESEE's float16 source data** —
   the existing `test_low_snr_injection_survives_float16_source` only
   checked that detection succeeded; added

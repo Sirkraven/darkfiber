@@ -36,6 +36,40 @@ efectiva sin que el pipeline lo sepa (el `n_ch`/`dx` que ve
 `ArrayGeometry` sigue siendo el nominal, no el efectivo con 2 canales
 muertos descontados).
 
+## 2026-07-28 — FOSSA: piloto muestra un factor 12× de degradación de I/O entre dos pasadas idénticas, misma sesión
+
+**Observación operacional, no de física — F1.5.** Durante el piloto de
+FOSSA (previo a decidir si correr la curva completa de 140 trials), se
+midieron tres pasadas read-only/piloto sobre los mismos 19 archivos
+`.tdms` (~699MB c/u), todas con el mismo trabajo por archivo (cargar
+completo vía `replay.load_tdms`, eager read):
+
+1. Serie de RMS para estacionariedad (`compute_rms_series_lazy`, 19
+   cargas): **628.5s** (~33.1s/archivo).
+2. Chequeo de headroom int16 (19 cargas, mismo método de carga, sin
+   ningún cómputo extra relevante): **7,597.8s** (~400s/archivo) — un
+   factor **12×** sobre el trabajo #1, siendo exactamente el mismo
+   trabajo.
+3. Piloto SNR=8 (`run_step_lazy_single_file`, 20 cargas + 20 trials):
+   **4,204.4s** (~210s/trial) — 6-10× más lento que el benchmark de
+   carga de un solo archivo ya establecido en F1.4/F1.5 (14.6-22.4s).
+
+Ninguna de las tres corridas cambió el código del loader entre medio —
+es la misma función, los mismos archivos, en la misma sesión de esta
+máquina. La hipótesis más simple es contención externa (antivirus
+re-escaneando archivos binarios grandes leídos repetidamente,
+throttling térmico tras I/O sostenido, u otro proceso de fondo), no una
+propiedad real de `load_tdms` ni del diseño de lectura lazy de 1
+archivo/trial. **No investigado más ahora** — se decidió no tomar la
+extrapolación ×7 del piloto (≈8h10min) como estimador confiable del
+costo real de la curva completa de FOSSA sin re-medir en condiciones
+más limpias, y se dejó la decisión curva-completa/decimación/re-medición
+pendiente del usuario en vez de decidir unilateralmente con un número
+sospechoso. Si esto vuelve a aparecer en otra corrida pesada (Valencia
+ya fue la más cara de las 3 curvas medidas, 1894.2s, sin este patrón),
+vale la pena perfilar qué proceso específico está compitiendo por
+disco/CPU en vez de asumir que es ruido de una sola vez.
+
 ## 2026-07-27 — Valencia: 2 canales muertos confirmados en la punta más profunda del cable submarino
 
 **Hallazgo de calidad de dato real, F1.5, no un bug de pipeline.**

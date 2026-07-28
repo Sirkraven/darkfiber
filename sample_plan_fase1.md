@@ -578,3 +578,74 @@ ni el máximo (stanford1_campus) cambiaron. Puramente descriptivo, sin
 intentar explicación causal acá (eso es trabajo de F1.6) — pero es la
 primera confirmación real de que el spread observado con 4 arrays no
 era un artefacto de muestra chica que se iba a disolver con más datos.
+
+### FOSSA — loader + piloto (curva completa PENDIENTE de aprobación)
+
+**Descubierto en disco**: 20 archivos `.tdms` (no 19 como se había
+reportado), todos separados por exactamente 60s, sin huecos,
+155429-161329 UTC. Se usaron los primeros 19 cronológicamente
+(155429-161229), el 20mo quedó sin usar — consistente con el K=19
+pre-registrado.
+
+**Loader nuevo**: `replay.load_tdms(path, fs, dx)` (NI TDMS,
+`nptdms.TdmsFile.read()` — lectura EAGER completa, no streaming).
+Confirmado contra el archivo real: 11,648 canales × 30,000 muestras
+(60s @ 500Hz), int16 → upcast a float32, sin properties confiables
+(`attrs={}` real, fs/dx obligatorios como en los demás loaders
+no-QuakeFlow). **Benchmark de partial-read** (streaming
+`TdmsFile.open()` + `channel.read_data()` por canal): descartado, >120s
+contra 14.6-22.4s de la lectura completa eager — el diseño pasa a "1
+archivo entero por trial, cargado y descartado", nunca streaming
+parcial.
+
+**Canal-count/spacing vs. chanmap**: confirmado contra
+`DASchanmap_westsac_2017.csv` — **11,648 canales** (coincide
+exactamente con la hipótesis), spacing mediana 2.0m, longitud real de
+cable 23,644.06m.
+
+**Test de grilla int16**: aplicado
+(`test_injection_arithmetic_never_rounds_through_int16`), igual patrón
+que float16 de FORESEE — aritmética de inyección confirmada en
+float32/float64, no trunca a través de la grilla entera de origen.
+
+**Headroom de grabación** (§12 paso 4, fracción de muestras cerca de
+±32767): sobre los 19 archivos, máximo absoluto observado
+6,108-6,303 (~19% del full-scale int16) — **cero clipping, cero
+muestras cerca del techo** en cualquiera de los 19 archivos. Sin
+concerns de saturación del ADC.
+
+**Estacionariedad** (RAM-bounded: RMS calculado 1 archivo a la vez,
+descartado antes de cargar el siguiente —
+`snr_curve.compute_rms_series_lazy` +
+`stationarity_check(rms_series=...)`, nuevo parámetro que evita tener
+que tener los 19 archivos completos residentes a la vez, ~1.4GB c/u
+tras el upcast): **limpio, max/min RMS = 1.58×** (muy por debajo del
+umbral 3.0×), los 19 archivos pre-registrados usados sin recorte, sin
+necesidad de sustituir por reserva.
+
+**Piloto** (SNR=8, n=20, `snr_curve.run_step_lazy_single_file` —
+variante RAM-bounded de `run_step`: sortea un archivo, lo carga
+completo, corre UN trial, lo descarta antes del siguiente, nunca más
+de un archivo de ~1.4GB residente): **20/20 trials válidos, 11 hits,
+recall 55.0% [IC95% Wilson 34.2%-74.2%], runtime_s = 4204.4s (≈70.1
+min)**.
+
+**Extrapolación ×7 para la curva completa (140 trials): ≈29,431s ≈
+8h10min.** Fuera del rango de sanity-check pre-registrado (2-5.7h,
+derivado del costo por canal·Hz de los 4 arrays ya medidos).
+
+**Anomalía detectada, no resuelta — el número de arriba no es
+confiable como estimador de costo estable**: el mismo pase read-only
+de 19 archivos (sin ningún cómputo de trial, solo lectura+RMS) tardó
+628.5s la primera vez y 7,597.8s la segunda (chequeo de headroom,
+mismo trabajo exacto) — un factor 12× sobre el mismo trabajo. El
+piloto (210s/trial promedio) es 6-10× más lento que el benchmark de
+carga de un solo archivo (14.6-22.4s) medido en F1.4/F1.5. Este patrón
+apunta a algo externo al loader (contención de disco/antivirus,
+throttling térmico, u otra causa ambiental de esta máquina en esta
+sesión) degradándose a lo largo de la sesión, no a una propiedad
+estable de `load_tdms` ni de la lectura lazy. **No se recomienda tomar
+8h10min como el costo real de la curva completa sin antes re-medir en
+condiciones limpias** — la curva completa NO se corrió, queda
+pendiente de decisión explícita (curva completa vs. decimación
+espacial documentada vs. re-medir el piloto) tras revisar esto.

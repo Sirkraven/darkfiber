@@ -39,6 +39,7 @@ dependencies = [
 
 [project.optional-dependencies]
 h5 = ["h5py>=3.10"]
+tdms = ["npTDMS>=1.9"]
 figs = ["matplotlib>=3.8"]
 dashboard = ["streamlit>=1.30"]
 ops = ["pyyaml>=6.0"]

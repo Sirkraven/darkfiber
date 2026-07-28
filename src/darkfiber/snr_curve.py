@@ -82,7 +82,12 @@ def wilson_ci(k: int, n: int, z: float = Z_95) -> tuple[float, float]:
     return (max(0.0, center - half), min(1.0, center + half))
 
 
-def stationarity_check(sources: list[dict], threshold: float = 3.0, k_min: int = 1) -> dict:
+def stationarity_check(
+    sources: list[dict] | None = None,
+    threshold: float = 3.0,
+    k_min: int = 1,
+    rms_series: list[float] | None = None,
+) -> dict:
     """Criterio de estacionariedad pre-registrado (F1.3 §2/§7, uniforme
     para FOSSA/Valencia/Stanford-2/FORESEE): serie de `noise_rms()` por
     fuente del pool (ya en banda de análisis -- cada `source["noise"]`
@@ -103,8 +108,19 @@ def stationarity_check(sources: list[dict], threshold: float = 3.0, k_min: int =
     Rama terminal: si ni el subconjunto contiguo más largo llega a
     `k_min`, se devuelve el pool COMPLETO con `drift_flag=True` --
     NUNCA se recorta por debajo de `k_min` ni se declara "inmedible".
+
+    `rms_series` (F1.5, FOSSA): pasar la serie de RMS YA CALCULADA en vez
+    de `sources` -- necesario cuando cargar todos los archivos a la vez
+    no es viable en RAM (FOSSA: 19 archivos x ~1.4GB tras upcast a
+    float32 = ~26GB simultáneos). El caller calcula cada RMS cargando UN
+    archivo a la vez y descartándolo (ver `snr_curve.py` §F1.5 / doc de
+    la corrida de FOSSA) -- el algoritmo de acá es idéntico, solo cambia
+    de dónde sale la serie.
     """
-    rms_series = [noise_rms(s["noise"]) for s in sources]
+    if rms_series is None:
+        if sources is None:
+            raise ValueError("stationarity_check necesita 'sources' o 'rms_series'")
+        rms_series = [noise_rms(s["noise"]) for s in sources]
     n = len(rms_series)
 
     def ratio(lo: int, hi: int) -> float:
@@ -316,6 +332,120 @@ def run_step(
         recall=(hits / n_done if n_done else 0.0),
         ci_low=ci_lo,
         ci_high=ci_hi,
+    )
+
+
+def _prepare_single_file_source(
+    path: str,
+    loader: Callable[..., tuple],
+    fs_override: float | None,
+    dx_override: float | None,
+    channel_range: tuple[int, int] | None,
+) -> dict:
+    """Carga UN archivo, aplica channel_range/sanitize/bandpass, y arma el
+    dict 'source' que `run_trial` espera -- idéntico al procesamiento por
+    archivo de `gather_noise_sources`, pero para un solo path a la vez y
+    sin acumular en una lista (F1.5, FOSSA: RAM-bounded, nunca más de un
+    archivo de ~1.4GB residente a la vez). El archivo completo se trata
+    como ruido sin evento (FOSSA no trae `event_time_index` embebido y no
+    se pre-registró `manual_exclude_s` para esta corrida)."""
+    data, fs, dx, _attrs = loader(path, fs_override, dx_override)
+    if channel_range is not None:
+        ch_start, ch_end = channel_range
+        if ch_start < 1 or ch_end > data.shape[0] or ch_start > ch_end:
+            raise SystemExit(
+                f"{path}: channel_range {channel_range} (1-indexado) fuera de rango "
+                f"para un array de {data.shape[0]} canales"
+            )
+        data = data[ch_start - 1 : ch_end, :]
+    data = sanitize(data)
+    data = bandpass(data, fs)
+    n_ch, n_t = data.shape
+    return dict(
+        path=path,
+        fs=fs,
+        dx=dx,
+        n_ch=n_ch,
+        noise=data,
+        exclusion_kind="none (archivo completo, sin verdad-terreno)",
+        segment_s=(0.0, n_t / fs),
+    )
+
+
+def compute_rms_series_lazy(
+    files: list[str],
+    loader: Callable[..., tuple],
+    fs_override: float | None = None,
+    dx_override: float | None = None,
+    channel_range: tuple[int, int] | None = None,
+) -> list[float]:
+    """Serie de RMS por archivo para `stationarity_check(rms_series=...)`,
+    cargando UN archivo a la vez y descartándolo antes de pasar al
+    siguiente -- ver `_prepare_single_file_source`. Necesario para FOSSA:
+    19 archivos completos simultáneos (~1.4GB c/u tras upcast a float32)
+    no entran en RAM, pero uno a la vez sí."""
+    series = []
+    for path in files:
+        source = _prepare_single_file_source(path, loader, fs_override, dx_override, channel_range)
+        series.append(noise_rms(source["noise"]))
+        print(f"  ({os.path.basename(path)}: rms={series[-1]:.4g})")
+        del source
+    return series
+
+
+def run_step_lazy_single_file(
+    files: list[str],
+    loader: Callable[..., tuple],
+    snr: float,
+    n_target: int,
+    step_idx: int,
+    threshold: float,
+    fs_override: float | None = None,
+    dx_override: float | None = None,
+    channel_range: tuple[int, int] | None = None,
+) -> dict:
+    """Variante RAM-bounded de `run_step`: en vez de sortear entre fuentes
+    YA CARGADAS, sortea un archivo, lo carga completo, corre UN trial, y lo
+    descarta antes del próximo -- necesario para FOSSA (ver
+    `_prepare_single_file_source`). Mismo picker/semántica que `run_step`
+    (mismo seed por step_idx, mismo max_attempts). Mide además el runtime
+    real de punta a punta (incluye el costo de carga por trial, no solo
+    cómputo) -- es justamente lo que el pilot pre-registrado necesita
+    reportar antes de comprometer la curva completa de 140 trials."""
+    picker = np.random.default_rng(1_000 + step_idx)
+    hits = 0
+    n_done = 0
+    attempts = 0
+    max_attempts = n_target * 25
+    t_start = time.time()
+    while n_done < n_target and attempts < max_attempts:
+        attempts += 1
+        path = files[int(picker.integers(0, len(files)))]
+        source = _prepare_single_file_source(path, loader, fs_override, dx_override, channel_range)
+        v_app = float(picker.uniform(*V_APP_RANGE_MPS)) * (1.0 if picker.random() < 0.5 else -1.0)
+        trial_seed = int(picker.integers(0, 2**31 - 1))
+        result = run_trial(source, snr, v_app, trial_seed, threshold)
+        del source
+        if result is None:
+            continue
+        n_done += 1
+        if result.detected and result.classified_as == EventClass.SEISMIC_CONFIRMED:
+            hits += 1
+    runtime_s = time.time() - t_start
+    if n_done < n_target:
+        print(
+            f"  AVISO: SNR={snr:g} solo consiguió {n_done}/{n_target} trials válidos "
+            f"(ventanas de ruido demasiado cortas para algunas v_app sorteadas)"
+        )
+    ci_lo, ci_hi = wilson_ci(hits, n_done)
+    return dict(
+        snr=snr,
+        n=n_done,
+        hits=hits,
+        recall=(hits / n_done if n_done else 0.0),
+        ci_low=ci_lo,
+        ci_high=ci_hi,
+        runtime_s=runtime_s,
     )
 
 

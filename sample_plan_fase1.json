@@ -11,7 +11,11 @@
     "reserve_files_policy": "confirmado en las 3 corridas: input_files_explicit_list=true en los 3 JSON de salida, ningun archivo de reserva se usó"
   },
   "f1_5_results": {
-    "order_run": ["FORESEE", "Stanford_2", "Valencia"],
+    "order_run": [
+      "FORESEE",
+      "Stanford_2",
+      "Valencia"
+    ],
     "infrastructure_added": [
       "gather_noise_sources: parametros nuevos 'loader' (callable, inyecta load_hdf5_generic/read_segy en vez de load_file por-extension) y 'channel_range' (1-indexado inclusive, convertido a slice 0-indexado en un solo lugar)",
       "snr_curve.py CLI: --format {auto,hdf5-generic,segy}, --hdf5-key, --channel-start/--channel-end, --files (lista explicita, evita arrastrar reserva del glob de --dir)",
@@ -19,7 +23,11 @@
       "convert_stanford_sgy.phase_to_strain_rate(): extraida de main() a funcion reusable para que snr_curve.py la aplique sin duplicar logica"
     ],
     "FORESEE": {
-      "stationarity": {"passed_clean": true, "max_over_min": 1.06, "files_used": 2},
+      "stationarity": {
+        "passed_clean": true,
+        "max_over_min": 1.06,
+        "files_used": 2
+      },
       "threshold": 4.0,
       "n_valid_trials": 140,
       "runtime_s": 312.7,
@@ -28,8 +36,15 @@
       "figure": "figures/fig6_recall_snr_foresee.png"
     },
     "Stanford_2": {
-      "stationarity": {"passed_clean": true, "max_over_min": 1.37, "files_used": 4},
-      "channel_range": [399, 750],
+      "stationarity": {
+        "passed_clean": true,
+        "max_over_min": 1.37,
+        "files_used": 4
+      },
+      "channel_range": [
+        399,
+        750
+      ],
       "threshold": 4.0,
       "n_valid_trials": 140,
       "runtime_s": 109.3,
@@ -38,15 +53,28 @@
       "figure": "figures/fig6_recall_snr_stanford2_sandhill.png"
     },
     "Valencia": {
-      "stationarity": {"passed_clean": true, "max_over_min": 1.04, "files_used": 3},
-      "channel_range": [510, 2977],
+      "stationarity": {
+        "passed_clean": true,
+        "max_over_min": 1.04,
+        "files_used": 3
+      },
+      "channel_range": [
+        510,
+        2977
+      ],
       "channel_range_correction": "corregido de la estimacion F1.3 (~548) al valor real del CSV de geometria submarina (510) -- 2468 canales",
       "hdf5_layout_correction": "F1.4 asumia 2D simple como FORESEE; el real es 3D (601 bloques, 250 muestras/bloque, 2977 canales), anidado 3 niveles bajo grupos -- load_hdf5_generic extendido en F1.5 para detectar y reordenar, validado contra fs antes de reordenar",
       "dtype_real": "float32 (estandar, no requirio test de grilla de precision)",
       "dead_channels_found": {
         "count": 2,
-        "real_channel_numbers": [2976, 2977],
-        "depth_m": [377.36, 378.91],
+        "real_channel_numbers": [
+          2976,
+          2977
+        ],
+        "depth_m": [
+          377.36,
+          378.91
+        ],
         "note": "punta mas lejana y profunda del cable submarino -- sanitize() ya lo maneja correctamente (zeroea, reporta, no rompe), documentado en docs/observaciones.md"
       },
       "threshold": 4.0,
@@ -55,7 +83,11 @@
       "snr50": 2.33,
       "non_monotone_point_estimates": {
         "note": "recall NUNCA llega a 100% en el rango barrido (unica de las 7 curvas con esta forma) -- pasa el chequeo de monotonia DENTRO de IC (los 3 escalones altos solapan), pero el punto estimado baja 90%->85%->70% en SNR=8->12->20. Compatible con ruido estadistico a n=20/escalon, no investigado mas -- observacion registrada para F1.6, no experimento disenado ahora.",
-        "recall_by_snr": {"8": 0.90, "12": 0.85, "20": 0.70}
+        "recall_by_snr": {
+          "8": 0.9,
+          "12": 0.85,
+          "20": 0.7
+        }
       },
       "json": "figures/snr_curve_valencia_submarine.json",
       "figure": "figures/fig6_recall_snr_valencia_submarine.png"
@@ -72,17 +104,95 @@
       },
       "spread_x": 4.8313,
       "spread_note": "IDENTICO al spread de 4 arrays (7.73/1.6) -- los 3 arrays nuevos cayeron dentro del rango ya observado, no lo ampliaron por ningun extremo. Primera confirmacion de que el spread no era artefacto de muestra chica."
+    },
+    "FOSSA_pilot": {
+      "files_on_disk": 20,
+      "files_used": 19,
+      "files_used_note": "primeros 19 cronologicamente (155429-161229 UTC), 20mo (161329) sin usar, consistente con K=19 pre-registrado; los 20 estan separados por exactamente 60s cada uno, sin huecos",
+      "loader": "replay.load_tdms(path, fs, dx) -- nptdms.TdmsFile.read(), lectura eager completa (no streaming). Confirmado contra archivo real: 11648 canales x 30000 muestras (60s@500Hz), int16 -> upcast float32, attrs={} (fs/dx obligatorios)",
+      "partial_read_benchmark": {
+        "streaming_s": ">120 (no completo)",
+        "eager_s": "14.6-22.4",
+        "decision": "descartado streaming; diseno = 1 archivo entero por trial, cargado y descartado"
+      },
+      "chanmap_verification": {
+        "source": "DASchanmap_westsac_2017.csv",
+        "n_channels": 11648,
+        "spacing_median_m": 2.0,
+        "cable_length_m": 23644.06
+      },
+      "int16_grid_test": "test_injection_arithmetic_never_rounds_through_int16 -- aritmetica de inyeccion confirmada en float32/float64",
+      "headroom_check": {
+        "threshold_near_ceiling": 0.95,
+        "ceiling": 32767,
+        "max_abs_observed_range": [
+          6108,
+          6303
+        ],
+        "max_abs_fraction_of_fullscale": 0.192,
+        "exact_clip_fraction": 0.0,
+        "near95_fraction": 0.0,
+        "note": "sin clipping, sin muestras cerca del techo, en ninguno de los 19 archivos"
+      },
+      "stationarity": {
+        "passed_clean": true,
+        "max_over_min": 1.58,
+        "files_used": 19,
+        "method": "RAM-bounded: RMS calculado 1 archivo a la vez y descartado (compute_rms_series_lazy), pasado a stationarity_check(rms_series=...)"
+      },
+      "pilot": {
+        "snr": 8.0,
+        "n_target": 20,
+        "n_valid_trials": 20,
+        "hits": 11,
+        "recall": 0.55,
+        "ci95_wilson": [
+          0.342,
+          0.742
+        ],
+        "runtime_s": 4204.4,
+        "method": "run_step_lazy_single_file -- sortea archivo, carga completo, corre 1 trial, descarta antes del siguiente"
+      },
+      "extrapolation_x7": {
+        "runtime_s": 29430.8,
+        "runtime_h": 8.175
+      },
+      "timing_anomaly": {
+        "description": "el mismo pase read-only de 19 archivos (sin computo de trial) tardo 628.5s la primera vez (RMS) y 7597.8s la segunda (headroom check, mismo trabajo exacto) -- factor 12x sobre trabajo identico. El piloto (210s/trial promedio) es 6-10x mas lento que el benchmark de carga de un solo archivo (14.6-22.4s) de F1.4/F1.5.",
+        "interpretation": "apunta a algo externo al loader (contencion de disco/antivirus, throttling termico, u otra causa ambiental de esta sesion/maquina) degradandose con el tiempo, no a una propiedad estable de load_tdms ni de la lectura lazy",
+        "recommendation": "no tomar 8h10min como costo real sin re-medir en condiciones limpias"
+      },
+      "full_curve_status": "PENDIENTE -- NO corrida. Requiere decision explicita del usuario: curva completa vs decimacion espacial documentada vs re-medir el piloto primero"
     }
   },
   "common_params": {
-    "snr_steps": [1.0, 2.0, 3.0, 5.0, 8.0, 12.0, 20.0],
+    "snr_steps": [
+      1.0,
+      2.0,
+      3.0,
+      5.0,
+      8.0,
+      12.0,
+      20.0
+    ],
     "n_per_step": 20,
-    "v_app_range_mps": [2000.0, 6500.0],
+    "v_app_range_mps": [
+      2000.0,
+      6500.0
+    ],
     "wavelet": "ricker",
     "threshold": 4.0,
     "noise_margin_s": 5.0,
     "seed_mechanism": "hardcoded en snr_curve.py: np.random.default_rng(1000 + step_idx)",
-    "seed_values_by_step": [1000, 1001, 1002, 1003, 1004, 1005, 1006],
+    "seed_values_by_step": [
+      1000,
+      1001,
+      1002,
+      1003,
+      1004,
+      1005,
+      1006
+    ],
     "noise_floor_formula": "13.6 + 0.001833 * aperture_m",
     "total_budget_gb": 40,
     "size_overrun_stop_threshold_pct": 20
@@ -131,12 +241,30 @@
           "never_crosses_file_boundary": "la ventana de la etapa 2 vive enteramente dentro del archivo de la etapa 1 -- por eso los huecos de grabacion (ver gap_evidence) no importan, no hace falta asumir ni verificar contigueidad para nada",
           "exact_floor_verification": {
             "method": "formula exacta de inject_and_verify_sized/pipeline_margin_s (no la aproximacion 13.6+0.001833*aperture_m), con aperture_m=23300, seismic_v_min_mps=1500, warmup_s=8.8 (lta_s 8.0 + gap_s 0.4 + sta_s 0.4), wavelet Ricker dur_s=0.8 (default de synth.ricker -- el '6.0' del codigo es la frecuencia central, no la duracion)",
-          "table_v_app_vs_margin_in_60s_file": [
-            {"v_app_mps": 2000, "min_len_s_exact": 56.317, "margin_s": 3.683, "note": "peor caso -- v_app mas lento sorteable"},
-            {"v_app_mps": 3200, "min_len_s_exact": 51.948, "margin_s": 8.052},
-            {"v_app_mps": 4500, "min_len_s_exact": 49.844, "margin_s": 10.156},
-            {"v_app_mps": 6500, "min_len_s_exact": 48.251, "margin_s": 11.749, "note": "mejor caso -- v_app mas rapido sorteable"}
-          ],
+            "table_v_app_vs_margin_in_60s_file": [
+              {
+                "v_app_mps": 2000,
+                "min_len_s_exact": 56.317,
+                "margin_s": 3.683,
+                "note": "peor caso -- v_app mas lento sorteable"
+              },
+              {
+                "v_app_mps": 3200,
+                "min_len_s_exact": 51.948,
+                "margin_s": 8.052
+              },
+              {
+                "v_app_mps": 4500,
+                "min_len_s_exact": 49.844,
+                "margin_s": 10.156
+              },
+              {
+                "v_app_mps": 6500,
+                "min_len_s_exact": 48.251,
+                "margin_s": 11.749,
+                "note": "mejor caso -- v_app mas rapido sorteable"
+              }
+            ],
             "conclusion": "el piso SIEMPRE cabe (60s > 56.317s incluso en el peor caso -- ningun trial se descarta por ventana insuficiente), pero NO es holgado en el extremo lento: margen 3.68s-11.75s segun que v_app se sortee para ese trial. Variedad entre los 140 trials viene predominantemente de CUAL de los 19 archivos se sortea, no de donde cae la ventana dentro de un archivo dado -- mas limitado que arrays con pools de un solo archivo largo (ej. Stanford-1 en F1.1, 900s en un archivo, margen ~840s). Decision pendiente del usuario: aceptar esta cifra tal cual, o ajustar algo (ej. K) -- no resuelto unilateralmente."
           }
         }
@@ -173,7 +301,10 @@
         "status": "diseñado, no implementado -- F1.4",
         "why_not_reuse_load_quakeflow_h5": "load_quakeflow_h5 (run_on_quakeflow.py:114-134) tiene defaults SILENCIOSOS si faltan attrs: _attr(attrs,'dt_s',0.01) y _attr(attrs,'dx_m',8.0) -- asume fs=100Hz/dx=8m en silencio en vez de fallar si el archivo no trae esos attrs exactos. Valencia no es QuakeFlow, sus attrs internos son desconocidos -- reusar este loader violaria la regla de nunca asumir fs/dx.",
         "new_contract": "lee primer dataset 2D del HDF5 (mismo fallback defensivo), pero fs/dx son OBLIGATORIOS como override explicito (mismo contrato que .npz en replay.py, SystemExit si faltan)",
-        "override_values": {"fs": 250, "dx": 16.8}
+        "override_values": {
+          "fs": 250,
+          "dx": 16.8
+        }
       }
     },
     "Stanford_2": {
@@ -182,25 +313,34 @@
       "first_file": "cbt_processed_20200301_065859.550+0000.sgy",
       "first_file_folder": "20200301",
       "first_file_timestamp_utc": "2020-03-01T06:58:59.550Z",
-      "file_size_mb": 75.30,
+      "file_size_mb": 75.3,
       "k_files": 4,
-      "declared_size_gb": 0.30,
+      "declared_size_gb": 0.3,
       "format": "SEG-Y",
       "real_file_verification": {
         "method": "read_binary_header + read_segy corridos directo contra el archivo real descargado (Ola 1)",
         "sample_interval_us": 4000,
         "samples_per_trace": 15000,
         "format_code": 5,
-        "data_shape": [1250, 15000],
+        "data_shape": [
+          1250,
+          15000
+        ],
         "fs_hz": 250.0,
         "duration_s": 60.0,
-        "sample_value_range": [-205734.7, 205190.7],
+        "sample_value_range": [
+          -205734.7,
+          205190.7
+        ],
         "value_range_note": "magnitud consistente con fase optica desenrollada, no strain-rate -- CONFIRMA (no solo presume) que la derivada por default de convert_stanford_sgy.py hace falta aca tambien"
       },
       "geometry_file": "/Stanford-2-Sandhill-Road/Stanford-2-Sandhill-Road-geometry.csv",
       "geometry_real_verification": {
         "n_rows": 352,
-        "channel_range": [399, 750],
+        "channel_range": [
+          399,
+          750
+        ],
         "channel_range_note": "352 canales contiguos confirmados, 399-750 (no 400-750 -- corrimiento de a uno respecto al numero citado del paper)",
         "median_spacing_m": 7.87,
         "path_length_m": 2847.07,
@@ -240,7 +380,10 @@
       "real_file_verification": {
         "method": "h5py abierto directo contra el archivo real descargado (Ola 1)",
         "dataset_name": "raw",
-        "data_shape": [2137, 75000],
+        "data_shape": [
+          2137,
+          75000
+        ],
         "dtype_real": "float16",
         "dtype_note": "CORRECCION: F1.2b/F1.3 habian asumido float32 para el calculo de duracion -- el dtype real es float16, mas chico, lo que cambia la duracion implicita",
         "attrs_file_level": {},
@@ -279,7 +422,10 @@
       "loader": {
         "type": "comparte replay.load_hdf5_generic con Valencia",
         "status": "F1.4 cerrado -- implementado y verificado contra archivo real",
-        "override_values": {"fs": 125.0, "dx": 2.0},
+        "override_values": {
+          "fs": 125.0,
+          "dx": 2.0
+        },
         "real_file_check": "load_hdf5_generic(path, fs=125.0, dx=2.0) da shape=(2137,75000), dtype=float32 (upcast confirmado desde float16 real), attrs={}. SystemExit sin fs/dx confirmado contra el archivo real tambien."
       }
     }
@@ -289,7 +435,10 @@
     "status": "IMPLEMENTADO -- F1.4",
     "why_not_reuse_load_quakeflow_h5": "load_quakeflow_h5 defaultea dt_s->0.01/dx_m->8.0 en silencio si faltan los attrs -- confirmado peligroso, no solo hipotetico: el archivo real de FORESEE no trae NINGUN attr",
     "contract": "fs/dx OBLIGATORIOS (SystemExit si faltan), key opcional (default: prueba 'raw' primero, si no el primer dataset 2D), nunca lee attrs",
-    "shared_by": ["FORESEE", "Valencia (pendiente de confirmar convencion de key cuando se descargue en Ola 2)"],
+    "shared_by": [
+      "FORESEE",
+      "Valencia (pendiente de confirmar convencion de key cuando se descargue en Ola 2)"
+    ],
     "test_file": "tests/test_replay_hdf5_generic.py",
     "test_count": 6,
     "test_coverage": "SystemExit en las 3 combinaciones de fs/dx faltante; attrs presentes pero ignorados a proposito; shape/dtype/upcast via clave 'raw' default; fallback a primer dataset 2D; key explicito inexistente falla fuerte; supervivencia de inyeccion SNR=1 sobre datos float16-de-origen tras el upcast"
@@ -304,7 +453,7 @@
   "budget_summary": {
     "FOSSA_gb": 13.29,
     "Valencia_gb": 5.34,
-    "Stanford_2_gb": 0.30,
+    "Stanford_2_gb": 0.3,
     "FORESEE_gb": 0.64,
     "metadata_license_files_gb": 0.001,
     "total_declared_gb": 19.57,
@@ -314,27 +463,102 @@
     "status": "FINAL -- los 4 arrays tienen archivo real, no quedan estimaciones por tasa"
   },
   "transfer_list": [
-    {"n": 1, "category": "datos", "path": "/FOSSA/Data/westSac_170906155429.tdms + 18 siguientes cronologicamente", "count": 19, "size_gb": 13.29},
-    {"n": 2, "category": "datos", "path": "/Valencia/Data/SR_Valencia_2020-09-01_13-21-28_UTC/... + 2 siguientes cronologicamente", "count": 3, "size_gb": 5.34},
-    {"n": 3, "category": "datos", "path": "/Stanford-2-Sandhill-Road/Data/20200301/cbt_processed_20200301_065859.550+0000.sgy + 3 siguientes cronologicamente", "count": 4, "size_gb": 0.30},
-    {"n": 4, "category": "datos", "path": "/FORESEE/Data/201904/FORESEE_UTC_20190404_194804.hdf5 + 1 siguiente cronologicamente", "count": 2, "size_gb": 0.64},
-    {"n": 5, "category": "metadata", "path": "/FOSSA/DASchanmap_westsac_2017.csv", "size_kb": 268.55},
-    {"n": 6, "category": "metadata", "path": "/Valencia/DAS-1-geometry-Valencia-undersea.csv"},
-    {"n": 7, "category": "metadata", "path": "/Valencia/DAS-1-geometry-Valencia-onland.csv"},
-    {"n": 8, "category": "metadata", "path": "/Stanford-2-Sandhill-Road/Stanford-2-Sandhill-Road-geometry.csv"},
-    {"n": 9, "category": "metadata", "path": "/FORESEE/foresee_ch_loc.txt", "size_kb": 72.65},
-    {"n": 10, "category": "licencia", "path": "/FOSSA/licence.txt", "size_kb": 15.72},
-    {"n": 11, "category": "licencia", "path": "/Valencia/ODBL_license.txt"},
-    {"n": 12, "category": "licencia", "path": "/Stanford-2-Sandhill-Road/ODBL_license.txt"},
-    {"n": 13, "category": "licencia", "path": "/FORESEE/ODBL_license.txt"}
+    {
+      "n": 1,
+      "category": "datos",
+      "path": "/FOSSA/Data/westSac_170906155429.tdms + 18 siguientes cronologicamente",
+      "count": 19,
+      "size_gb": 13.29
+    },
+    {
+      "n": 2,
+      "category": "datos",
+      "path": "/Valencia/Data/SR_Valencia_2020-09-01_13-21-28_UTC/... + 2 siguientes cronologicamente",
+      "count": 3,
+      "size_gb": 5.34
+    },
+    {
+      "n": 3,
+      "category": "datos",
+      "path": "/Stanford-2-Sandhill-Road/Data/20200301/cbt_processed_20200301_065859.550+0000.sgy + 3 siguientes cronologicamente",
+      "count": 4,
+      "size_gb": 0.3
+    },
+    {
+      "n": 4,
+      "category": "datos",
+      "path": "/FORESEE/Data/201904/FORESEE_UTC_20190404_194804.hdf5 + 1 siguiente cronologicamente",
+      "count": 2,
+      "size_gb": 0.64
+    },
+    {
+      "n": 5,
+      "category": "metadata",
+      "path": "/FOSSA/DASchanmap_westsac_2017.csv",
+      "size_kb": 268.55
+    },
+    {
+      "n": 6,
+      "category": "metadata",
+      "path": "/Valencia/DAS-1-geometry-Valencia-undersea.csv"
+    },
+    {
+      "n": 7,
+      "category": "metadata",
+      "path": "/Valencia/DAS-1-geometry-Valencia-onland.csv"
+    },
+    {
+      "n": 8,
+      "category": "metadata",
+      "path": "/Stanford-2-Sandhill-Road/Stanford-2-Sandhill-Road-geometry.csv"
+    },
+    {
+      "n": 9,
+      "category": "metadata",
+      "path": "/FORESEE/foresee_ch_loc.txt",
+      "size_kb": 72.65
+    },
+    {
+      "n": 10,
+      "category": "licencia",
+      "path": "/FOSSA/licence.txt",
+      "size_kb": 15.72
+    },
+    {
+      "n": 11,
+      "category": "licencia",
+      "path": "/Valencia/ODBL_license.txt"
+    },
+    {
+      "n": 12,
+      "category": "licencia",
+      "path": "/Stanford-2-Sandhill-Road/ODBL_license.txt"
+    },
+    {
+      "n": 13,
+      "category": "licencia",
+      "path": "/FORESEE/ODBL_license.txt"
+    }
   ],
   "transfer_list_total_files": 28,
   "transfer_list_note": "28 archivos totales (19+3+4+2 de datos + 5 metadata + 4 licencias) -- mas que el ~26 estimado por el usuario porque las 2 geometrias de Valencia se cuentan por separado. Ninguna transferencia disparada.",
   "comcat_summary": {
-    "FOSSA": {"window_utc": "2017-09-06 ~15:54-16:14", "result": "LIMPIO"},
-    "Valencia": {"window_utc": "2020-09-01 ~13:21", "result": "LIMPIO"},
-    "Stanford_2": {"window_utc": "2020-03-01 ~06:59", "result": "LIMPIO (evento mas cercano a 9h+ de distancia)"},
-    "FORESEE": {"window_utc": "2019-04-04 ~19:48", "result": "LIMPIO"},
+    "FOSSA": {
+      "window_utc": "2017-09-06 ~15:54-16:14",
+      "result": "LIMPIO"
+    },
+    "Valencia": {
+      "window_utc": "2020-09-01 ~13:21",
+      "result": "LIMPIO"
+    },
+    "Stanford_2": {
+      "window_utc": "2020-03-01 ~06:59",
+      "result": "LIMPIO (evento mas cercano a 9h+ de distancia)"
+    },
+    "FORESEE": {
+      "window_utc": "2019-04-04 ~19:48",
+      "result": "LIMPIO"
+    },
     "all_clean_no_exclude_s_needed": true
   }
 }
