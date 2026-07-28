@@ -8,6 +8,55 @@ something to hide.
 
 ### Added
 
+- **F1.5: three new SNR50 curves measured (FORESEE, Stanford-2, Valencia)**
+  — FOSSA still pending (TDMS, Ola 3, single-step pilot). Stationarity
+  clean on all three (max/min RMS 1.04×-1.37×, well under the 3.0×
+  threshold); no reserve files used on any run
+  (`input_files_explicit_list=true` in every output JSON).
+  Real pipeline infrastructure needed to actually run these didn't exist
+  yet after F1.4 (which only tested the loaders in isolation):
+  `gather_noise_sources` gained a `loader` callable parameter (to inject
+  `load_hdf5_generic`/`read_segy` in place of extension-based
+  `load_file` dispatch) and a `channel_range` parameter (1-indexed
+  inclusive, matching the real geometry files directly, converted to a
+  0-indexed slice in one place); `snr_curve.py`'s CLI gained
+  `--format {auto,hdf5-generic,segy}`, `--hdf5-key`,
+  `--channel-start`/`--channel-end`, and `--files` (an explicit file
+  list, so a directory holding both measurement and reserve files can't
+  silently pull in the wrong ones via glob). F1.3's stationarity
+  criterion — designed then, never actually implemented — is now real
+  code: `snr_curve.stationarity_check()`, with 5 new tests covering the
+  clean-pass case, the longest-contiguous-subset algorithm, its
+  earliest-start tie-break, the terminal drift-flag branch, and the
+  monotonic-ratio shortcut that makes the scan efficient. Stanford's
+  phase→strain-rate derivative was extracted from
+  `convert_stanford_sgy.py`'s `main()` into a reusable
+  `phase_to_strain_rate()` function so `snr_curve.py` applies the exact
+  same transform to Stanford-2 without duplicating it.
+  Two real corrections surfaced by actually loading Valencia's data:
+  its submarine channel boundary is channel **510** (not the ~548
+  estimated in F1.3 from spacing arithmetic — the real geometry CSV
+  states it directly), and its HDF5 layout is genuinely 3D
+  (`601 blocks × 250 samples/block × 2977 channels`, nested three
+  groups deep), not the flat 2D `raw` dataset FORESEE has — extended
+  `load_hdf5_generic` to detect and reshape this, validating the
+  middle dimension against `fs` before reordering rather than assuming
+  the layout blindly. `sanitize()` (pre-existing, unchanged) found 2
+  dead channels in Valencia's real data at the cable's farthest,
+  deepest point (~377-379m depth) — handled correctly with no code
+  changes needed, logged in `docs/observaciones.md` as a genuine data
+  property.
+  Results: FORESEE SNR50=1.75 (140/140 trials, 312.7s), Stanford-2
+  SNR50=1.77 (channels 399-750, 140/140, 109.3s), Valencia SNR50=2.33
+  (channels 510-2977, 140/140, 1894.2s). Valencia's curve never reaches
+  100% recall within the swept range (unique among all 7 curves
+  measured so far) — passes the within-CI monotonicity check, but the
+  point estimates dip 90%→85%→70% at the top three steps; logged as an
+  observation for F1.6, not investigated further now.
+  **Spread across 7 arrays: 4.83×, identical to the 4-array spread** —
+  all three new arrays fell inside the already-observed range
+  (1.6-7.73), not extending it at either end.
+
 - **F1.4: stricter precision test for FORESEE's float16 source data** —
   the existing `test_low_snr_injection_survives_float16_source` only
   checked that detection succeeded; added

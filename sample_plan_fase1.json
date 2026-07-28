@@ -1,14 +1,78 @@
 {
-  "status": "F1.4_LOADERS_DONE_FORESEE_STANFORD2",
-  "note": "Ola 1 descargada (FORESEE, Stanford-2 -- 10 archivos c/u, medicion pre-registrada + reserva declarada). F1.4: loaders escritos, probados contra archivos reales, 34/34 tests verdes. NO se corrio ninguna curva SNR50 -- solo loaders y tests, por instruccion explicita. Valencia = Ola 2, pendiente de disparo.",
+  "status": "F1.5_DONE_FORESEE_STANFORD2_VALENCIA_FOSSA_PENDING",
+  "note": "F1.5 cerrado para FORESEE, Stanford-2, Valencia -- 3 curvas SNR50 medidas, estacionariedad limpia en las 3, ningun archivo de reserva usado. FOSSA sigue pendiente (Ola 3, TDMS, piloto de un escalon).",
   "globus_endpoint": "alejandro-darkfiber",
   "download_status": {
     "wave_1_downloaded": true,
-    "FOSSA": "solo metadata (chanmap + licencia), sin .tdms todavia",
-    "FORESEE": "10 archivos .hdf5 (2 medicion pre-registrada + 8 reserva declarada, no entran a la corrida)",
-    "Stanford_2": "10 archivos .sgy (4 medicion pre-registrada + 6 reserva declarada, no entran a la corrida)",
-    "Valencia": "solo metadata (geometrias + licencia), sin .hdf5 todavia -- Ola 2 pendiente de disparo",
-    "reserve_files_policy": "la medicion usa EXACTAMENTE los archivos de este documento -- si el chequeo de estacionariedad rechaza alguno, se avisa antes de sustituir por uno de reserva (desviacion del pre-registro, requiere aprobacion explicita)"
+    "FOSSA": "solo metadata (chanmap + licencia), sin .tdms todavia -- Ola 3 pendiente",
+    "FORESEE": "10 archivos .hdf5 (2 medicion USADOS + 8 reserva declarada, NO entraron a la corrida)",
+    "Stanford_2": "10 archivos .sgy (4 medicion USADOS + 6 reserva declarada, NO entraron a la corrida)",
+    "Valencia": "6 archivos .hdf5 (3 medicion USADOS + 3 reserva declarada, NO entraron a la corrida)",
+    "reserve_files_policy": "confirmado en las 3 corridas: input_files_explicit_list=true en los 3 JSON de salida, ningun archivo de reserva se usó"
+  },
+  "f1_5_results": {
+    "order_run": ["FORESEE", "Stanford_2", "Valencia"],
+    "infrastructure_added": [
+      "gather_noise_sources: parametros nuevos 'loader' (callable, inyecta load_hdf5_generic/read_segy en vez de load_file por-extension) y 'channel_range' (1-indexado inclusive, convertido a slice 0-indexado en un solo lugar)",
+      "snr_curve.py CLI: --format {auto,hdf5-generic,segy}, --hdf5-key, --channel-start/--channel-end, --files (lista explicita, evita arrastrar reserva del glob de --dir)",
+      "snr_curve.stationarity_check(): implementacion real del criterio disenado en F1.3 (nunca antes codigo), 5 tests nuevos (caso limpio, subconjunto, empate, rama terminal, atajo de monotonia del ratio)",
+      "convert_stanford_sgy.phase_to_strain_rate(): extraida de main() a funcion reusable para que snr_curve.py la aplique sin duplicar logica"
+    ],
+    "FORESEE": {
+      "stationarity": {"passed_clean": true, "max_over_min": 1.06, "files_used": 2},
+      "threshold": 4.0,
+      "n_valid_trials": 140,
+      "runtime_s": 312.7,
+      "snr50": 1.75,
+      "json": "figures/snr_curve_foresee.json",
+      "figure": "figures/fig6_recall_snr_foresee.png"
+    },
+    "Stanford_2": {
+      "stationarity": {"passed_clean": true, "max_over_min": 1.37, "files_used": 4},
+      "channel_range": [399, 750],
+      "threshold": 4.0,
+      "n_valid_trials": 140,
+      "runtime_s": 109.3,
+      "snr50": 1.77,
+      "json": "figures/snr_curve_stanford2_sandhill.json",
+      "figure": "figures/fig6_recall_snr_stanford2_sandhill.png"
+    },
+    "Valencia": {
+      "stationarity": {"passed_clean": true, "max_over_min": 1.04, "files_used": 3},
+      "channel_range": [510, 2977],
+      "channel_range_correction": "corregido de la estimacion F1.3 (~548) al valor real del CSV de geometria submarina (510) -- 2468 canales",
+      "hdf5_layout_correction": "F1.4 asumia 2D simple como FORESEE; el real es 3D (601 bloques, 250 muestras/bloque, 2977 canales), anidado 3 niveles bajo grupos -- load_hdf5_generic extendido en F1.5 para detectar y reordenar, validado contra fs antes de reordenar",
+      "dtype_real": "float32 (estandar, no requirio test de grilla de precision)",
+      "dead_channels_found": {
+        "count": 2,
+        "real_channel_numbers": [2976, 2977],
+        "depth_m": [377.36, 378.91],
+        "note": "punta mas lejana y profunda del cable submarino -- sanitize() ya lo maneja correctamente (zeroea, reporta, no rompe), documentado en docs/observaciones.md"
+      },
+      "threshold": 4.0,
+      "n_valid_trials": 140,
+      "runtime_s": 1894.2,
+      "snr50": 2.33,
+      "non_monotone_point_estimates": {
+        "note": "recall NUNCA llega a 100% en el rango barrido (unica de las 7 curvas con esta forma) -- pasa el chequeo de monotonia DENTRO de IC (los 3 escalones altos solapan), pero el punto estimado baja 90%->85%->70% en SNR=8->12->20. Compatible con ruido estadistico a n=20/escalon, no investigado mas -- observacion registrada para F1.6, no experimento disenado ahora.",
+        "recall_by_snr": {"8": 0.90, "12": 0.85, "20": 0.70}
+      },
+      "json": "figures/snr_curve_valencia_submarine.json",
+      "figure": "figures/fig6_recall_snr_valencia_submarine.png"
+    },
+    "spread_7_arrays": {
+      "values": {
+        "monterey_bay": 1.6,
+        "FORESEE": 1.75,
+        "Stanford_2": 1.77,
+        "Valencia": 2.33,
+        "ridgecrest_north": 2.5,
+        "arcata": 5.9,
+        "stanford1_campus": 7.73
+      },
+      "spread_x": 4.8313,
+      "spread_note": "IDENTICO al spread de 4 arrays (7.73/1.6) -- los 3 arrays nuevos cayeron dentro del rango ya observado, no lo ampliaron por ningun extremo. Primera confirmacion de que el spread no era artefacto de muestra chica."
+    }
   },
   "common_params": {
     "snr_steps": [1.0, 2.0, 3.0, 5.0, 8.0, 12.0, 20.0],

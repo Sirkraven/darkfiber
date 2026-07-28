@@ -38,6 +38,7 @@ import glob
 import json
 import os
 import time
+from collections.abc import Callable
 
 import numpy as np
 
@@ -81,12 +82,85 @@ def wilson_ci(k: int, n: int, z: float = Z_95) -> tuple[float, float]:
     return (max(0.0, center - half), min(1.0, center + half))
 
 
+def stationarity_check(sources: list[dict], threshold: float = 3.0, k_min: int = 1) -> dict:
+    """Criterio de estacionariedad pre-registrado (F1.3 §2/§7, uniforme
+    para FOSSA/Valencia/Stanford-2/FORESEE): serie de `noise_rms()` por
+    fuente del pool (ya en banda de análisis -- cada `source["noise"]`
+    viene de `gather_noise_sources`, que ya aplicó `bandpass`), umbral
+    de acción `max/min > threshold` (default 3.0x).
+
+    Algoritmo si dispara: subconjunto CONTIGUO más largo (por índice en
+    la lista, en el orden en que se pasó -- cronológico si `files` venía
+    ordenado así, sin asumir contigüidad temporal real entre archivos)
+    cuyo propio max/min interno sea `<= threshold`; empate en longitud ->
+    el que empieza más temprano (garantizado por el orden de escaneo:
+    `start` ascendente, solo se reemplaza `best` con un largo
+    ESTRICTAMENTE mayor). El ratio max/min de una ventana es monótono no
+    decreciente al agrandarla (agregar un elemento nunca baja el máximo
+    ni sube el mínimo) -- permite cortar el escaneo interno en el primer
+    `end` que excede el umbral para ese `start`, sin perder el óptimo.
+
+    Rama terminal: si ni el subconjunto contiguo más largo llega a
+    `k_min`, se devuelve el pool COMPLETO con `drift_flag=True` --
+    NUNCA se recorta por debajo de `k_min` ni se declara "inmedible".
+    """
+    rms_series = [noise_rms(s["noise"]) for s in sources]
+    n = len(rms_series)
+
+    def ratio(lo: int, hi: int) -> float:
+        seg = rms_series[lo:hi]
+        lo_v = min(seg)
+        return (max(seg) / lo_v) if lo_v > 0 else float("inf")
+
+    overall_ratio = ratio(0, n)
+    if overall_ratio <= threshold:
+        return dict(
+            passed_clean=True,
+            drift_flag=False,
+            kept_indices=list(range(n)),
+            rms_series=rms_series,
+            overall_ratio=overall_ratio,
+            threshold=threshold,
+        )
+
+    best_len, best_start = 0, 0
+    for start in range(n):
+        for end in range(start + 1, n + 1):
+            if ratio(start, end) <= threshold:
+                if (end - start) > best_len:
+                    best_len, best_start = end - start, start
+            else:
+                break  # ratio no decrece al agrandar la ventana -- cortar acá es seguro
+
+    if best_len >= k_min and best_len < n:
+        return dict(
+            passed_clean=False,
+            drift_flag=False,
+            kept_indices=list(range(best_start, best_start + best_len)),
+            rms_series=rms_series,
+            overall_ratio=overall_ratio,
+            subset_ratio=ratio(best_start, best_start + best_len),
+            threshold=threshold,
+        )
+
+    return dict(
+        passed_clean=False,
+        drift_flag=True,
+        kept_indices=list(range(n)),
+        rms_series=rms_series,
+        overall_ratio=overall_ratio,
+        threshold=threshold,
+    )
+
+
 def gather_noise_sources(
     files: list[str],
     margin_s: float = NOISE_MARGIN_S,
     fs_override: float | None = None,
     dx_override: float | None = None,
     manual_exclude_s: tuple[float, float] | None = None,
+    loader: Callable[..., tuple] | None = None,
+    channel_range: tuple[int, int] | None = None,
 ) -> list[dict]:
     """Ventanas de ruido REAL sin evento, alejadas del origen catalogado.
 
@@ -107,14 +181,43 @@ def gather_noise_sources(
     `fs_override`/`dx_override`: pasan directo a `replay.load_file` --
     ignorados para `.h5` (que trae su propio fs/dx embebido, a menos que
     se quieran forzar), OBLIGATORIOS para `.npz`.
+
+    `loader` (F1.5): callable `(path, fs, dx) -> (data, fs, dx, attrs)`
+    para usar en vez de `replay.load_file` -- necesario para formatos que
+    `load_file` no despacha por extensión (`replay.load_hdf5_generic`
+    para FORESEE/Valencia, que comparten extensión `.h5`/`.hdf5` con
+    QuakeFlow pero NO su convención de attrs; `convert_stanford_sgy.read_segy`
+    para `.sgy`, que `load_file` no reconoce en absoluto). Default `None`
+    = comportamiento previo (`load_file`), sin cambios para los arrays ya
+    medidos.
+
+    `channel_range` (F1.5): `(canal_inicio, canal_fin)` 1-indexado
+    INCLUSIVE, tal cual aparece en los archivos de geometría reales (ej.
+    Stanford-2: 399-750; Valencia: 510-2977) -- se convierte acá a slice
+    0-indexado (`data[inicio-1:fin, :]`) en un solo lugar para no repetir
+    la conversión (y el riesgo de off-by-one) en cada call site. Se aplica
+    INMEDIATAMENTE después de cargar, antes de `sanitize`/`bandpass`, así
+    que todo lo demás (RMS, estacionariedad, aperture) ya opera sobre el
+    subrango, no sobre el array completo.
     """
     sources: list[dict] = []
     for path in files:
         try:
-            data, fs, dx, attrs = load_file(path, fs=fs_override, dx=dx_override)
+            if loader is not None:
+                data, fs, dx, attrs = loader(path, fs_override, dx_override)
+            else:
+                data, fs, dx, attrs = load_file(path, fs=fs_override, dx=dx_override)
         except Exception as exc:
             print(f"  ({os.path.basename(path)}: omitido, {exc})")
             continue
+        if channel_range is not None:
+            ch_start, ch_end = channel_range
+            if ch_start < 1 or ch_end > data.shape[0] or ch_start > ch_end:
+                raise SystemExit(
+                    f"{path}: channel_range {channel_range} (1-indexado) fuera de rango "
+                    f"para un array de {data.shape[0]} canales"
+                )
+            data = data[ch_start - 1 : ch_end, :]
         data = sanitize(data)
         data = bandpass(data, fs)
         n_ch, n_t = data.shape
@@ -391,13 +494,89 @@ def main() -> None:
         "del arreglo (Tier0Config.from_array_profile, A7) si calibrate.py "
         "--param tier0_threshold --apply propuso uno; si no, default 4.0.",
     )
+    ap.add_argument(
+        "--files",
+        nargs="+",
+        default=None,
+        help="Lista EXPLÍCITA de archivos a usar (rutas completas o relativas a --dir) -- "
+        "si se da, IGNORA el glob de --dir por completo. Necesario cuando --dir tiene "
+        "archivos de reserva además de los pre-registrados (F1.5): sin esto, el glob "
+        "los arrastraría a todos, no solo a los del pre-registro.",
+    )
+    ap.add_argument(
+        "--format",
+        choices=("auto", "hdf5-generic", "segy"),
+        default="auto",
+        help="'auto' = replay.load_file (comportamiento previo, .h5 QuakeFlow / .npz). "
+        "'hdf5-generic' = replay.load_hdf5_generic (FORESEE/Valencia -- fs/dx/--hdf5-key "
+        "obligatorios, nunca lee attrs). 'segy' = convert_stanford_sgy.read_segy + "
+        "phase_to_strain_rate (Stanford-2/1 -- dx obligatorio, fs sale del header real).",
+    )
+    ap.add_argument(
+        "--hdf5-key",
+        default=None,
+        help="Ruta del dataset dentro del HDF5 (soporta anidado 'grupo/sub/dataset') -- "
+        "solo con --format hdf5-generic. Sin esto, load_hdf5_generic prueba 'raw' y "
+        "después el primer dataset 2D/3D de la raíz.",
+    )
+    ap.add_argument(
+        "--channel-start",
+        type=int,
+        default=None,
+        help="Canal inicial, 1-indexado INCLUSIVE (tal cual el archivo de geometría real) "
+        "-- para restringir a un subrango (ej. Stanford-2 399-750, Valencia 510-2977). "
+        "Requiere --channel-end.",
+    )
+    ap.add_argument(
+        "--channel-end", type=int, default=None, help="Canal final, 1-indexado INCLUSIVE."
+    )
     args = ap.parse_args()
 
-    files = sorted(
-        glob.glob(os.path.join(args.dir, "*.h5")) + glob.glob(os.path.join(args.dir, "*.npz"))
+    if (args.channel_start is None) != (args.channel_end is None):
+        raise SystemExit("--channel-start y --channel-end van juntos, o ninguno de los dos")
+    channel_range = (
+        (args.channel_start, args.channel_end) if args.channel_start is not None else None
     )
+
+    loader = None
+    if args.format == "hdf5-generic":
+        from .replay import load_hdf5_generic
+
+        def loader(path, fs, dx):  # noqa: E731
+            return load_hdf5_generic(path, fs=fs, dx=dx, key=args.hdf5_key)
+
+    elif args.format == "segy":
+        from pathlib import Path
+
+        from .convert_stanford_sgy import phase_to_strain_rate, read_segy
+
+        def loader(path, fs, dx):  # noqa: E731
+            if dx is None:
+                raise SystemExit("--format segy requiere --dx explícito (SEG-Y no trae spacing)")
+            data, real_fs = read_segy(Path(path))
+            if fs is not None and abs(fs - real_fs) > 1e-6:
+                raise SystemExit(
+                    f"{path}: --fs={fs} no coincide con fs real del header SEG-Y ({real_fs}) -- "
+                    "no se ignora el header, se corrige --fs o se omite."
+                )
+            data = phase_to_strain_rate(data, real_fs)
+            return data, real_fs, dx, {}
+
+    if args.files is not None:
+        files = sorted(
+            f if os.path.isabs(f) or os.path.exists(f) else os.path.join(args.dir, f)
+            for f in args.files
+        )
+    elif args.format == "segy":
+        files = sorted(glob.glob(os.path.join(args.dir, "*.sgy")))
+    else:
+        files = sorted(
+            glob.glob(os.path.join(args.dir, "*.h5"))
+            + glob.glob(os.path.join(args.dir, "*.hdf5"))
+            + glob.glob(os.path.join(args.dir, "*.npz"))
+        )
     if not files:
-        raise SystemExit(f"no se encontraron .h5 ni .npz en {args.dir}")
+        raise SystemExit(f"no se encontraron archivos para --format {args.format} en {args.dir}")
 
     cat = SignatureCatalog(args.db, naming_threshold=3)
     if args.threshold is not None:
@@ -427,6 +606,8 @@ def main() -> None:
         fs_override=args.fs,
         dx_override=args.dx,
         manual_exclude_s=exclude_s,
+        loader=loader,
+        channel_range=channel_range,
     )
     if not sources:
         raise SystemExit("no se pudo extraer ninguna ventana de ruido sin evento de estos archivos")
@@ -513,6 +694,16 @@ def main() -> None:
                 "curve": curve,
                 "snr50": snr50,
                 "runtime_s": dt,
+                # Provenance F1.5: formato/loader usado, subrango de
+                # canales aplicado (si hubo), y la lista EXPLÍCITA de
+                # archivos de entrada -- para que quede trazable que la
+                # corrida usó exactamente el set pre-registrado, no un
+                # glob que pudo arrastrar archivos de reserva.
+                "format": args.format,
+                "hdf5_key": args.hdf5_key,
+                "channel_range": list(channel_range) if channel_range is not None else None,
+                "input_files": [os.path.basename(f) for f in files],
+                "input_files_explicit_list": args.files is not None,
                 # Provenance del pool de ruido (F1.1, extensión a .npz):
                 # qué archivo aportó qué tramo, y si la exclusión de
                 # evento fue automática (event_time_index embebido) o

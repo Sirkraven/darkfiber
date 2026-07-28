@@ -42,6 +42,23 @@ def hdf5_path(tmp_path):
     return _write_hdf5(tmp_path)
 
 
+def _write_hdf5_3d_febus(tmp_path, n_blocks=4, samples_per_block=250, n_ch=5, nested=True):
+    """Simula el layout real de Valencia: dataset 3D
+    `(n_bloques, muestras_por_bloque, n_canales)`, anidado bajo grupos
+    (mismo patrón que el archivo real:
+    `fa1-<id>/Source1/Zone1/SR_Valencia`)."""
+    rng = np.random.default_rng(0)
+    data = rng.standard_normal((n_blocks, samples_per_block, n_ch)).astype(np.float32)
+    path = tmp_path / "test_valencia_like.hdf5"
+    with h5py.File(path, "w") as fh:
+        if nested:
+            grp = fh.create_group("fa1-test/Source1/Zone1")
+            grp.create_dataset("SR_Valencia", data=data)
+        else:
+            fh.create_dataset("SR_Valencia", data=data)
+    return str(path), data
+
+
 def test_requires_explicit_fs_dx(hdf5_path):
     """Sin fs/dx explícitos, debe fallar fuerte (`SystemExit`) -- nunca
     asumir un default como hace `load_quakeflow_h5` con `dt_s`/`dx_m`."""
@@ -162,3 +179,45 @@ def test_injection_arithmetic_never_rounds_through_float16(hdf5_path):
         "grilla de float16 -- sugiere que la aritmética de inyección pasó por "
         "float16 en algún punto, no se mantuvo en float32 como debería"
     )
+
+
+def test_3d_febus_layout_reshapes_correctly(tmp_path):
+    """Layout real de Valencia: dataset 3D `(bloques, muestras/bloque,
+    canales)`, anidado bajo grupos, accedido con una ruta `key`
+    (h5py soporta indexado con `/` nativo). Verifica el reordenamiento
+    exacto a `(canales, tiempo)` contra los datos escritos, no solo el
+    shape final."""
+    n_blocks, samples_per_block, n_ch = 4, 250, 5
+    path, written = _write_hdf5_3d_febus(tmp_path, n_blocks, samples_per_block, n_ch)
+    data, fs, dx, attrs = load_hdf5_generic(
+        path, fs=250.0, dx=16.8, key="fa1-test/Source1/Zone1/SR_Valencia"
+    )
+    assert data.shape == (n_ch, n_blocks * samples_per_block)
+    assert data.dtype == np.float32
+    # Reconstruye a mano lo mismo que debería hacer el loader y compara
+    # exacto -- no solo el shape, el REORDENAMIENTO real de valores.
+    expected = written.transpose(2, 0, 1).reshape(n_ch, n_blocks * samples_per_block)
+    np.testing.assert_array_equal(data, expected)
+    # Canal 0, primeros `samples_per_block` valores == bloque 0 del canal 0
+    np.testing.assert_array_equal(data[0, :samples_per_block], written[0, :, 0])
+
+
+def test_3d_layout_rejects_mismatched_fs(tmp_path):
+    """Si la dimensión del medio del dataset 3D NO coincide con `fs`
+    (`round(fs)`), el layout (bloques, muestras/bloque, canales) NO se
+    asume a ciegas -- falla fuerte en vez de reordenar mal en silencio."""
+    path, _ = _write_hdf5_3d_febus(tmp_path, n_blocks=4, samples_per_block=250, n_ch=5)
+    with pytest.raises(SystemExit):
+        load_hdf5_generic(path, fs=125.0, dx=16.8, key="fa1-test/Source1/Zone1/SR_Valencia")
+
+
+def test_nested_group_path_key_works(tmp_path):
+    """`key` acepta una ruta anidada completa (`grupo/subgrupo/dataset`)
+    -- necesario porque Valencia real anida el dataset 3 niveles bajo
+    grupos (`fa1-<id>/Source1/Zone1/SR_Valencia`), no en la raíz del
+    archivo como FORESEE."""
+    path, written = _write_hdf5_3d_febus(tmp_path, n_blocks=2, samples_per_block=250, n_ch=3)
+    data, fs, dx, _ = load_hdf5_generic(
+        path, fs=250.0, dx=16.8, key="fa1-test/Source1/Zone1/SR_Valencia"
+    )
+    assert data.shape == (3, 500)

@@ -83,12 +83,28 @@ def load_hdf5_generic(
     OBLIGATORIOS acá, mismo contrato que `.npz` en `load_file` --
     `SystemExit` si faltan, nunca asumidos.
 
-    `key`: nombre del dataset a leer. Si no se da, prueba `"raw"` primero
-    (la convención observada en el archivo real de FORESEE), después el
-    primer dataset 2D que encuentre (mismo fallback defensivo que
-    `load_quakeflow_h5`) -- sirve tanto para FORESEE como para Valencia
-    sin necesitar dos loaders separados, mientras ninguno de los dos use
-    una convención de nombre distinta a lo ya visto.
+    `key`: nombre (o ruta anidada, ej. `"grupo/subgrupo/dataset"` --
+    h5py soporta indexado con `/` nativamente) del dataset a leer. Si no
+    se da, prueba `"raw"` primero (la convención observada en el archivo
+    real de FORESEE), después el primer dataset 2D que encuentre en la
+    raíz (mismo fallback defensivo que `load_quakeflow_h5`) -- sirve
+    tanto para FORESEE como para Valencia sin necesitar dos loaders
+    separados, aunque cada uno necesite un `key` explícito distinto
+    (Valencia está anidado 3 niveles, `fa1-<id>/Source1/Zone1/SR_Valencia`
+    -- el nombre del grupo raíz varía por archivo/interrogador, así que
+    NO hay un default posible para ese caso, tiene que pasarse `key`).
+
+    **Layout 3D (Valencia/Febus)**: a diferencia del `raw` 2D de FORESEE
+    (canales × muestras directo), el dataset real de Valencia tiene shape
+    `(n_bloques, muestras_por_bloque, n_canales)` -- confirmado en el
+    archivo real (`(601, 250, 2977)`, con el atributo `SamplingRate=250`
+    del grupo padre coincidiendo EXACTO con `muestras_por_bloque=250`,
+    la evidencia de que esa dimensión es "muestras dentro de 1s a fs
+    real", no una coincidencia asumida). Si el dataset resuelto es 3D,
+    se verifica que la dimensión del medio coincida con `round(fs)`
+    (si no coincide, falla fuerte -- no se asume el layout a ciegas para
+    un archivo 3D distinto) y se reordena a `(canales, tiempo)` con
+    `transpose(2, 0, 1).reshape(n_ch, -1)`.
     """
     if fs is None or dx is None:
         raise SystemExit(
@@ -107,13 +123,28 @@ def load_hdf5_generic(
         elif "raw" in fh and isinstance(fh["raw"], h5py.Dataset) and fh["raw"].ndim == 2:
             ds = fh["raw"]
         else:
-            candidates = [k for k in fh if isinstance(fh[k], h5py.Dataset) and fh[k].ndim == 2]
+            candidates = [k for k in fh if isinstance(fh[k], h5py.Dataset) and fh[k].ndim in (2, 3)]
             if not candidates:
                 raise SystemExit(
-                    f"{path}: no se encontró un dataset 2D (claves: {list(fh.keys())})"
+                    f"{path}: no se encontró un dataset 2D/3D (claves: {list(fh.keys())})"
                 )
             ds = fh[candidates[0]]
-        data = np.asarray(ds[()], dtype=np.float32)
+
+        if ds.ndim == 3:
+            n_blocks, samples_per_block, n_ch = ds.shape
+            if samples_per_block != round(fs):
+                raise SystemExit(
+                    f"{path}: dataset 3D con shape {ds.shape} -- la dimensión del medio "
+                    f"({samples_per_block}) no coincide con fs={fs} (round={round(fs)}); "
+                    "el layout (bloques, muestras/bloque, canales) asumido para Valencia/Febus "
+                    "no aplica acá, no se reordena a ciegas."
+                )
+            raw = np.asarray(ds[()], dtype=np.float32)
+            data = raw.transpose(2, 0, 1).reshape(n_ch, n_blocks * samples_per_block)
+        elif ds.ndim == 2:
+            data = np.asarray(ds[()], dtype=np.float32)
+        else:
+            raise SystemExit(f"{path}: dataset '{ds.name}' tiene ndim={ds.ndim}, se esperaba 2 o 3")
     return data, fs, dx, {}
 
 

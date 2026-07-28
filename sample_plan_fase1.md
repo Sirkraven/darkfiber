@@ -1,10 +1,9 @@
-# Sample plan pre-registrado — F1.3/F1.4 (SNR50, extensión a más instalaciones)
+# Sample plan pre-registrado — F1.3/F1.4/F1.5 (SNR50, extensión a más instalaciones)
 
-**Fecha de registro:** F1.4 (loaders) cerrado para FORESEE y Stanford-2.
-FOSSA (TDMS) y Valencia (comparte loader HDF5 con FORESEE) quedan para
-cuando se descarguen sus datos — Valencia es Ola 2, a disparar cuando
-esto se apruebe. **No se corrió ninguna curva SNR50 todavía — F1.4 es
-solo loaders + tests, por instrucción explícita.**
+**Fecha de registro:** F1.5 (corridas) cerrado para FORESEE, Stanford-2
+y Valencia — las 3 curvas nuevas están medidas, ver §14. **FOSSA sigue
+sin correr** — va al final, con su piloto de un escalón, después de
+bajar su Ola 3 (TDMS), por instrucción explícita.
 
 ## 0. Estado
 
@@ -421,3 +420,161 @@ protocolo de piloto FOSSA, algoritmo de subsetting por estacionariedad
 ## 13. Archivos de respaldo
 
 - `sample_plan_fase1.json`: versión máquina-legible, mismo estado.
+
+## 14. F1.5 — Resultados
+
+Orden ejecutado: FORESEE → Stanford-2 → Valencia (livianos primero,
+loaders ya probados en F1.4). Para cada uno: chequeo de estacionariedad
+(§7) primero, curva completa solo si pasó limpio. Ningún archivo de
+reserva entró a ninguna corrida — los 3 usaron exactamente el set
+pre-registrado, `input_files_explicit_list=true` en los 3 JSON de
+salida (lista literal, no glob de carpeta).
+
+**Trabajo de infraestructura hecho para poder correr esto** (no estaba
+armado en F1.4, que solo probó los loaders de forma aislada):
+`gather_noise_sources` ganó dos parámetros nuevos, `loader` (callable
+para inyectar `load_hdf5_generic`/`read_segy` en vez del `load_file`
+por-extensión) y `channel_range` (1-indexado inclusive, igual que los
+archivos de geometría reales, convertido a slice 0-indexado en un solo
+lugar). `snr_curve.py` ganó `--format {auto,hdf5-generic,segy}`,
+`--hdf5-key`, `--channel-start/--channel-end`, y `--files` (lista
+explícita, para no arrastrar los archivos de reserva del glob de
+`--dir`). El criterio de estacionariedad de F1.3 (diseñado, nunca
+implementado) ahora es código real: `snr_curve.stationarity_check()`,
+5 tests nuevos cubriendo el caso limpio, el subconjunto, el empate, y
+la rama terminal. La derivada fase→strain-rate de Stanford
+(`convert_stanford_sgy.py`) se extrajo a una función reusable
+(`phase_to_strain_rate`) para que `snr_curve.py` la aplique sin
+duplicar la lógica.
+
+### FORESEE
+
+**Estacionariedad**: limpio. max/min RMS = **1.06×** (muy por debajo del
+umbral 3.0×), ambos archivos pre-registrados usados sin recorte.
+
+**Curva**: threshold=4.0 (default), 140/140 trials válidos, monótona
+dentro de IC Wilson 95%, runtime 312.7s.
+
+| SNR | recall | IC95% Wilson | n |
+|---|---|---|---|
+| 1 | 5.0% | [0.9, 23.6] | 20 |
+| 2 | 65.0% | [43.3, 81.9] | 20 |
+| 3 | 95.0% | [76.4, 99.1] | 20 |
+| 5 | 100.0% | [83.9, 100.0] | 20 |
+| 8 | 100.0% | [83.9, 100.0] | 20 |
+| 12 | 100.0% | [83.9, 100.0] | 20 |
+| 20 | 100.0% | [83.9, 100.0] | 20 |
+
+**SNR50 = 1.75.** JSON: `figures/snr_curve_foresee.json`. Figura:
+`figures/fig6_recall_snr_foresee.png`.
+
+### Stanford-2 (Sand Hill Road, canales 399-750)
+
+**Estacionariedad**: limpio. max/min RMS = **1.37×**, los 4 archivos
+pre-registrados usados sin recorte.
+
+**Curva**: threshold=4.0 (default), 140/140 trials válidos, monótona
+dentro de IC Wilson 95%, runtime 109.3s. Canales restringidos a
+399-750 (352 canales, segmento recto confirmado por geometría GPS real
+en F1.4) — aplicado ANTES de correr, como se pidió.
+
+| SNR | recall | IC95% Wilson | n |
+|---|---|---|---|
+| 1 | 0.0% | [0.0, 16.1] | 20 |
+| 2 | 65.0% | [43.3, 81.9] | 20 |
+| 3 | 95.0% | [76.4, 99.1] | 20 |
+| 5 | 100.0% | [83.9, 100.0] | 20 |
+| 8 | 100.0% | [83.9, 100.0] | 20 |
+| 12 | 100.0% | [83.9, 100.0] | 20 |
+| 20 | 100.0% | [83.9, 100.0] | 20 |
+
+**SNR50 = 1.77.** JSON: `figures/snr_curve_stanford2_sandhill.json`.
+Figura: `figures/fig6_recall_snr_stanford2_sandhill.png`.
+
+### Valencia (submarino, canales 510-2977)
+
+**Corrección de geometría (F1.5, sobre lo pre-registrado en F1.3)**: al
+cargar el archivo real de geometría submarina
+(`DAS-1-geometry-Valencia-undersea.csv`), el canal de arranque real es
+**510**, no el ~548 estimado en F1.3 por aritmética de
+distancia/spacing — el CSV lista directamente el rango 510-2977 (2,468
+canales), sin ambigüedad. El KMZ de la parte terrestre
+(`DAS-1-geometry-Valencia-onland.kmz`) resultó ser solo una traza
+geográfica (LineString, 9,189m — coincide exacto con el valor del
+paper) sin canales numerados, así que no aporta el límite por sí solo;
+el límite real sale enteramente del CSV submarino.
+
+**Corrección de layout HDF5 (F1.4→F1.5)**: el dataset real NO es 2D
+simple como FORESEE — es 3D, `(601 bloques, 250 muestras/bloque, 2977
+canales)`, anidado 3 niveles bajo grupos
+(`fa1-20050027/Source1/Zone1/SR_Valencia`). `load_hdf5_generic` se
+extendió (F1.5) para detectar y reordenar este layout, validando que la
+dimensión del medio coincida con `fs` antes de reordenar (nunca a
+ciegas). dtype real: **float32** (estándar, confirmado al cargar — no
+hizo falta el test de grilla de precisión que si aplicó a FORESEE por
+su float16).
+
+**Dato real de calidad de canal, no un error de pipeline**: `sanitize()`
+encontró 150,250 muestras no-finitas (NaN/Inf) por archivo — exactamente
+un canal completo (150,250 = 601×250, el tamaño de un canal entero) — y
+2 canales muertos (varianza ~0): índices 2466-2467 dentro del subrango
+submarino, es decir **canales reales 2976-2977, la punta más lejana y
+más profunda del cable** (~377-379m de profundidad, según la geometría
+real). `sanitize()` ya maneja esto correctamente (zeroea y reporta, no
+rompe nada aguas abajo) — queda documentado como propiedad real del
+sitio (posible degradación de acople en el extremo del cable), no
+como un bug.
+
+**Estacionariedad**: limpio. max/min RMS = **1.04×**, los 3 archivos
+pre-registrados usados sin recorte.
+
+**Curva**: threshold=4.0 (default), 140/140 trials válidos, runtime
+1894.2s (2,468 canales, la corrida más cara de las 3 — comparable a
+monterey_bay/arcata en escala de canales).
+
+| SNR | recall | IC95% Wilson | n |
+|---|---|---|---|
+| 1 | 15.0% | [5.2, 36.0] | 20 |
+| 2 | 45.0% | [25.8, 65.8] | 20 |
+| 3 | 60.0% | [38.7, 78.1] | 20 |
+| 5 | 60.0% | [38.7, 78.1] | 20 |
+| 8 | 90.0% | [69.9, 97.2] | 20 |
+| 12 | 85.0% | [64.0, 94.8] | 20 |
+| 20 | 70.0% | [48.1, 85.5] | 20 |
+
+**SNR50 = 2.33.** JSON: `figures/snr_curve_valencia_submarine.json`.
+Figura: `figures/fig6_recall_snr_valencia_submarine.png`.
+
+**Hallazgo real, no ocultado por pasar el chequeo de monotonía**: el
+script confirma "monótona dentro de IC Wilson 95%" (las 3 escalones
+altos se solapan en sus intervalos: [69.9,97.2] / [64.0,94.8] /
+[48.1,85.5]), pero el PUNTO estimado cae dos veces seguidas en el
+extremo alto: 90%→85%→70% (SNR=8→12→20) — y **nunca llega a 100%**, a
+diferencia de los otros 6 arrays ya medidos, que sí llegan y se quedan
+en 100% desde algún escalón en adelante. Con n=20/escalón esto es
+compatible con ruido estadístico puro (las IC se solapan de sobra), pero
+es la primera curva de la serie con esta forma — no se descarta que sea
+una característica real del sitio (ambiente submarino, o el efecto de
+los 2 canales muertos reduciendo la apertura efectiva). **No se diseña
+ningún experimento para esto ahora** — mismo criterio que la
+observación de ridgecrest_north en F1.1 — queda para F1.6 con más N.
+
+### Spread de 7 arrays (antes de FOSSA)
+
+| Array | SNR50 | Ambiente |
+|---|---|---|
+| monterey_bay | 1.6 | Submarino (SeaFOAM) |
+| FORESEE | 1.75 | Urbano, campus universitario |
+| Stanford-2 | 1.77 | Urbano, vía pública |
+| Valencia | 2.33 | Submarino |
+| ridgecrest_north | 2.5 | Desierto/rural |
+| arcata | 5.9 | — |
+| stanford1_campus | 7.73 | Urbano, campus universitario |
+
+**Spread = 7.73/1.6 = 4.83× — IDÉNTICO al de 4 arrays.** Los 3 arrays
+nuevos cayeron DENTRO del rango ya observado (1.6-7.73), no lo
+ampliaron por ninguno de los dos extremos — ni el mínimo (monterey_bay)
+ni el máximo (stanford1_campus) cambiaron. Puramente descriptivo, sin
+intentar explicación causal acá (eso es trabajo de F1.6) — pero es la
+primera confirmación real de que el spread observado con 4 arrays no
+era un artefacto de muestra chica que se iba a disolver con más datos.

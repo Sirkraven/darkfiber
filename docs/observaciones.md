@@ -9,6 +9,62 @@ podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
 (ese es trabajo declarado y concreto; esto es más crudo, todavía sin
 decidir si es trabajo).
 
+## 2026-07-27 — Valencia: curva SNR50 no llega a 100% de recall (única de 7 arrays con esta forma)
+
+**Observación, no experimento — F1.5.** Las 7 curvas SNR50 medidas
+hasta ahora (monterey_bay, ridgecrest_north, arcata, stanford1_campus,
+FORESEE, Stanford-2, Valencia) tienen todas la misma forma esperada
+—recall sube monótono hasta 100% y se queda ahí— EXCEPTO Valencia: sube
+hasta 90% en SNR=8, y despue baja a 85% (SNR=12) y 70% (SNR=20), sin
+llegar nunca a 100% dentro del rango barrido (1-20).
+
+El chequeo de monotonía-dentro-de-IC pasa igual (los IC Wilson 95% de
+esos 3 escalones se solapan: [69.9,97.2] / [64.0,94.8] / [48.1,85.5] —
+compatible con ruido estadístico puro a n=20/escalón), así que esto NO
+bloqueó la medición ni se trató como error. Pero es la primera curva de
+la serie con esta forma, y vale la pena tenerlo registrado en vez de
+solo reportar el SNR50 interpolado (2.33) sin más contexto.
+
+Dos candidatas a explicación, NINGUNA investigada todavía (no se diseña
+experimento ahora): (1) es simple ruido de muestreo, se va a disolver
+con más N en F1.6; (2) hay algo real del sitio — Valencia es el único
+array submarino de los 7 con geometría de cable NO perfectamente lineal
+en toda su extensión (mezcla tierra+mar, aunque acá se midió solo el
+tramo submarino) y tiene 2 canales muertos confirmados en la punta más
+profunda del cable (ver entrada de abajo) que reducen la apertura
+efectiva sin que el pipeline lo sepa (el `n_ch`/`dx` que ve
+`ArrayGeometry` sigue siendo el nominal, no el efectivo con 2 canales
+muertos descontados).
+
+## 2026-07-27 — Valencia: 2 canales muertos confirmados en la punta más profunda del cable submarino
+
+**Hallazgo de calidad de dato real, F1.5, no un bug de pipeline.**
+`run_on_stanford.sanitize()` (ya existente, sin cambios) detectó, en
+los 3 archivos reales de Valencia: 150,250 muestras no-finitas por
+archivo (exactamente 601×250, un canal completo — sugiere que es UN
+canal específico con el archivo entero en NaN/Inf, no ruido disperso) y
+2 canales con varianza ~0 (índices 2466-2467 dentro del subrango
+submarino restringido a 510-2977, es decir **canales reales 2976 y
+2977** — los últimos dos de todo el arreglo). Según la geometría real
+(`DAS-1-geometry-Valencia-undersea.csv`), esos dos canales están a
+~377-379m de profundidad, la punta más lejana y más profunda de todo el
+tendido — consistente con una hipótesis razonable (acople degradado en
+el extremo del cable) aunque no confirmada, no investigada más acá.
+
+`sanitize()` ya maneja esto correctamente (zeroea las muestras no
+finitas, reporta los canales muertos, no dispara falsos triggers) — no
+hizo falta ningún cambio de código para que la medición fuera segura.
+Queda anotado porque es la primera vez en el proyecto que se ve un dato
+real con canales muertos EN LA PUNTA del arreglo específicamente (no
+dispersos), y porque la apertura nominal que usa `ArrayGeometry`
+(`(n_ch-1)*dx`) no descuenta estos 2 canales — la apertura EFECTIVA es
+ligeramente menor a la nominal, sin que nada en el pipeline actual lo
+sepa o lo corrija. No cambia ninguna decisión tomada en F1.5 (2 de 2468
+canales es despreciable), pero si esto se repite en otros arrays con
+más canales muertos, valdría la pena que `ArrayGeometry` o
+`gather_noise_sources` lo reporten explícitamente en el JSON de salida,
+no solo en el log de consola.
+
 ## 2026-07-27 — Heterogeneidad de dtype de origen entre arrays: int16, float16, float32 — comparabilidad de SNR50 verificada, no asumida
 
 **Hallazgo, surge de F1.4 (loaders de FORESEE/Stanford-2).** La serie de

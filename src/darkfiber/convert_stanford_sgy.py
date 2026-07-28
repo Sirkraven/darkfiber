@@ -67,6 +67,20 @@ def read_segy(path: Path) -> tuple[np.ndarray, float]:
     return data, fs
 
 
+def phase_to_strain_rate(data: np.ndarray, fs: float) -> np.ndarray:
+    """Deriva temporal + remoción de drift común (láser) entre canales --
+    el SEG-Y crudo de Stanford trae fase óptica desenrollada, no
+    strain-rate (mismo tratamiento que el paper original). Extraído de
+    `main()` a función reusable (F1.5) para que `snr_curve.py` pueda
+    aplicar EXACTAMENTE el mismo tratamiento a Stanford-2 sin duplicar
+    la lógica -- confirmado necesario en Stanford-2 real por la magnitud
+    de las muestras crudas (~±205,000, consistente con fase, no
+    strain-rate), no solo presumido por analogía de interrogador."""
+    out = (data[:, 1:] - data[:, :-1]) * fs
+    out -= np.median(out, axis=0, keepdims=True)  # drift común (láser) entre canales, por muestra
+    return out.astype(np.float32)
+
+
 def main() -> None:
     """CLI de convert_stanford_sgy.py: ver el docstring del módulo."""
     ensure_utf8_stdio()
@@ -99,10 +113,10 @@ def main() -> None:
         print(f"  {f.name}: {data.shape[0]} canales x {data.shape[1]} muestras (fs={fs} Hz)")
 
     full = np.concatenate(chunks, axis=1)
+    assert fs_ref is not None  # garantizado: `files` no está vacío (chequeado arriba)
 
     if not args.no_diff:
-        full = (full[:, 1:] - full[:, :-1]) * fs_ref
-        full -= np.median(full, axis=0, keepdims=True)  # quita el drift común (láser) entre canales
+        full = phase_to_strain_rate(full, fs_ref)
         print(
             "Derivada temporal + remoción de drift común aplicadas "
             "(fase óptica -> strain-rate, igual que el paper original)."
