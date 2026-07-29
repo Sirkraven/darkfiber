@@ -60,6 +60,10 @@ def inject_and_verify(
             detected=True,
             classified_as=res.classification,
             measured_velocity_mps=res.apparent_velocity_mps,
+            boundary_pinned=res.boundary_pinned,
+            onset_agrees=res.onset_agrees,
+            v_app_onset_mps=res.v_app_onset_mps,
+            explanations=res.explanations,
             latency_note="offline batch; en streaming la latencia la fija la ventana de análisis",
         )
     return SelfTestResult(

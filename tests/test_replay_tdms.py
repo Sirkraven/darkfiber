@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from nptdms import ChannelObject, TdmsWriter
+from nptdms import ChannelObject, RootObject, TdmsWriter
 
 from darkfiber.replay import load_tdms
 
@@ -19,7 +19,7 @@ N_CH = 6
 N_T = 30000  # 60s @ 500Hz, igual que el archivo real de FOSSA
 
 
-def _write_tdms(tmp_path, dtype=np.int16, group_name="Measurement"):
+def _write_tdms(tmp_path, dtype=np.int16, group_name="Measurement", root_properties=None):
     rng = np.random.default_rng(0)
     if np.issubdtype(dtype, np.integer):
         data = rng.integers(-2000, 2000, size=(N_CH, N_T)).astype(dtype)
@@ -28,7 +28,10 @@ def _write_tdms(tmp_path, dtype=np.int16, group_name="Measurement"):
     path = tmp_path / "test_array.tdms"
     with TdmsWriter(str(path)) as writer:
         channels = [ChannelObject(group_name, str(i), data[i]) for i in range(N_CH)]
-        writer.write_segment(channels)
+        if root_properties is not None:
+            writer.write_segment([RootObject(properties=root_properties), *channels])
+        else:
+            writer.write_segment(channels)
     return str(path)
 
 
@@ -38,15 +41,49 @@ def tdms_path(tmp_path):
 
 
 def test_requires_explicit_fs_dx(tdms_path):
-    """Sin fs/dx explícitos, falla fuerte -- el TDMS real de FOSSA no
-    trae properties confiables (confirmado: properties={} en el archivo
-    real, grupo y canales), nunca se asumen."""
+    """Sin fs/dx explícitos, falla fuerte -- nunca se asumen, ni siquiera
+    cuando el header SÍ trae SamplingFrequency[Hz]/SpatialResolution[m]
+    (ver test_header_properties_*): el contrato es 'fs/dx siempre
+    explícitos, cruzados contra el header si está', no 'leídos del header
+    si están'."""
     with pytest.raises(SystemExit):
         load_tdms(tdms_path)
     with pytest.raises(SystemExit):
         load_tdms(tdms_path, fs=FS)
     with pytest.raises(SystemExit):
         load_tdms(tdms_path, dx=DX)
+
+
+def test_header_properties_matching_fs_dx_pass_through(tmp_path):
+    """Corrección F1.5: el archivo real de FOSSA SÍ trae
+    SamplingFrequency[Hz]/SpatialResolution[m] a nivel ARCHIVO (no
+    grupo/canal, que sí vienen vacíos) -- cuando el header coincide con lo
+    pasado, carga normal (el header no bloquea, solo corrobora)."""
+    path = _write_tdms(
+        tmp_path, root_properties={"SamplingFrequency[Hz]": FS, "SpatialResolution[m]": DX}
+    )
+    data, fs, dx, _ = load_tdms(path, fs=FS, dx=DX)
+    assert fs == FS
+    assert dx == DX
+    assert data.shape == (N_CH, N_T)
+
+
+def test_header_fs_mismatch_fails_loud(tmp_path):
+    """'El header manda': si --fs pasado no coincide con
+    SamplingFrequency[Hz] del header, falla fuerte en vez de aceptar en
+    silencio el valor del caller -- mismo patrón que el guard de fs de
+    convert_stanford_sgy.read_segy en snr_curve.py."""
+    path = _write_tdms(tmp_path, root_properties={"SamplingFrequency[Hz]": FS})
+    with pytest.raises(SystemExit):
+        load_tdms(path, fs=FS + 50.0, dx=DX)
+
+
+def test_header_dx_mismatch_fails_loud(tmp_path):
+    """Mismo guard que test_header_fs_mismatch_fails_loud, para
+    SpatialResolution[m]/--dx."""
+    path = _write_tdms(tmp_path, root_properties={"SpatialResolution[m]": DX})
+    with pytest.raises(SystemExit):
+        load_tdms(path, fs=FS, dx=DX + 5.0)
 
 
 def test_shape_dtype_matches_real_foresee_pattern(tdms_path):

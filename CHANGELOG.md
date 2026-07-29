@@ -8,6 +8,69 @@ something to hide.
 
 ### Added
 
+- **F1.5→F1.6: per-trial diagnostics propagation, Valencia's non-hit
+  cause identified, FOSSA I/O contention diagnosed (full curve still not
+  run)** — `CoherenceResult` already computed `boundary_pinned` and an
+  internal `onset_agrees` concordance flag but discarded almost
+  everything the instant `SelfTestResult` was built from it. Added
+  `onset_agrees` to `CoherenceResult` (populated at all 5 return sites
+  after it's computed — a pure additive field, no branch condition
+  touched) and propagated `classified_as`/`boundary_pinned`/
+  `onset_agrees`/`v_app_onset_mps`/`explanations` onto `SelfTestResult`
+  in `selftest.inject_and_verify`. `snr_curve.py` gained
+  `--dump-trial-diagnostics`, which records one entry per valid trial
+  (`trial_diagnostics` in the output JSON) via both `run_step` and the
+  new `run_step_lazy_single_file`. Pure IO/observability layer — no
+  detection logic changed, confirmed by re-running Valencia with
+  identical files/threshold/seeds and getting a bit-exact match
+  (SNR50=2.33, all 7 hits/n pairs identical, runtime 1894.2s→2039.0s,
+  normal variance).
+  With that data: Valencia's non-100%-recall curve (flagged 2026-07-27)
+  is **not** the aperture/resolution ceiling hypothesized before this
+  instrumentation — of 11 non-hit trials at SNR=8/12/20, only 1 involved
+  `boundary_pinned`/`onset_agrees` failing. The other 10 had correctly
+  resolved, corroborated velocities (0-4% semblance/onset agreement,
+  well inside the seismic velocity range) but failed the
+  `coincidence_fraction >= 0.30` gate (actual values 19.7%-30.0%) —
+  STA/LTA triggers on too few channels near-simultaneously, even though
+  post-hoc semblance confirms the signal is present on ~92-100% of
+  channels once the right velocity is known. Refutes the original
+  hypothesis with data instead of leaving it unconfirmed, and reframes
+  the open F1.6 question around STA/LTA trigger sparsity rather than
+  velocity resolution.
+  Also added `--format tdms` to `snr_curve.py`'s CLI (RAM-bounded:
+  stationarity via `compute_rms_series_lazy`, curve via
+  `run_step_lazy_single_file`, never routes through
+  `gather_noise_sources`) so FOSSA's curve can actually be run through
+  the same CLI as every other array once approved.
+  Corrected an earlier claim in `replay.load_tdms`'s docstring: FOSSA's
+  real file does **not** lack usable properties — `group`/`channel`
+  properties are empty, but file-level `tdms.properties` carries
+  `SamplingFrequency[Hz]=500.0` and `SpatialResolution[m]=2.0`,
+  matching exactly what was already being supplied by hand. `fs`/`dx`
+  stay mandatory explicit parameters (the property names are an iDAS
+  convention, not a TDMS-format guarantee), but the loader now
+  cross-validates them against the header when present and fails loud
+  on mismatch, same pattern as `read_segy`'s fs guard.
+  Diagnosed FOSSA's pilot runtime anomaly (12× swing between two
+  identical read-only passes, logged 2026-07-28): `docker ps` found a
+  Streamlit dashboard container running 2 days with a live bind-mount
+  to `D:\darkfiber\repo\data` (same physical disk as the FOSSA data),
+  a poll-based file watcher, and a healthcheck hitting the wrong port
+  with 2,438 consecutive failures. Stopped it (reversible) — an
+  isolated single-file load came back clean (18.0s), but a full
+  20-trial pilot re-run only improved 9% (4204.4s→3829.0s), so the
+  container wasn't the whole story. Ruled out spinning-disk latency
+  (both disks are NVMe SSD); confirmed real-time antivirus protection
+  is on but its exclusions can't be inspected or changed without admin
+  rights from this session. System RAM (15.8GB total, 3.7GB free at
+  measurement time) is flagged as the most plausible remaining
+  explanation for sustained-load slowdown, not something fixable in
+  code. Clean extrapolation (×7 on 3829.0s) is ≈7h27min — still over
+  the 6h pre-authorized cap (down from the original 8h10min but not
+  under it). **The full 140-trial FOSSA curve was still not run**,
+  per the explicit stop-if->6h rule — pending the user's decision.
+
 - **F1.5: three new SNR50 curves measured (FORESEE, Stanford-2, Valencia)**
   — FOSSA still pending (TDMS, Ola 3, single-step pilot). Stationarity
   clean on all three (max/min RMS 1.04×-1.37×, well under the 3.0×

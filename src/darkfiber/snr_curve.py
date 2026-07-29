@@ -300,8 +300,36 @@ def run_trial(source: dict, snr: float, v_app: float, seed: int, threshold: floa
     )
 
 
+def _diagnostic_entry(trial_idx: int, snr: float, v_app: float, seed: int, result) -> dict:
+    """Un registro por trial VÁLIDO para `--dump-trial-diagnostics`: por qué
+    NO confirmó (o sí), con los campos que `contracts.SelfTestResult` ahora
+    propaga desde `CoherenceResult` -- `classified_as`/`boundary_pinned`/
+    `onset_agrees`/`v_app_onset_mps`/`explanations`. Capa IO pura: no
+    reinterpreta el veredicto, solo lo serializa tal cual salió del
+    pipeline."""
+    return dict(
+        trial_idx=trial_idx,
+        snr=snr,
+        v_app_mps=v_app,
+        seed=seed,
+        hit=bool(result.detected and result.classified_as == EventClass.SEISMIC_CONFIRMED),
+        detected=result.detected,
+        classified_as=(result.classified_as.value if result.classified_as else None),
+        measured_velocity_mps=result.measured_velocity_mps,
+        boundary_pinned=result.boundary_pinned,
+        onset_agrees=result.onset_agrees,
+        v_app_onset_mps=result.v_app_onset_mps,
+        explanations=result.explanations,
+    )
+
+
 def run_step(
-    sources: list[dict], snr: float, n_target: int, step_idx: int, threshold: float
+    sources: list[dict],
+    snr: float,
+    n_target: int,
+    step_idx: int,
+    threshold: float,
+    diagnostics: list[dict] | None = None,
 ) -> dict:
     picker = np.random.default_rng(1_000 + step_idx)
     hits = 0
@@ -316,6 +344,8 @@ def run_step(
         result = run_trial(src, snr, v_app, trial_seed, threshold)
         if result is None:
             continue
+        if diagnostics is not None:
+            diagnostics.append(_diagnostic_entry(n_done, snr, v_app, trial_seed, result))
         n_done += 1
         if result.detected and result.classified_as == EventClass.SEISMIC_CONFIRMED:
             hits += 1
@@ -403,6 +433,7 @@ def run_step_lazy_single_file(
     fs_override: float | None = None,
     dx_override: float | None = None,
     channel_range: tuple[int, int] | None = None,
+    diagnostics: list[dict] | None = None,
 ) -> dict:
     """Variante RAM-bounded de `run_step`: en vez de sortear entre fuentes
     YA CARGADAS, sortea un archivo, lo carga completo, corre UN trial, y lo
@@ -428,6 +459,8 @@ def run_step_lazy_single_file(
         del source
         if result is None:
             continue
+        if diagnostics is not None:
+            diagnostics.append(_diagnostic_entry(n_done, snr, v_app, trial_seed, result))
         n_done += 1
         if result.detected and result.classified_as == EventClass.SEISMIC_CONFIRMED:
             hits += 1
@@ -635,12 +668,15 @@ def main() -> None:
     )
     ap.add_argument(
         "--format",
-        choices=("auto", "hdf5-generic", "segy"),
+        choices=("auto", "hdf5-generic", "segy", "tdms"),
         default="auto",
         help="'auto' = replay.load_file (comportamiento previo, .h5 QuakeFlow / .npz). "
         "'hdf5-generic' = replay.load_hdf5_generic (FORESEE/Valencia -- fs/dx/--hdf5-key "
         "obligatorios, nunca lee attrs). 'segy' = convert_stanford_sgy.read_segy + "
-        "phase_to_strain_rate (Stanford-2/1 -- dx obligatorio, fs sale del header real).",
+        "phase_to_strain_rate (Stanford-2/1 -- dx obligatorio, fs sale del header real). "
+        "'tdms' = replay.load_tdms (FOSSA -- fs/dx obligatorios; RAM-bounded, un archivo "
+        "a la vez tanto para estacionariedad como para la curva, ver run_step_lazy_single_file "
+        "-- nunca pasa por gather_noise_sources, que cargaría todos los archivos a la vez).",
     )
     ap.add_argument(
         "--hdf5-key",
@@ -659,6 +695,15 @@ def main() -> None:
     )
     ap.add_argument(
         "--channel-end", type=int, default=None, help="Canal final, 1-indexado INCLUSIVE."
+    )
+    ap.add_argument(
+        "--dump-trial-diagnostics",
+        action="store_true",
+        help="Guarda un registro por trial VÁLIDO ('trial_diagnostics' en el JSON de salida) "
+        "con classified_as/boundary_pinned/onset_agrees/v_app_onset_mps/explanations, "
+        "propagados desde CoherenceResult vía SelfTestResult -- para diagnosticar POR QUÉ "
+        "un trial no confirmó (guarda de borde vs. guarda de concordancia vs. sin candidato "
+        "Tier0) sin tener que re-correr nada después. Capa IO, no cambia ningún veredicto.",
     )
     args = ap.parse_args()
 
@@ -692,6 +737,12 @@ def main() -> None:
             data = phase_to_strain_rate(data, real_fs)
             return data, real_fs, dx, {}
 
+    elif args.format == "tdms":
+        from .replay import load_tdms
+
+        def loader(path, fs, dx):  # noqa: E731
+            return load_tdms(path, fs=fs, dx=dx)
+
     if args.files is not None:
         files = sorted(
             f if os.path.isabs(f) or os.path.exists(f) else os.path.join(args.dir, f)
@@ -699,6 +750,8 @@ def main() -> None:
         )
     elif args.format == "segy":
         files = sorted(glob.glob(os.path.join(args.dir, "*.sgy")))
+    elif args.format == "tdms":
+        files = sorted(glob.glob(os.path.join(args.dir, "*.tdms")))
     else:
         files = sorted(
             glob.glob(os.path.join(args.dir, "*.h5"))
@@ -730,34 +783,106 @@ def main() -> None:
     )
     print(f"\nCargando ruido real sin evento de {len(files)} archivo(s)...")
     exclude_s = tuple(args.exclude_s) if args.exclude_s else None
-    sources = gather_noise_sources(
-        files,
-        margin_s=args.noise_margin_s,
-        fs_override=args.fs,
-        dx_override=args.dx,
-        manual_exclude_s=exclude_s,
-        loader=loader,
-        channel_range=channel_range,
-    )
-    if not sources:
-        raise SystemExit("no se pudo extraer ninguna ventana de ruido sin evento de estos archivos")
-    total_noise_s = sum(s["noise"].shape[1] / s["fs"] for s in sources)
-    print(f"  {len(sources)} tramo(s) de ruido, {total_noise_s:.0f}s totales")
-    for s in sources:
-        print(
-            f"    {os.path.basename(s['path'])} [{s['segment_s'][0]:.1f}s, {s['segment_s'][1]:.1f}s] "
-            f"({(s['segment_s'][1] - s['segment_s'][0]):.1f}s) -- exclusion_kind={s['exclusion_kind']}"
-        )
+    trial_diagnostics: list[dict] = []
 
-    curve = []
-    t0 = time.perf_counter()
-    for step_idx, snr in enumerate(SNR_STEPS):
-        r = run_step(sources, snr, args.n_per_step, step_idx, threshold)
-        curve.append(r)
-        print(
-            f"  SNR={snr:5.1f}: recall={r['recall'] * 100:5.1f}%  "
-            f"IC95=[{r['ci_low'] * 100:5.1f}, {r['ci_high'] * 100:5.1f}]  n={r['n']}"
+    if args.format == "tdms":
+        # FOSSA (F1.5): RAM-bounded en todo el camino -- gather_noise_sources
+        # cargaría los N archivos completos a la vez (~1.4GB c/u tras el
+        # upcast a float32), inviable ya en 19 archivos (~26GB). Tanto la
+        # estacionariedad como la curva se calculan UN archivo a la vez
+        # (compute_rms_series_lazy / run_step_lazy_single_file), nunca más
+        # de un archivo residente en memoria.
+        if exclude_s is not None:
+            raise SystemExit("--exclude-s no aplica a --format tdms (sin verdad-terreno embebida)")
+        if args.legacy_check:
+            raise SystemExit("--legacy-check no está implementado para --format tdms")
+        print("  estacionariedad RAM-bounded (1 archivo a la vez)...")
+        rms_series = compute_rms_series_lazy(
+            files, loader, fs_override=args.fs, dx_override=args.dx, channel_range=channel_range
         )
+        stat = stationarity_check(rms_series=rms_series, threshold=3.0)
+        if stat["drift_flag"]:
+            raise SystemExit(
+                "Estacionariedad: ni el subconjunto contiguo más largo entra bajo el umbral "
+                f"(overall_ratio={stat['overall_ratio']:.2f}) -- rama terminal, requiere "
+                "revisión manual antes de continuar."
+            )
+        if len(stat["kept_indices"]) < len(files):
+            raise SystemExit(
+                f"Estacionariedad: {len(files) - len(stat['kept_indices'])} archivo(s) del set "
+                "pre-registrado quedaron fuera del subconjunto contiguo bajo el umbral -- "
+                "desviación del pre-registro, requiere aprobación manual antes de sustituir por "
+                f"reserva (overall_ratio={stat['overall_ratio']:.2f}, "
+                f"subset_ratio={stat.get('subset_ratio', float('nan')):.2f})."
+            )
+        print(
+            f"  limpio, max/min RMS = {stat['overall_ratio']:.2f}x, {len(files)} archivo(s) usados"
+        )
+        sources = None
+
+        probe = _prepare_single_file_source(files[0], loader, args.fs, args.dx, channel_range)
+        fs0, dx0, nch0 = probe["fs"], probe["dx"], probe["n_ch"]
+        del probe
+
+        curve = []
+        t0 = time.perf_counter()
+        for step_idx, snr in enumerate(SNR_STEPS):
+            step_diag: list[dict] | None = [] if args.dump_trial_diagnostics else None
+            r = run_step_lazy_single_file(
+                files,
+                loader,
+                snr,
+                args.n_per_step,
+                step_idx,
+                threshold,
+                fs_override=args.fs,
+                dx_override=args.dx,
+                channel_range=channel_range,
+                diagnostics=step_diag,
+            )
+            curve.append(r)
+            if step_diag is not None:
+                trial_diagnostics.extend(step_diag)
+            print(
+                f"  SNR={snr:5.1f}: recall={r['recall'] * 100:5.1f}%  "
+                f"IC95=[{r['ci_low'] * 100:5.1f}, {r['ci_high'] * 100:5.1f}]  n={r['n']}  "
+                f"runtime_s={r['runtime_s']:.1f}"
+            )
+    else:
+        sources = gather_noise_sources(
+            files,
+            margin_s=args.noise_margin_s,
+            fs_override=args.fs,
+            dx_override=args.dx,
+            manual_exclude_s=exclude_s,
+            loader=loader,
+            channel_range=channel_range,
+        )
+        if not sources:
+            raise SystemExit(
+                "no se pudo extraer ninguna ventana de ruido sin evento de estos archivos"
+            )
+        total_noise_s = sum(s["noise"].shape[1] / s["fs"] for s in sources)
+        print(f"  {len(sources)} tramo(s) de ruido, {total_noise_s:.0f}s totales")
+        for s in sources:
+            print(
+                f"    {os.path.basename(s['path'])} [{s['segment_s'][0]:.1f}s, {s['segment_s'][1]:.1f}s] "
+                f"({(s['segment_s'][1] - s['segment_s'][0]):.1f}s) -- exclusion_kind={s['exclusion_kind']}"
+            )
+        fs0, dx0, nch0 = sources[0]["fs"], sources[0]["dx"], sources[0]["n_ch"]
+
+        curve = []
+        t0 = time.perf_counter()
+        for step_idx, snr in enumerate(SNR_STEPS):
+            step_diag = [] if args.dump_trial_diagnostics else None
+            r = run_step(sources, snr, args.n_per_step, step_idx, threshold, diagnostics=step_diag)
+            curve.append(r)
+            if step_diag is not None:
+                trial_diagnostics.extend(step_diag)
+            print(
+                f"  SNR={snr:5.1f}: recall={r['recall'] * 100:5.1f}%  "
+                f"IC95=[{r['ci_low'] * 100:5.1f}, {r['ci_high'] * 100:5.1f}]  n={r['n']}"
+            )
 
     non_monotone = [
         (a["snr"], b["snr"])
@@ -792,7 +917,6 @@ def main() -> None:
             "array_profile_history antes de sobrescribir."
         )
 
-    fs0, dx0, nch0 = sources[0]["fs"], sources[0]["dx"], sources[0]["n_ch"]
     profile = cat.get_array_profile(args.array_id) or {}
     thresholds = dict(profile.get("thresholds_json") or {})
     thresholds["threshold"] = threshold
@@ -839,20 +963,33 @@ def main() -> None:
                 # evento fue automática (event_time_index embebido) o
                 # manual (--exclude-s, para formatos sin verdad-terreno
                 # embebida). Distinto por-fuente porque una corrida
-                # puede en general mezclar ambos casos.
+                # puede en general mezclar ambos casos. None para
+                # --format tdms: no hay 'sources' pre-cargados (lectura
+                # lazy de 1 archivo por trial), el archivo completo se usa
+                # como ruido sin verdad-terreno en todos los casos.
                 "noise_exclusion": {
                     "margin_s": args.noise_margin_s,
                     "manual_exclude_s": list(exclude_s) if exclude_s is not None else None,
-                    "sources": [
-                        {
-                            "file": os.path.basename(s["path"]),
-                            "segment_s": list(s["segment_s"]),
-                            "duration_s": s["segment_s"][1] - s["segment_s"][0],
-                            "exclusion_kind": s["exclusion_kind"],
-                        }
-                        for s in sources
-                    ],
+                    "sources": (
+                        [
+                            {
+                                "file": os.path.basename(s["path"]),
+                                "segment_s": list(s["segment_s"]),
+                                "duration_s": s["segment_s"][1] - s["segment_s"][0],
+                                "exclusion_kind": s["exclusion_kind"],
+                            }
+                            for s in sources
+                        ]
+                        if sources is not None
+                        else None
+                    ),
                 },
+                # F1.6 (diagnóstico read-only sobre Valencia, extendido a
+                # FOSSA): un registro por trial VÁLIDO con classified_as/
+                # boundary_pinned/onset_agrees/v_app_onset_mps/explanations
+                # -- None si --dump-trial-diagnostics no se pidió, [] si se
+                # pidió pero por alguna razón no hubo trials válidos.
+                "trial_diagnostics": (trial_diagnostics if args.dump_trial_diagnostics else None),
             },
             fh,
             indent=2,
@@ -861,6 +998,7 @@ def main() -> None:
     print(f"Tabla guardada en {out_json}")
 
     if args.legacy_check:
+        assert sources is not None  # tdms+legacy_check ya salió antes vía SystemExit
         explain_legacy_recall(sources, args.array_id, threshold)
 
     if args.figs:

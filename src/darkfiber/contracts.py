@@ -286,6 +286,14 @@ class CoherenceResult(BaseModel):
         "puede sostener SISMO_CONFIRMADO por sí sola (ver "
         "coherence._velocity_peak_is_boundary).",
     )
+    onset_agrees: bool | None = Field(
+        None,
+        description="A10: si v_app_onset_mps (Theil-Sen) corrobora "
+        "apparent_velocity_mps dentro de onset_agreement_tol_frac -- guarda de "
+        "concordancia independiente de boundary_pinned, ya usada internamente "
+        "en la decisión de is_seismic; expuesta acá para diagnóstico (None si "
+        "no había suficientes cruces STA/LTA para el ajuste de onsets).",
+    )
     explanations: list[str] = Field(default_factory=list)
 
 
@@ -368,3 +376,21 @@ class SelfTestResult(BaseModel):
     classified_as: EventClass | None = None
     measured_velocity_mps: float | None = None
     latency_note: str = ""
+    boundary_pinned: bool | None = Field(
+        None,
+        description="Propagado de CoherenceResult.boundary_pinned cuando "
+        "detected=True (ver ese campo); None si no hubo evento Tier0 que "
+        "analizar (candidato nunca llegó a CoherenceAgent).",
+    )
+    onset_agrees: bool | None = Field(
+        None, description="Propagado de CoherenceResult.onset_agrees cuando detected=True."
+    )
+    v_app_onset_mps: float | None = Field(
+        None, description="Propagado de CoherenceResult.v_app_onset_mps cuando detected=True."
+    )
+    explanations: list[str] = Field(
+        default_factory=list,
+        description="Propagado de CoherenceResult.explanations cuando detected=True -- "
+        "vacío si no hubo evento Tier0 (no confundir con 'sin explicaciones', "
+        "significa 'sin veredicto de CoherenceAgent que explicar').",
+    )

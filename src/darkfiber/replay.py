@@ -180,18 +180,40 @@ def load_tdms(
     implementación de este esquema.
 
     `fs`/`dx` OBLIGATORIOS (mismo contrato que los demás loaders no-QuakeFlow
-    de este módulo) -- el TDMS real de FOSSA no trae `properties` útiles
-    (grupo y canales vienen con `properties={}` vacío, confirmado en el
-    archivo real).
+    de este módulo, nunca leídos en silencio) -- corrección F1.5 sobre una
+    afirmación previa incorrecta: grupo y canales SÍ vienen con
+    `properties={}` vacío en el archivo real, pero el ARCHIVO (`tdms.properties`,
+    no `group.properties` ni `channel.properties`) trae metadata rica del
+    interrogador iDAS, incluyendo `SamplingFrequency[Hz]` y
+    `SpatialResolution[m]` -- confirmado en el archivo real (500.0 y 2.0,
+    coincidiendo exacto con lo ya usado). Como no todo TDMS de otro
+    vendor/modelo va a traer esas claves exactas (es convención de iDAS, no
+    del formato TDMS en general), `fs`/`dx` se mantienen obligatorios en vez
+    de leerse solos del header -- pero si el header SÍ trae esas claves, "el
+    header manda": se cruza contra lo pasado y falla fuerte en desacuerdo,
+    mismo patrón que el guard de fs de `convert_stanford_sgy`/`read_segy`
+    en `snr_curve.py`.
     """
     if fs is None or dx is None:
         raise SystemExit(
-            "Para TDMS hacen falta --fs y --dx explícitos (sin properties "
-            "confiables en el archivo real de FOSSA)."
+            "Para TDMS hacen falta --fs y --dx explícitos (nunca se leen "
+            "en silencio, aunque el header a veces los tenga -- ver docstring)."
         )
     from nptdms import TdmsFile
 
     tdms = TdmsFile.read(path)
+    header_fs = tdms.properties.get("SamplingFrequency[Hz]")
+    if header_fs is not None and abs(float(header_fs) - fs) > 1e-6:
+        raise SystemExit(
+            f"{path}: --fs={fs} no coincide con SamplingFrequency[Hz] del header TDMS "
+            f"({header_fs}) -- no se ignora el header, se corrige --fs o se omite."
+        )
+    header_dx = tdms.properties.get("SpatialResolution[m]")
+    if header_dx is not None and abs(float(header_dx) - dx) > 1e-6:
+        raise SystemExit(
+            f"{path}: --dx={dx} no coincide con SpatialResolution[m] del header TDMS "
+            f"({header_dx}) -- no se ignora el header, se corrige --dx o se omite."
+        )
     groups = tdms.groups()
     if not groups:
         raise SystemExit(f"{path}: TDMS sin grupos")

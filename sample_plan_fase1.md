@@ -553,11 +553,53 @@ extremo alto: 90%→85%→70% (SNR=8→12→20) — y **nunca llega a 100%**, a
 diferencia de los otros 6 arrays ya medidos, que sí llegan y se quedan
 en 100% desde algún escalón en adelante. Con n=20/escalón esto es
 compatible con ruido estadístico puro (las IC se solapan de sobra), pero
-es la primera curva de la serie con esta forma — no se descarta que sea
-una característica real del sitio (ambiente submarino, o el efecto de
-los 2 canales muertos reduciendo la apertura efectiva). **No se diseña
-ningún experimento para esto ahora** — mismo criterio que la
-observación de ridgecrest_north en F1.1 — queda para F1.6 con más N.
+es la primera curva de la serie con esta forma.
+
+**Diagnóstico instrumentado (F1.5→F1.6, `--dump-trial-diagnostics`)**:
+la hipótesis del techo de apertura/resolución (§7, `v_app_max ∝ L`) fue
+DESCARTADA por dato, no por argumento — Valencia resuelve muy por
+encima de las velocidades inyectadas, así que si esa hipótesis fuera la
+causa, esperaríamos ver `boundary_pinned=True` dominando los no-hits.
+Re-corrida SOLO de Valencia (mismos 3 archivos, mismo threshold=4.0,
+mismos seeds — determinismo confirmado bit-exacto: SNR50=2.33 y los 7
+pares hits/n idénticos al primer corrida, runtime 1894.2s→2039.0s,
+variación normal) con propagación completa de
+`CoherenceResult`→`SelfTestResult` (`boundary_pinned`, `onset_agrees`,
+`v_app_onset_mps`, `explanations`, campos nuevos, capa IO pura, Bloque A
+intacto). De los 11 trials no-hit en SNR=8/12/20 (2+3+6):
+- **0/11** sin candidato Tier0 (`detected=False`) — Tier0 siempre generó
+  un evento a analizar.
+- **1/11 (9%)** `boundary_pinned=True` + `onset_agrees=False` juntos —
+  un solo trial (SNR=20, v_app=3430 m/s) donde el pico de semblanza
+  quedó pineado en el piso de la grilla (1500 m/s), la única instancia
+  real de "borde de grilla" en los 3 escalones.
+- **10/11 (91%)** con velocidad CORRECTAMENTE resuelta y corroborada
+  (`boundary_pinned=False`, `onset_agrees=True`, semblanza-vs-onset
+  dentro de 0-4%, velocidad bien adentro de [1500,8000] m/s) pero
+  clasificados `COHERENTE_DESCONOCIDO` en vez de `SISMO_CONFIRMADO`. La
+  causa real, leída directo de `coincidence_fraction` (campo numérico de
+  `CoherenceResult`, expuesto en el texto de `explanations`): en los 10
+  casos la coincidencia cae en 19.7%-30.0%, contra el piso
+  `seismic_min_coincidence=0.30` — el gate que bloquea es la FRACCIÓN DE
+  CANALES que disparó el STA/LTA casi-simultáneamente, no la resolución
+  de velocidad. La extensión del evento (`span_fraction`) fue 100% del
+  arreglo en los 11 casos — el STA/LTA sí dispara en canales dispersos
+  por todo el cable, pero no en la fracción mínima requerida.
+
+**Conclusión**: el recall decreciente de Valencia a SNR alto NO es "el
+sistema rechazando correctamente lo irresoluble" (la hipótesis
+pre-registrada) — es el pipeline midiendo la velocidad bien pero
+fallando el gate de coincidencia de disparo. Abre una pregunta nueva y
+más concreta para F1.6: ¿por qué el disparo STA/LTA por-canal es tan
+disperso/parcial en Valencia específicamente (heterogeneidad de ruido
+real a lo largo del cable submarino, quizás relacionada con los 2
+canales muertos u otra variación de acople) cuando la coherencia
+espacial post-hoc (semblanza) confirma que la señal SÍ está presente en
+~92-100% de los canales una vez que se conoce la velocidad correcta?
+**No se diseña ningún experimento para esto ahora** — mismo criterio
+que la observación de ridgecrest_north en F1.1 — queda para F1.6 con
+más N, ahora con una hipótesis mecánica concreta en vez de una
+pregunta abierta.
 
 ### Spread de 7 arrays (antes de FOSSA)
 
@@ -581,22 +623,42 @@ era un artefacto de muestra chica que se iba a disolver con más datos.
 
 ### FOSSA — loader + piloto (curva completa PENDIENTE de aprobación)
 
-**Descubierto en disco**: 20 archivos `.tdms` (no 19 como se había
-reportado), todos separados por exactamente 60s, sin huecos,
-155429-161329 UTC. Se usaron los primeros 19 cronológicamente
+**Fe de erratas §1** (descubierto en disco): 20 archivos `.tdms` (no 19
+como se había reportado), todos separados por exactamente 60s EXACTOS,
+**cero huecos**, 155429-161329 UTC. El span "~79 min con huecos
+posibles" del pre-registro venía de un endpoint mal leído (candidato:
+171329 confundido con 161329 -- un dígito de diferencia que infla el
+rango casi 10×). Se usaron los primeros 19 cronológicamente
 (155429-161229), el 20mo quedó sin usar — consistente con el K=19
-pre-registrado.
+pre-registrado. El diseño de estacionariedad sin asumir contigüidad
+temporal (§7) no cambia por esto: seguía siendo la postura correcta
+incluso si hubiera habido huecos reales, así que no hubo que rehacer
+nada, solo corregir la premisa registrada.
 
 **Loader nuevo**: `replay.load_tdms(path, fs, dx)` (NI TDMS,
 `nptdms.TdmsFile.read()` — lectura EAGER completa, no streaming).
 Confirmado contra el archivo real: 11,648 canales × 30,000 muestras
-(60s @ 500Hz), int16 → upcast a float32, sin properties confiables
-(`attrs={}` real, fs/dx obligatorios como en los demás loaders
-no-QuakeFlow). **Benchmark de partial-read** (streaming
-`TdmsFile.open()` + `channel.read_data()` por canal): descartado, >120s
-contra 14.6-22.4s de la lectura completa eager — el diseño pasa a "1
-archivo entero por trial, cargado y descartado", nunca streaming
-parcial.
+(60s @ 500Hz), int16 → upcast a float32. **Benchmark de partial-read**
+(streaming `TdmsFile.open()` + `channel.read_data()` por canal):
+descartado, >120s contra 14.6-22.4s de la lectura completa eager — el
+diseño pasa a "1 archivo entero por trial, cargado y descartado", nunca
+streaming parcial.
+
+**Corrección (fs real leído del header, no solo por aritmética)**: una
+afirmación previa de "sin properties confiables" era incorrecta a medias
+— `group.properties`/`channel.properties` SÍ vienen vacíos en el
+archivo real, pero `tdms.properties` (nivel ARCHIVO) trae metadata rica
+del interrogador iDAS, incluyendo `SamplingFrequency[Hz]=500.0` y
+`SpatialResolution[m]=2.0` — **coincide exacto** con lo ya usado por
+aritmética de tamaño (11,648×500×2×60=698.88MB ✓) y con el chanmap. Como
+esas claves son convención de iDAS, no del formato TDMS en general,
+`fs`/`dx` se mantienen obligatorios como parámetro explícito (nunca
+leídos solos del header, mismo contrato que los demás loaders
+no-QuakeFlow) — pero ahora el header SÍ manda: `load_tdms` cruza el
+valor pasado contra `SamplingFrequency[Hz]`/`SpatialResolution[m]`
+cuando están presentes y falla fuerte en desacuerdo (mismo patrón que
+el guard de fs de `read_segy`). 4 tests nuevos
+(`tests/test_replay_tdms.py`).
 
 **Canal-count/spacing vs. chanmap**: confirmado contra
 `DASchanmap_westsac_2017.csv` — **11,648 canales** (coincide
@@ -634,18 +696,70 @@ min)**.
 8h10min.** Fuera del rango de sanity-check pre-registrado (2-5.7h,
 derivado del costo por canal·Hz de los 4 arrays ya medidos).
 
-**Anomalía detectada, no resuelta — el número de arriba no es
-confiable como estimador de costo estable**: el mismo pase read-only
-de 19 archivos (sin ningún cómputo de trial, solo lectura+RMS) tardó
-628.5s la primera vez y 7,597.8s la segunda (chequeo de headroom,
-mismo trabajo exacto) — un factor 12× sobre el mismo trabajo. El
-piloto (210s/trial promedio) es 6-10× más lento que el benchmark de
-carga de un solo archivo (14.6-22.4s) medido en F1.4/F1.5. Este patrón
-apunta a algo externo al loader (contención de disco/antivirus,
-throttling térmico, u otra causa ambiental de esta máquina en esta
-sesión) degradándose a lo largo de la sesión, no a una propiedad
-estable de `load_tdms` ni de la lectura lazy. **No se recomienda tomar
-8h10min como el costo real de la curva completa sin antes re-medir en
-condiciones limpias** — la curva completa NO se corrió, queda
-pendiente de decisión explícita (curva completa vs. decimación
-espacial documentada vs. re-medir el piloto) tras revisar esto.
+**Diagnóstico de I/O (PASO B, antes de re-medir)**:
+1. `docker ps -a`: el contenedor `repo-pipeline-1` está detenido
+   (Exited limpio hace 4 días, no compite). El contenedor
+   `repo-dashboard-1` (Streamlit) llevaba **2 días corriendo**, con
+   bind-mount RW en vivo a `D:\darkfiber\repo\data` (el MISMO disco
+   físico que `D:\darkfiber\data\Fossa\`), file-watcher poll-based
+   (confirmado en su propio log: "Detected WSL. Using poll-based file
+   watching"), y un healthcheck roto apuntando al puerto equivocado
+   (8080 en vez de 8501) fallando cada 30s -- **2,438 fallos
+   consecutivos** acumulados.
+2. Ambos discos físicos son NVMe SSD (Samsung 256GB + Kingston 500GB,
+   `Get-PhysicalDisk` confirma `MediaType=SSD`) — descarta la hipótesis
+   de disco mecánico lento.
+3. Windows Defender: protección en tiempo real activa
+   (`RealTimeProtectionEnabled=True`), pero no se pudieron leer ni
+   agregar exclusiones sin permisos de administrador
+   (`Get-MpPreference`/`Add-MpPreference` fallan: "Must be an
+   administrator") — este camino quedó bloqueado, no descartado.
+4. Acción tomada: `docker stop repo-dashboard-1` (reversible,
+   contenedor ya roto/no crítico para esta corrida). Una carga aislada
+   de UN archivo post-stop dio **18.0s** — dentro del rango limpio
+   esperado (14.6-22.4s).
+
+**Re-piloto post-fix (mismos seeds, SNR=8, n=20)**: hits=11/20,
+recall=55.0% — **idéntico al piloto original** (confirma determinismo
+del picker/trial, ver `run_step_lazy_single_file`), pero
+**runtime_s = 3,829.0s (≈63.8 min)**, solo 9% más rápido que el
+original (4,204.4s) — **el stop del contenedor NO resolvió la
+lentitud sostenida**, a pesar de que la carga AISLADA de un archivo sí
+dio limpio. La carga aislada probablemente se benefició de cache de
+página tibio (ese archivo específico ya se había leído varias veces
+antes en la sesión); 20 cargas sostenidas de ~700MB cada una NO
+muestran la misma mejora. RAM total del sistema: **15.8GB, con solo
+3.7GB libres** en el momento de la medición — presión de memoria
+real durante cargas sostenidas de arrays de ~1.4GB es la explicación
+más plausible que queda sin descartar (no arreglable por código; sería
+necesario liberar RAM del sistema o medir en otra máquina/momento).
+
+**Extrapolación ×7 limpia: 3,829.0 × 7 ≈ 26,803s ≈ 7h27min.** Sigue
+**por encima del techo de 6h pre-autorizado** (el original daba
+8h10min) — la mejora del contenedor detenido no fue suficiente para
+cruzar el umbral. **Por regla explícita: se PARA acá, NO se lanza la
+curva completa de 140 trials.** Reportado para decisión del usuario en
+vez de decidir unilateralmente con un número todavía sospechoso.
+
+**Hipótesis fs (FOSSA, pre-registrada antes de esta corrida)**:
+provisionalmente REFUTADA por el piloto — recall 55% en SNR=8, con
+techo de IC Wilson en 74.2%, por debajo del ~90% que marca el extremo
+bajo del cluster de las otras 6 curvas ya medidas en ese mismo rango de
+SNR. Confirmación pendiente de la curva completa, que no se corrió — la
+predicción explícita pre-FOSSA queda registrada como tal, no como
+descartada en firme.
+
+**Decimación espacial**: rechazada en este punto de decisión, no
+diferida por falta de tiempo. Razón: la serie mide instalaciones tal
+como están desplegadas — un sub-muestreo espacial de canales sería, en
+los hechos, un array SINTÉTICO distinto a los otros 6 ya medidos,
+rompiendo la comparabilidad que es el punto central de la serie de 7
+arrays. Queda disponible como control separado para F1.6 (para
+preguntas tipo "¿el spread cambia con la densidad de canales?"), nunca
+como sustituto de la medición real de FOSSA.
+
+**Estado**: loader + estacionariedad + headroom + piloto (×2) +
+diagnóstico de I/O, todo cerrado con dato. **Curva completa de 140
+trials: NO corrida, pendiente de decisión explícita del usuario** (¿se
+acepta 7h27min igual, se investiga la presión de RAM primero, o se
+re-mide en otro momento/máquina?).

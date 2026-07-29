@@ -606,6 +606,7 @@ class CoherenceAgent:
                 v_app_onset_mps=v_onset,
                 onset_fit_r2=r2_onset,
                 boundary_pinned=boundary_pinned,
+                onset_agrees=onset_agrees,
                 explanations=expl,
             )
 
@@ -639,6 +640,7 @@ class CoherenceAgent:
                 v_app_onset_mps=v_onset,
                 onset_fit_r2=r2_onset,
                 boundary_pinned=boundary_pinned,
+                onset_agrees=onset_agrees,
                 explanations=expl,
             )
 
@@ -681,6 +683,7 @@ class CoherenceAgent:
                 onset_fit_r2=r2_onset,
                 suppressed_false_positive=False,
                 boundary_pinned=boundary_pinned,
+                onset_agrees=onset_agrees,
                 explanations=expl,
             )
 
@@ -709,6 +712,7 @@ class CoherenceAgent:
                 onset_fit_r2=r2_onset,
                 suppressed_false_positive=True,
                 boundary_pinned=boundary_pinned,
+                onset_agrees=onset_agrees,
                 explanations=expl,
             )
 
@@ -729,5 +733,6 @@ class CoherenceAgent:
             v_app_onset_mps=v_onset,
             onset_fit_r2=r2_onset,
             boundary_pinned=boundary_pinned,
+            onset_agrees=onset_agrees,
             explanations=expl,
         )

@@ -90,7 +90,17 @@
         }
       },
       "json": "figures/snr_curve_valencia_submarine.json",
-      "figure": "figures/fig6_recall_snr_valencia_submarine.png"
+      "figure": "figures/fig6_recall_snr_valencia_submarine.png",
+      "nonhit_diagnostics": {
+        "method": "CLI --dump-trial-diagnostics re-run, mismos 3 archivos/threshold/seeds -- determinismo bit-exacto confirmado (snr50 y 7 pares hits/n identicos, runtime 1894.2s->2039.0s, variacion normal)",
+        "nonhits_snr_8_12_20": {
+          "total": 11,
+          "no_tier0_candidate": 0,
+          "boundary_pinned_or_onset_disagrees": 1,
+          "coincidence_fraction_below_threshold": 10
+        },
+        "conclusion": "la hipotesis de techo de apertura/resolucion (v_app_max ~ L) fue DESCARTADA por dato: 10/11 no-hits tienen velocidad correctamente resuelta y corroborada (boundary_pinned=False, onset_agrees=True, semblanza-vs-onset dentro de 0-4%) pero coincidence_fraction (19.7%-30.0%) por debajo del piso seismic_min_coincidence=0.30 -- el gate real es la fraccion de canales que dispara STA/LTA casi-simultaneamente, no la resolucion de velocidad"
+      }
     },
     "spread_7_arrays": {
       "values": {
@@ -108,8 +118,8 @@
     "FOSSA_pilot": {
       "files_on_disk": 20,
       "files_used": 19,
-      "files_used_note": "primeros 19 cronologicamente (155429-161229 UTC), 20mo (161329) sin usar, consistente con K=19 pre-registrado; los 20 estan separados por exactamente 60s cada uno, sin huecos",
-      "loader": "replay.load_tdms(path, fs, dx) -- nptdms.TdmsFile.read(), lectura eager completa (no streaming). Confirmado contra archivo real: 11648 canales x 30000 muestras (60s@500Hz), int16 -> upcast float32, attrs={} (fs/dx obligatorios)",
+      "files_used_note": "primeros 19 cronologicamente (155429-161229 UTC), 20mo (161329) sin usar, consistente con K=19 pre-registrado; los 20 estan separados por exactamente 60s cada uno, sin huecos. Fe de erratas: el span original de ~79min con huecos posibles venia de un endpoint mal leido (candidato: 171329 confundido con 161329)",
+      "loader": "replay.load_tdms(path, fs, dx) -- nptdms.TdmsFile.read(), lectura eager completa (no streaming). Confirmado contra archivo real: 11648 canales x 30000 muestras (60s@500Hz), int16 -> upcast float32, attrs={} (fs/dx obligatorios) -- CORRECCION F1.5: group.properties/channel.properties SI vienen vacios en el archivo real, pero tdms.properties (nivel ARCHIVO) trae SamplingFrequency[Hz]=500.0 y SpatialResolution[m]=2.0, coincidiendo exacto con lo ya usado. load_tdms ahora cruza fs/dx pasados contra el header cuando esas claves estan presentes y falla fuerte en desacuerdo (fs/dx se mantienen obligatorios como parametro explicito, nunca leidos solos del header, ya que esas claves son convencion de iDAS no del formato TDMS en general)",
       "partial_read_benchmark": {
         "streaming_s": ">120 (no completo)",
         "eager_s": "14.6-22.4",
@@ -162,7 +172,45 @@
         "interpretation": "apunta a algo externo al loader (contencion de disco/antivirus, throttling termico, u otra causa ambiental de esta sesion/maquina) degradandose con el tiempo, no a una propiedad estable de load_tdms ni de la lectura lazy",
         "recommendation": "no tomar 8h10min como costo real sin re-medir en condiciones limpias"
       },
-      "full_curve_status": "PENDIENTE -- NO corrida. Requiere decision explicita del usuario: curva completa vs decimacion espacial documentada vs re-medir el piloto primero"
+      "full_curve_status": "NO corrida -- extrapolacion limpia 7h27min > techo de 6h. Pendiente de decision explicita del usuario.",
+      "io_diagnosis": {
+        "docker_ps": {
+          "repo-pipeline-1": "Exited (0) hace 4 dias, no compite",
+          "repo-dashboard-1": "2 dias corriendo, bind-mount RW en vivo a D:\\\\darkfiber\\\\repo\\\\data (mismo disco que D:\\\\darkfiber\\\\data\\\\Fossa), file-watcher poll-based (Streamlit + WSL), healthcheck roto (puerto 8080 en vez de 8501) con 2438 fallos consecutivos"
+        },
+        "disk_check": "ambos discos fisicos NVMe SSD (Samsung 256GB, Kingston 500GB) -- descarta disco mecanico lento",
+        "defender_check": "RealTimeProtectionEnabled=True; Get-MpPreference/Add-MpPreference fallan sin permisos de administrador -- camino bloqueado, no descartado",
+        "action_taken": "docker stop repo-dashboard-1 (reversible)",
+        "isolated_load_post_fix_s": 18.0,
+        "clean_pilot_rerun": {
+          "snr": 8.0,
+          "n": 20,
+          "hits": 11,
+          "recall": 0.55,
+          "runtime_s": 3829.0,
+          "note": "identico en hits/recall al piloto original -- determinismo confirmado; runtime solo 9% mas rapido, el fix del contenedor NO resolvio la lentitud sostenida"
+        },
+        "system_ram": {
+          "total_gb": 15.8,
+          "free_gb_at_measurement": 3.7,
+          "note": "presion de memoria durante cargas sostenidas de ~1.4GB queda como explicacion mas plausible no descartada"
+        },
+        "clean_extrapolation_x7": {
+          "runtime_s": 26803.0,
+          "runtime_h": 7.445
+        },
+        "decision": "PARADO -- extrapolacion limpia (7h27min) sigue por encima del techo de 6h pre-autorizado. Curva completa NO lanzada, pendiente de decision explicita del usuario"
+      },
+      "fs_hypothesis": {
+        "status": "provisionalmente refutada por el piloto",
+        "data": "recall 55% en SNR=8, techo IC Wilson 74.2% < ~90% (extremo bajo del cluster de las otras 6 curvas en ese rango de SNR)",
+        "confirmation": "pendiente de curva completa, que no se corrio"
+      },
+      "spatial_decimation": {
+        "status": "rechazada en este punto de decision, no diferida",
+        "reason": "la serie mide instalaciones tal como estan desplegadas; sub-muestrear canales crearia un array sintetico distinto a los otros 6, rompiendo la comparabilidad de la serie",
+        "availability": "disponible como control separado para F1.6, nunca como sustituto de la medicion real de FOSSA"
+      }
     }
   },
   "common_params": {

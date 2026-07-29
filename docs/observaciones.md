@@ -36,6 +36,50 @@ efectiva sin que el pipeline lo sepa (el `n_ch`/`dx` que ve
 `ArrayGeometry` sigue siendo el nominal, no el efectivo con 2 canales
 muertos descontados).
 
+## 2026-07-29 — Valencia: instrumentado el porqué de los no-hits — no es el techo de apertura, es el gate de coincidencia STA/LTA
+
+**Seguimiento de la entrada anterior (2026-07-27), ahora con dato en vez
+de dos candidatas sin investigar.** Se agregó propagación de diagnóstico
+por-trial (`CoherenceResult.boundary_pinned/onset_agrees/v_app_onset_mps/
+explanations` → `SelfTestResult`, capa IO pura, Bloque A intacto) y se
+re-corrió SOLO Valencia con `--dump-trial-diagnostics` (mismos 3
+archivos/threshold/seeds del F1.5 original — determinismo bit-exacto
+confirmado: SNR50=2.33 y los 7 pares hits/n idénticos, runtime
+1894.2s→2039.0s dentro de variación normal).
+
+La hipótesis de techo de apertura/resolución (`v_app_max ∝ L`,
+propuesta antes de tener este dato) predecía que los no-hits a SNR alto
+serían mayormente `boundary_pinned=True` (velocidad fuera del rango
+resoluble por esta apertura). **Resultado: NO.** De los 11 trials no-hit
+en SNR=8/12/20:
+- 0/11 sin candidato Tier0 en absoluto.
+- 1/11 con `boundary_pinned=True`/`onset_agrees=False` (un pico pineado
+  en el piso de la grilla, 1500 m/s) — la única instancia real del
+  mecanismo hipotetizado.
+- **10/11 con velocidad correctamente resuelta y corroborada**
+  (`boundary_pinned=False`, `onset_agrees=True`, semblanza-vs-onset
+  dentro de 0-4% de diferencia, velocidad bien adentro de
+  [1500,8000] m/s) pero clasificados `COHERENTE_DESCONOCIDO`. La causa,
+  leída directo de `coincidence_fraction`: los 10 caen en 19.7%-30.0%,
+  contra el piso `seismic_min_coincidence=0.30` — el STA/LTA dispara en
+  muy pocos canales casi-simultáneamente, aunque el `span_fraction` sea
+  100% (los canales que sí disparan están dispersos por todo el cable,
+  no agrupados) y la semblanza post-hoc confirme que la señal está
+  presente en ~92-100% de los canales una vez que se conoce la
+  velocidad correcta.
+
+**Para qué sirve**: refuta con dato la hipótesis original (útil
+negativo, no solo "no confirmado") y abre una pregunta nueva y más
+concreta para F1.6: ¿por qué el disparo STA/LTA por-canal es tan
+disperso/parcial en Valencia específicamente? Candidatas sin investigar
+todavía: heterogeneidad real de ruido a lo largo del cable submarino
+(condición de acople variable, ver los 2 canales muertos de la entrada
+de abajo como posible síntoma relacionado de lo mismo), o un umbral
+STA/LTA calibrado para arrays terrestres que no transfiere bien a un
+ambiente submarino. La infraestructura (`--dump-trial-diagnostics`)
+queda disponible para instrumentar el mismo diagnóstico en cualquier
+otro array de la serie sin tener que re-derivar esto desde cero.
+
 ## 2026-07-28 — FOSSA: piloto muestra un factor 12× de degradación de I/O entre dos pasadas idénticas, misma sesión
 
 **Observación operacional, no de física — F1.5.** Durante el piloto de
@@ -69,6 +113,27 @@ sospechoso. Si esto vuelve a aparecer en otra corrida pesada (Valencia
 ya fue la más cara de las 3 curvas medidas, 1894.2s, sin este patrón),
 vale la pena perfilar qué proceso específico está compitiendo por
 disco/CPU en vez de asumir que es ruido de una sola vez.
+
+**Seguimiento 2026-07-29 — perfilado, causa parcialmente identificada,
+NO totalmente resuelta.** `docker ps -a` mostró `repo-dashboard-1`
+(Streamlit) corriendo hacía 2 días con un bind-mount RW en vivo a
+`D:\darkfiber\repo\data` (mismo disco físico que
+`D:\darkfiber\data\Fossa\`), file-watcher poll-based (confirmado en su
+propio log), y un healthcheck roto (puerto 8080 en vez de 8501) con
+**2,438 fallos consecutivos** acumulados en 2 días. Se detuvo
+(`docker stop`, reversible) y una carga aislada de un solo archivo dio
+18.0s (limpio). PERO: el re-piloto completo (mismos seeds, 20 trials)
+solo mejoró 9% (4,204.4s→3,829.0s) — la lentitud sostenida NO se
+explica (solo) por el contenedor. Se verificó que ambos discos son
+NVMe SSD (descarta disco mecánico lento) y que Defender está activo
+pero sus exclusiones no son inspeccionables/editables sin admin desde
+esta sesión (bloqueado, no descartado). RAM del sistema: 15.8GB
+totales, solo 3.7GB libres al momento de medir — presión de memoria
+real durante cargas sostenidas de arrays de ~1.4GB queda como la
+explicación más plausible sin descartar, y no es arreglable por código.
+**Extrapolación limpia (×7 sobre 3,829.0s) = 7h27min, todavía por
+encima del techo de 6h pre-autorizado** — la curva completa de FOSSA
+sigue sin correrse, pendiente de decisión explícita.
 
 ## 2026-07-27 — Valencia: 2 canales muertos confirmados en la punta más profunda del cable submarino
 
