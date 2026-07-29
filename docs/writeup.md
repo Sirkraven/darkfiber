@@ -379,6 +379,28 @@ arrays with broadly similar channel counts means "will this array see a
 given event" cannot be answered from geometry alone; it requires
 measuring against that installation's real noise.
 
+**The mass-coincidence gate penalizes very-large-aperture arrays by
+construction.** `coincidence_fraction` measures the maximum fraction of
+channels that fire within a short window `W` (`coincidence_window_s`,
+default 3.5s) — but the real moveout of an earthquake crossing the full
+aperture `L` at apparent velocity `v_app` takes `T = L / v_app` seconds,
+so the physically achievable maximum fraction is bounded by `~W/T`
+(channels each firing once, spread across the full crossing time). For
+Valencia (L=41.45 km — the largest-aperture array with a complete SNR50
+curve measured so far; the next is arcata at 15.4 km), verified against
+the 11 non-hit trials at SNR≥8 from the real run with
+`--dump-trial-diagnostics`: for the 10/11 with correctly resolved
+velocity (`boundary_pinned=False`, `v_app` between 2,200 and 3,400 m/s),
+W/T predicts 18.6%-27.7% against 19.7%-30.0% observed in
+`coincidence_fraction` — the arithmetic closes (difference ≤2.5 points
+across all 10 cases). All 10 fall below the `seismic_min_coincidence=0.30`
+floor, exactly where the gate rejects them. This is not a miscalibrated
+threshold for submarine cable nor sparse per-channel triggering noise:
+it's a geometric property of the metric itself — larger aperture means
+larger `T` for a given `v_app`, which means a lower achievable
+coincidence ceiling under a fixed window `W`. Declared finding, Bloque A
+frozen: neither the threshold nor the code changes as a result of this.
+
 **The sample is small.** N=16 ground-truth-matched real events yields
 wide Wilson intervals — e.g. HONEST_UNKNOWN's true rate could plausibly
 sit anywhere from 28% to 72%. Reported as measured, at the sample size

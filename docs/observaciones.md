@@ -36,6 +36,33 @@ efectiva sin que el pipeline lo sepa (el `n_ch`/`dx` que ve
 `ArrayGeometry` sigue siendo el nominal, no el efectivo con 2 canales
 muertos descontados).
 
+## 2026-07-29 — Valencia: cierre de la pregunta abierta de la entrada anterior — W/T explica el 19.7%-30.0%, no era disparo STA/LTA disperso
+
+**Seguimiento same-day de la entrada de abajo.** La entrada anterior dejó
+abierto "¿por qué el disparo STA/LTA por-canal es tan disperso/parcial en
+Valencia?", con heterogeneidad de ruido submarino y umbral mal calibrado
+como candidatas sin investigar. Resultado, con aritmética verificada
+contra los 11 trials no-hit reales (no supuesta): **no hace falta ninguna
+de las dos candidatas.** `coincidence_fraction` mide la fracción máxima
+de canales disparados dentro de la ventana `coincidence_window_s=3.5s`
+(valor real leído del código, no asumido); el moveout real a través de la
+apertura completa (L=41.45km) tarda `T=L/v_app` segundos — a los
+`v_app` reales de estos 10 trials (2,200-3,400 m/s, `boundary_pinned=False`,
+`onset_agrees=True`), T=12.6-18.8s, y `W/T` predice 18.6%-27.7% contra
+19.7%-30.0% observado — cierra dentro de 2.5 puntos en los 10 casos. Es
+decir: aunque CADA canal dispare perfectamente bien (no hay evidencia de
+disparo "ruidoso" o parcial), el propio hecho de que el frente tarde
+12-19s en cruzar el arreglo entero, contra una ventana fija de 3.5s,
+acota matemáticamente el techo de coincidencia alcanzable muy por debajo
+del piso `seismic_min_coincidence=0.30` — sin necesidad de invocar
+heterogeneidad de acople submarino ni mala calibración. Documentado como
+límite conocido en `docs/writeup.es.md` §7 / `docs/writeup.md` §6, sin
+tocar umbral ni código (Bloque A congelado). El único de los 11 trials
+que NO ajusta bien (30.0% observado vs. 12.7% predicho) es justo el que
+tiene `boundary_pinned=True` — su `v_app` no es confiable (pineado en el
+piso de la grilla), consistente con que la fórmula depende de tener una
+`v_app` real para calcular `T`.
+
 ## 2026-07-29 — Valencia: instrumentado el porqué de los no-hits — no es el techo de apertura, es el gate de coincidencia STA/LTA
 
 **Seguimiento de la entrada anterior (2026-07-27), ahora con dato en vez

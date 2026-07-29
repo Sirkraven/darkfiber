@@ -611,6 +611,74 @@ def make_figure(
     print(f"Figura guardada: {path}")
 
 
+def _build_curve_json_payload(
+    array_id: str,
+    threshold: float,
+    threshold_source: str,
+    n_per_step: int,
+    curve: list[dict],
+    snr50: float | None,
+    runtime_s: float,
+    format_: str,
+    hdf5_key: str | None,
+    channel_range: tuple[int, int] | None,
+    files: list[str],
+    files_explicit: bool,
+    noise_margin_s: float,
+    exclude_s: tuple[float, float] | None,
+    sources: list[dict] | None,
+    trial_diagnostics: list[dict] | None,
+    complete: bool,
+) -> dict:
+    """Arma el dict de salida de `snr_curve.py` -- extraído a función pura
+    para poder llamarlo tanto al final (comportamiento previo, sin
+    cambios) como tras CADA escalón SNR en `--format tdms` (F1.6, FOSSA:
+    la curva completa corre horas; sin checkpoints, un fallo a mitad
+    pierde todo el trabajo previo -- ver docs/observaciones.md
+    2026-07-29). `complete=False` marca un checkpoint intermedio,
+    `complete=True` la escritura final."""
+    return {
+        "array_id": array_id,
+        "threshold": threshold,
+        "threshold_source": threshold_source,
+        "snr_steps": list(SNR_STEPS),
+        "n_per_step": n_per_step,
+        "curve": curve,
+        "snr50": snr50,
+        "runtime_s": runtime_s,
+        "format": format_,
+        "hdf5_key": hdf5_key,
+        "channel_range": list(channel_range) if channel_range is not None else None,
+        "input_files": [os.path.basename(f) for f in files],
+        "input_files_explicit_list": files_explicit,
+        "noise_exclusion": {
+            "margin_s": noise_margin_s,
+            "manual_exclude_s": list(exclude_s) if exclude_s is not None else None,
+            "sources": (
+                [
+                    {
+                        "file": os.path.basename(s["path"]),
+                        "segment_s": list(s["segment_s"]),
+                        "duration_s": s["segment_s"][1] - s["segment_s"][0],
+                        "exclusion_kind": s["exclusion_kind"],
+                    }
+                    for s in sources
+                ]
+                if sources is not None
+                else None
+            ),
+        },
+        "trial_diagnostics": trial_diagnostics,
+        "complete": complete,
+    }
+
+
+def _write_curve_json(out_json: str, payload: dict) -> None:
+    os.makedirs(os.path.dirname(out_json) or ".", exist_ok=True)
+    with open(out_json, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2, default=str)
+
+
 def main() -> None:
     """CLI de snr_curve.py: ver el docstring del módulo."""
     ensure_utf8_stdio()
@@ -784,6 +852,8 @@ def main() -> None:
     print(f"\nCargando ruido real sin evento de {len(files)} archivo(s)...")
     exclude_s = tuple(args.exclude_s) if args.exclude_s else None
     trial_diagnostics: list[dict] = []
+    os.makedirs("figures", exist_ok=True)
+    out_json = f"figures/snr_curve_{args.array_id}.json"
 
     if args.format == "tdms":
         # FOSSA (F1.5): RAM-bounded en todo el camino -- gather_noise_sources
@@ -848,6 +918,33 @@ def main() -> None:
                 f"IC95=[{r['ci_low'] * 100:5.1f}, {r['ci_high'] * 100:5.1f}]  n={r['n']}  "
                 f"runtime_s={r['runtime_s']:.1f}"
             )
+            # F1.6: checkpoint incremental tras CADA escalón -- la curva
+            # completa de FOSSA corre horas; sin esto, un fallo a mitad
+            # (o un Ctrl-C) pierde todos los escalones ya terminados, no
+            # solo el que estaba en curso.
+            _write_curve_json(
+                out_json,
+                _build_curve_json_payload(
+                    args.array_id,
+                    threshold,
+                    threshold_source,
+                    args.n_per_step,
+                    curve,
+                    interpolate_snr50(curve),
+                    time.perf_counter() - t0,
+                    args.format,
+                    args.hdf5_key,
+                    channel_range,
+                    files,
+                    args.files is not None,
+                    args.noise_margin_s,
+                    exclude_s,
+                    sources,
+                    (trial_diagnostics if args.dump_trial_diagnostics else None),
+                    complete=False,
+                ),
+            )
+            print(f"  checkpoint guardado en {out_json} ({step_idx + 1}/{len(SNR_STEPS)} escalones)")
     else:
         sources = gather_noise_sources(
             files,
@@ -935,66 +1032,32 @@ def main() -> None:
         f"thresholds_json['threshold']={threshold})."
     )
 
-    os.makedirs("figures", exist_ok=True)
-    out_json = f"figures/snr_curve_{args.array_id}.json"
-    with open(out_json, "w", encoding="utf-8") as fh:
-        json.dump(
-            {
-                "array_id": args.array_id,
-                "threshold": threshold,
-                "threshold_source": threshold_source,
-                "snr_steps": list(SNR_STEPS),
-                "n_per_step": args.n_per_step,
-                "curve": curve,
-                "snr50": snr50,
-                "runtime_s": dt,
-                # Provenance F1.5: formato/loader usado, subrango de
-                # canales aplicado (si hubo), y la lista EXPLÍCITA de
-                # archivos de entrada -- para que quede trazable que la
-                # corrida usó exactamente el set pre-registrado, no un
-                # glob que pudo arrastrar archivos de reserva.
-                "format": args.format,
-                "hdf5_key": args.hdf5_key,
-                "channel_range": list(channel_range) if channel_range is not None else None,
-                "input_files": [os.path.basename(f) for f in files],
-                "input_files_explicit_list": args.files is not None,
-                # Provenance del pool de ruido (F1.1, extensión a .npz):
-                # qué archivo aportó qué tramo, y si la exclusión de
-                # evento fue automática (event_time_index embebido) o
-                # manual (--exclude-s, para formatos sin verdad-terreno
-                # embebida). Distinto por-fuente porque una corrida
-                # puede en general mezclar ambos casos. None para
-                # --format tdms: no hay 'sources' pre-cargados (lectura
-                # lazy de 1 archivo por trial), el archivo completo se usa
-                # como ruido sin verdad-terreno en todos los casos.
-                "noise_exclusion": {
-                    "margin_s": args.noise_margin_s,
-                    "manual_exclude_s": list(exclude_s) if exclude_s is not None else None,
-                    "sources": (
-                        [
-                            {
-                                "file": os.path.basename(s["path"]),
-                                "segment_s": list(s["segment_s"]),
-                                "duration_s": s["segment_s"][1] - s["segment_s"][0],
-                                "exclusion_kind": s["exclusion_kind"],
-                            }
-                            for s in sources
-                        ]
-                        if sources is not None
-                        else None
-                    ),
-                },
-                # F1.6 (diagnóstico read-only sobre Valencia, extendido a
-                # FOSSA): un registro por trial VÁLIDO con classified_as/
-                # boundary_pinned/onset_agrees/v_app_onset_mps/explanations
-                # -- None si --dump-trial-diagnostics no se pidió, [] si se
-                # pidió pero por alguna razón no hubo trials válidos.
-                "trial_diagnostics": (trial_diagnostics if args.dump_trial_diagnostics else None),
-            },
-            fh,
-            indent=2,
-            default=str,
-        )
+    # Escritura final -- complete=True. Para --format tdms, esto sobrescribe
+    # el último checkpoint incremental (complete=False) escrito tras cada
+    # escalón dentro del loop de arriba; para los demás formatos es la
+    # única escritura (comportamiento previo, sin cambios de forma).
+    _write_curve_json(
+        out_json,
+        _build_curve_json_payload(
+            args.array_id,
+            threshold,
+            threshold_source,
+            args.n_per_step,
+            curve,
+            snr50,
+            dt,
+            args.format,
+            args.hdf5_key,
+            channel_range,
+            files,
+            args.files is not None,
+            args.noise_margin_s,
+            exclude_s,
+            sources,
+            (trial_diagnostics if args.dump_trial_diagnostics else None),
+            complete=True,
+        ),
+    )
     print(f"Tabla guardada en {out_json}")
 
     if args.legacy_check:

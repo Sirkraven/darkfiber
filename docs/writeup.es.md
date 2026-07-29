@@ -460,6 +460,29 @@ que "¿este arreglo va a ver un evento dado?" no puede responderse solo
 desde la geometría; hace falta medir contra el ruido real de esa
 instalación.
 
+**El gate de coincidencia masiva penaliza por construcción a los
+arreglos de apertura muy grande.** `coincidence_fraction` mide la
+fracción máxima de canales que disparan dentro de una ventana corta `W`
+(`coincidence_window_s`, default 3.5s) — pero el moveout real de un
+sismo cruzando la apertura completa `L` a velocidad aparente `v_app`
+tarda `T = L / v_app` segundos, así que la fracción máxima físicamente
+alcanzable está acotada por `~W/T` (canales disparando cada uno una vez,
+repartidos a lo largo de todo el tiempo de cruce). Para Valencia
+(L=41.45 km — el arreglo de mayor apertura con curva SNR50 completa
+medida hasta ahora; el siguiente es arcata, 15.4 km), verificado con los
+11 trials no-hit de SNR≥8 de la corrida real con
+`--dump-trial-diagnostics`: en los 10/11 con velocidad correctamente
+resuelta (`boundary_pinned=False`, `v_app` entre 2,200 y 3,400 m/s), W/T
+predice 18.6%-27.7% contra 19.7%-30.0% observado en
+`coincidence_fraction` — la aritmética cierra (diferencia ≤2.5 puntos
+en los 10 casos). Los 10 caen bajo el piso `seismic_min_coincidence=0.30`,
+exactamente donde el gate los descarta. No es una miscalibración del
+umbral para cable submarino ni ruido de disparo disperso por canal: es
+una propiedad geométrica de la métrica misma — a mayor apertura, mayor
+`T` para una `v_app` dada, menor techo de coincidencia alcanzable con
+una ventana `W` fija. Hallazgo declarado, Bloque A congelado: no se
+cambia el umbral ni el código a partir de esto.
+
 **La muestra es chica.** N=16 eventos reales con verdad-terreno da
 intervalos de Wilson anchos — p. ej. la tasa real de HONEST_UNKNOWN
 podría plausiblemente estar en cualquier lado entre 28% y 72%. Reportado
