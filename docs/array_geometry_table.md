@@ -47,3 +47,11 @@ no por su geometría.
 `5.104762077331543` (float con ruido de precisión de punto flotante, no
 redondeado a 5.1) — reportado tal cual sale de la base, no limpiado, para
 que esta tabla sea trazable byte-a-byte contra la fuente.
+
+**Pendiente (fase de paper, no ahora)**: sourcear el ambiente de arcata
+desde la documentación de GorDAS/`quakeflow_das` antes de que esta tabla
+alimente cualquier claim tipo "ningún proxy geométrico/de ambiente
+predice SNR50" — ese claim exige los 8 ambientes sourceados, no 7 de 8
+con uno inferido o inventado. No se completa acá con un valor sin fuente
+primaria (mismo criterio que Brno en `docs/snr50_extension_fase1.md`
+F1.2b).

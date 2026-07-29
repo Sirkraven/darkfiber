@@ -36,6 +36,25 @@ efectiva sin que el pipeline lo sepa (el `n_ch`/`dx` que ve
 `ArrayGeometry` sigue siendo el nominal, no el efectivo con 2 canales
 muertos descontados).
 
+## PENDIENTE F1.6 (declarado, NO ejecutado todavía) — Valencia: ¿la partición hit/no-hit en SNR=8/12/20 separa limpiamente en v*≈3,553 m/s?
+
+**Trabajo declarado para la próxima sesión de F1.6, no crudo — instrucción
+explícita: no ejecutar ahora.** Con los diagnósticos por-trial completos
+de Valencia ya disponibles (`figures/snr_curve_valencia_submarine.json`,
+`trial_diagnostics`, commit `9a07ecc`), falta verificar si la partición
+hit/no-hit en los escalones SNR=8/12/20 separa limpiamente en
+`v_app ≈ 3,553 m/s` (umbral hipotético, no derivado todavía en código —
+a verificar, no asumir). Si separa: el techo de recall es puramente
+geométrico (consecuencia directa del hallazgo W/T de la entrada de
+abajo — a v_app por debajo de ese umbral, T=L/v_app crece lo suficiente
+para que W/T caiga bajo `seismic_min_coincidence=0.30` con certeza; por
+arriba, no) y el "dip" 90%→85%→70% de SNR=8→12→20 (entrada del
+2026-07-27) es ruido de muestreo del mix de velocidades sorteadas al
+azar en cada escalón (n=20/escalón, `v_app` uniforme en [2000,6500] —
+un escalón puede sortear por azar más trials lentos que otro) — cierre
+total de la anomalía, no solo del mecanismo. Si NO separa limpiamente,
+reportar qué sí explica el resto de la dispersión.
+
 ## 2026-07-29 — Valencia: cierre de la pregunta abierta de la entrada anterior — W/T explica el 19.7%-30.0%, no era disparo STA/LTA disperso
 
 **Seguimiento same-day de la entrada de abajo.** La entrada anterior dejó
