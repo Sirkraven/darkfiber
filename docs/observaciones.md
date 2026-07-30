@@ -16,7 +16,167 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
-## 2026-07-30 — Veta #1 EJECUTADA: resultado NULO — L_c no predice SNR50 (rho=-0.2515, signo contrario al predicho, no llega a sugestivo)
+## 2026-07-30 — CIERRE: serie de 8 SNR50 CONGELADA — arcata re-medido (8.00, antes 5.9), spread corregido a 5.0×
+
+**Cierre de la auditoría de la entrada de abajo, por la regla de decisión
+pre-declarada (heterogéneo → re-medición restringida a la geometría
+mayoritaria + provenance completa; homogéneo → documentar y cerrar).**
+monterey_bay y ridgecrest_north: homogéneos, sin cambios. arcata:
+heterogéneo, re-medido.
+
+**Re-medición de arcata** — `python -m darkfiber.snr_curve --dir
+D:/darkfiber/data/quakeflow/arcata --array-id arcata --files
+20230215T142504Z.h5 ... 20241221T151620Z.h5` (los 12 archivos de
+3,020ch/100Hz, explícitos, EXCLUYENDO los 3 de 7,550ch/125Hz),
+threshold=4.0 (default, sin cambios). 140/140 trials válidos, curva
+monótona dentro de IC Wilson 95%. **SNR50 = 8.00** (antes 5.9, medido
+sin saberlo sobre un pool que mezclaba dos geometrías). El valor
+anterior queda archivado con procedencia en `array_profile_history`
+(upsert automático, no sobrescritura silenciosa — confirmado en el log
+de la corrida: "Curva/SNR50 previos de 'arcata' archivados... antes de
+sobrescribir"). Provenance completa en el JSON nuevo
+(`input_files`/`noise_exclusion`, schema actual). No es una corrida de
+datos nuevos ni un evento real re-evaluado — Bloque A intacto: misma
+metodología de ruido sintético sobre el mismo pool de ruido real,
+restringida a la geometría que la fila de `array_profiles` describe.
+
+**Spread de la serie, corregido**: con arcata en 8.00, el máximo de la
+serie deja de ser stanford1_campus (7.73) — **spread = 8.00/1.60 =
+5.0×**, no el 4.83× reportado en la entrada "Cierre de la serie N=8"
+(2026-07-30, abajo) ni el 4.83× de F1.1-F1.5. Esa entrada anterior
+queda como estaba (no se edita en silencio) — esta es la corrección
+vigente.
+
+**Tabla final de 8 SNR50, con sha256 completo de cada `snr_curve_<id>.json`**
+(ver también `docs/array_geometry_table.md`, hashes truncados ahí por
+legibilidad):
+
+| Array | SNR50 | sha256 |
+|---|---|---|
+| monterey_bay | 1.60 | `f35789e6b3e91c7b65e3868b7e889b500af05319bde57fcc0cd650218b837230` |
+| FORESEE | 1.75 | `ef8890b37bc8247c8fa738234011149397ee7e47e4957e283d5089934b9580f5` |
+| Stanford-2 | 1.7692307692307692 | `c5756e8c796b8ce6761607c9f39d8067c6be3a24646287c841fe3c5072f0a625` |
+| Valencia | 2.3333333333333335 | `b1dff168b3972236675c55e0575337bfb573a6c2d1884794eb9c0cf1d21c8330` |
+| ridgecrest_north | 2.50 | `75cdc830f9b88ed477b31507c9c32b0a7fbd0e2e74e6823b7a95ba530e6c762b` |
+| FOSSA | 4.50 | `1f566023c027233091a269f668add82f393e001e0c208c97d1445a4e78532ed3` |
+| stanford1_campus | 7.727272727272727 | `326beaefd0b689af126c8f10fd26e2a57b011711495dc62a2598eefebfa9e7a9` |
+| arcata | **8.00** | `37f9a215d1802fbcfd8c04c2065b26304e2eb0067bb755c03ffad9cec29ff630` |
+
+Commit que cierra esta serie: ver el próximo commit de este mismo día
+en `git log` (mensaje "F1.6: cierre de serie"). El JSON de arcata lleva
+además `pipeline_hash`/`pipeline_hash_source` inyectados post-hoc con
+ese commit, mismo criterio que FOSSA (2026-07-29).
+
+**Línea de llegada declarada por el usuario**: sin más comandos de
+medición/auditoría sobre esta serie a partir de acá. Lo siguiente es
+la estructura del paper.
+
+## 2026-07-30 — Auditoría de homogeneidad de pool: monterey_bay y ridgecrest_north OK, arcata heterogéneo (confirmado, con la apertura de su geometría minoritaria)
+
+**Cierre del hallazgo de arcata (entradas de arriba/abajo, 2026-07-30):
+¿es arcata un caso aislado o el resto de los pools multi-archivo
+pre-F1.1 (misma era) tienen el mismo problema?** stanford1_campus queda
+exento por construcción — confirmado con `ls` del directorio
+(`D:\darkfiber\data\stanford`): un solo `eastfoothills_real.npz`, medido
+en F1.1 con `--fs`/`--dx` explícitos, no hay pool multi-archivo que
+pueda ser heterogéneo.
+
+**A1 — tabla por archivo** (`n_ch`/`fs`/`dx` de los attrs embebidos,
+leídos directo, no de memoria):
+
+`monterey_bay` (15 archivos) — TODOS `n_ch=2,845`, `dx=5.2m`. `fs` toma
+dos valores: `200.004959` (4 archivos) y `199.995422` (11 archivos) —
+jitter de reloj de ~0.0047%, ya documentado como benigno en
+`docs/writeup_data.md` ("fs no es un 200Hz limpio"), NO una clase
+estructural distinta como arcata.
+
+`ridgecrest_north` (12 archivos) — TODOS `n_ch=1,150`, `fs=100.0`,
+`dx=8.0m`, sin ninguna variación, ni siquiera jitter.
+
+**A2 — veredicto por pool**: **monterey_bay HOMOGÉNEO**, **ridgecrest_north
+HOMOGÉNEO**. Por la regla de decisión pre-declarada: documentar y
+cerrar, sin re-medición.
+
+**A3 — arcata, apertura de la geometría minoritaria (pendiente cerrado)**:
+los 3 archivos de 7,550 canales @ 125Hz tienen `dx=2.0419046878814697m`
+→ apertura implícita `(7550-1)×2.0419046878814697 = 15,414.34m`. Contra
+la apertura de la geometría mayoritaria (3,020ch, la de
+`array_profiles`): `(3020-1)×5.104762077331543 = 15,411.28m`. Las dos
+aperturas son casi idénticas (~3m de diferencia, 0.02%) — consistente
+con el mismo cable físico bajo dos configuraciones de adquisición
+distintas (canal/gauge), no dos instalaciones distintas.
+
+**Aplicando la regla de decisión pre-declarada**: arcata es
+**heterogéneo** → re-medición restringida a la geometría mayoritaria
+(3,020ch/100Hz, la de `array_profiles`), con provenance completa del
+schema actual (`--files` explícito, 12 archivos). Corriendo — ver
+entrada de cierre de esta misma fecha, más abajo, con el resultado y
+los hashes finales de la serie.
+
+## 2026-07-30 — CORRECCIÓN de lectura de la entrada de abajo: no es "L_c no predice SNR50", es "el binneado pre-registrado no resolvió L_c en la mayoría de los arrays"
+
+**El resultado (ρ=−0.2515) NO se toca — se corrige cómo se lee, con
+aritmética verificada, no reinterpretación libre.** Seis puntos, no
+cinco:
+
+**(C1) El límite vinculante real fue el BIN de 20m en 7/8 arrays, no el
+piso `2·dx` como decía mi framing original.** Comparando `2·dx` contra
+el ancho de bin fijo (20m) por array: monterey_bay 10.4<20,
+FORESEE 4.0<20, Stanford-2 16.32<20, ridgecrest_north 16.0<20,
+FOSSA 4.0<20, arcata 10.21<20, stanford1_campus 16.32<20 — **7 de 8 con
+piso por DEBAJO del bin**. Solo Valencia (`2·dx`=33.6m) tiene piso por
+ENCIMA del bin (20m). De esos 7, 6 quedaron efectivamente censurados
+(FORESEE fue el único de los 7 que sí cruzó dentro de su propio primer
+bin resoluble antes del piso).
+
+**(C2) Inconsistencia real en mi implementación, declarada, no oculta**:
+la detección de censura ocurría a la resolución del BIN (20m — si el
+primer bin ya estaba bajo 0.368, se marcaba censurado), pero el VALOR
+asignado era `2·dx` (4.0-16.3m según el array) — una escala más fina
+que la que el método realmente sondeó. No invalida el resultado (las
+reglas de censura estaban fijadas de antemano, antes de correr nada) —
+pero explica por qué 6 de los 8 puntos terminan siendo, en los hechos,
+marcadores de posición ordenados por `dx` (`2·dx` es monótono en `dx`),
+no mediciones independientes de coherencia real.
+
+**(C3) Límite ESTRUCTURAL de esta serie de 8 arrays, no un defecto del
+análisis en sí**: `2·dx` recorre de 4.0m (dx=2m, FOSSA/FORESEE) a 33.6m
+(dx=16.8m, Valencia) — factor **8.4×**. Ningún ancho de bin único en
+metros puede servir simultáneamente a los dos extremos de esa escala.
+Cualquier métrica de cruce en metros hereda este problema con esta
+mezcla particular de instalaciones — si el fenómeno físico vive por
+debajo de ~34m, estos 8 arrays, con estos spacings, no pueden testearlo
+con una métrica de cruce sin rediseñar el bin por array (lo que a su vez
+rompe la comparabilidad entre arrays que el diseño buscaba).
+
+**(C4) Lectura correcta a partir de acá**: *"el binneado pre-registrado
+no resolvió `L_c` en la mayoría de los arrays"* — NO *"`L_c` no predice
+SNR50"*. Reportar un nulo limpio sería sobre-afirmar un resultado
+negativo, exactamente el mismo tipo de error que sobre-afirmar un
+hallazgo positivo, en la dirección contraria. El `ρ=−0.2515` sigue
+siendo el número real bajo las reglas fijadas — pero no debe leerse
+como evidencia de ausencia de mecanismo, porque el instrumento no llegó
+a medir la cantidad de interés en 6 de 8 casos.
+
+**(C5) Dato diagnóstico que faltaba — los únicos 2 valores realmente
+medidos** (no censurados, cruce genuino dentro del rango observado):
+**FORESEE, `L_c`=16.38m** (dx=2.0m, muy por encima de su propio piso de
+4.0m) y **ridgecrest_north, `L_c`=20.52m** (dx=8.0m, por encima incluso
+del ancho de bin — un cruce interpolado más allá del primer bin). El
+`ρ=−0.2515` observado sobre 8 puntos está dominado, en la práctica, por
+dónde caen estos DOS valores reales relativo a los 6 marcadores de
+`2·dx` — con n_efectivo real de 2 mediciones independientes, no 8, el
+dato no sostiene ninguna lectura direccional confiable en ningún
+sentido.
+
+**(C6) Responsabilidad del diseño, no de la ejecución**: el ancho de bin
+de 20m estaba fijado en el pre-registro tal como fue aprobado — un
+chequeo contra `2·dx` de los 8 arrays (aritmética simple, disponible
+antes de correr nada) habría mostrado esto de antemano. Se registra así
+para que quede como responsabilidad compartida del diseño aprobado, no
+como un error introducido en la ejecución.
+
+## 2026-07-30 — Veta #1 EJECUTADA: rho=-0.2515 medido — el binneado de 20m no resolvió L_c en 6/8 arrays (ver corrección de lectura arriba)
 
 **F1.6, resultado del pre-registro `docs/prereg_veta1_coherencia_ruido.md`
 (commit `9f4c550`), corrido tal cual quedó fijado — cero ajustes al
@@ -36,27 +196,14 @@ pre-registrados, Bloque A intacto.
 | ridgecrest_north | 20.52 | **medido** | 2.50 |
 | Valencia | 33.60 | censurado (piso) | 2.3333 |
 
-**Spearman ρ(L_c, SNR50) = −0.2515** (p≈0.548, aproximado). **Resultado:
-NULO** — ni siquiera entra en la zona sugestiva pre-registrada
-(`0.5≤|ρ|<0.7381`), y el signo es NEGATIVO, contrario a la dirección
-predicha (positiva). Bajo las reglas fijadas de antemano (§8 del
-pre-registro), esto es inequívocamente un no-hallazgo: no hace falta
-invocar la condición de validez del signo porque ni la magnitud alcanza
-el umbral sugestivo.
-
-**Caveat honesto sobre el poder del test, declarado ahora que se ve**:
-6 de los 8 arrays (todos menos FORESEE y ridgecrest_north) quedaron
-**censurados en el piso** — el ancho de bin fijado (20m) resultó más
-grueso que `2·dx` para la mayoría de los arrays de spacing chico (2-8m),
-así que el método no pudo resolver nada más fino que su propio bin más
-cercano al origen para esos 6. Esto reduce la varianza real explotable
-por Spearman (6 de 8 valores son, en los hechos, una función monótona
-de `dx` solamente, no de una medición independiente de coherencia) — el
-resultado nulo es genuino bajo las reglas fijadas, pero el test tuvo
-menos poder real del que el pre-registro asumía implícitamente. Queda
-como limitación del EXPERIMENTO ejecutado (no del pre-registro en sí,
-que fijó la regla de censura correctamente y de antemano) para cualquier
-lectura futura de este número.
+**Spearman ρ(L_c, SNR50) = −0.2515** (p≈0.548, aproximado) — el número
+en sí no se toca, no cruza ningún umbral pre-registrado en ninguna
+dirección. **Pero ver la corrección de lectura de la entrada de arriba
+(2026-07-30) antes de citar esto como "nulo"**: 6 de los 8 valores de
+`L_c` son marcadores de posición (`2·dx`, censurados), no mediciones —
+la lectura correcta es que el binneado de 20m no resolvió la métrica en
+la mayoría de los arrays, no que se haya confirmado la ausencia de
+relación entre coherencia del ruido y SNR50.
 
 ### Dos problemas encontrados y corregidos DURANTE la ejecución (no ajustes al protocolo)
 
@@ -167,6 +314,12 @@ observado con N=4 y N=7** (ver entradas previas de
 rango ya observado, no lo amplió por ningún extremo — cuarta
 confirmación consecutiva de que el spread no es un artefacto de muestra
 chica. Tabla consolidada final: `docs/array_geometry_table.md`.
+
+**Superseded 2026-07-30**: arcata se re-midió (heterogeneidad de pool
+detectada en veta #1) y pasó de 5.9 a **8.00** — el spread vigente es
+**5.0×** (8.00/1.60), no 4.83×. Ver entrada de cierre "CIERRE: serie de
+8 SNR50 CONGELADA", más arriba en este archivo. Esta entrada queda como
+registro histórico de lo que se sabía en ese momento, no se edita.
 
 ## 2026-07-30 — FE DE ERRATAS: mi atribución del dip de FOSSA al mecanismo W/T de Valencia era incorrecta
 

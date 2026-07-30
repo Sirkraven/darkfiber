@@ -27,23 +27,36 @@ DOS escalones que bracketan el cruce de recall=50% (`interpolate_snr50`),
 n=20 cada uno — son los números reales que sostienen la interpolación, no
 un IC sintetizado.
 
-| Array | Ambiente | n_ch | spacing (dx) | apertura | fs | SNR50 | IC95% (escalones que bracketan 50%) |
-|---|---|---|---|---|---|---|---|
-| monterey_bay | Submarino (SeaFOAM) | 2,845 | 5.2 m | 14,788.8 m (14.79 km) | 199.995 Hz | 1.60 | [0.9,23.6]@SNR1 / [58.4,91.9]@SNR2 |
-| FORESEE (foresee) | Urbano, campus universitario | 2,137 | 2.0 m | 4,272.0 m (4.27 km) | 125.0 Hz | 1.75 | [0.9,23.6]@SNR1 / [43.3,81.9]@SNR2 |
-| Stanford-2 (stanford2_sandhill) | Urbano, vía pública | 352 | 8.16 m | 2,864.16 m (2.86 km) | 250.0 Hz | 1.77 | [0.0,16.1]@SNR1 / [43.3,81.9]@SNR2 |
-| Valencia (valencia_submarine) | Submarino | 2,468 | 16.8 m | 41,445.6 m (41.45 km) | 250.0 Hz | 2.33 | [25.8,65.8]@SNR2 / [38.7,78.1]@SNR3 |
-| ridgecrest_north | Desierto/rural | 1,150 | 8.0 m | 9,192.0 m (9.19 km) | 100.0 Hz | 2.50 | [5.2,36.0]@SNR2 / [64.0,94.8]@SNR3 |
-| FOSSA | Urbano — fibra oscura de telecom | 11,648 | 2.0 m | 23,294.0 m (23.29 km) | 500.0 Hz | 4.50 | [0.9,23.6]@SNR3 / [43.3,81.9]@SNR5 |
-| arcata | — (no sourceado) | 3,020 | 5.104762077331543 m | 15,411.28 m (15.41 km) | 100.0 Hz | 5.9 | [18.1,56.7]@SNR5 / [64.0,94.8]@SNR8 |
-| stanford1_campus | Urbano, campus universitario | 626 | 8.16 m | 5,100.0 m (5.10 km) | 100.0 Hz | 7.73 | [0.0,16.1]@SNR5 / [34.2,74.2]@SNR8 |
+**SERIE CONGELADA 2026-07-30** — tras la re-medición de arcata (ver nota
+más abajo), no se corren más mediciones/auditorías sobre esta serie de 8.
+Los hashes (`sha256` completo del propio `figures/snr_curve_<id>.json`,
+calculados directo sobre el archivo — no de memoria) son la referencia
+de auditoría byte-a-byte de cada fila.
+
+| Array | Ambiente | n_ch | spacing (dx) | apertura | fs | SNR50 | IC95% (escalones que bracketan 50%) | sha256 de `snr_curve_<id>.json` |
+|---|---|---|---|---|---|---|---|---|
+| monterey_bay | Submarino (SeaFOAM) | 2,845 | 5.2 m | 14,788.8 m (14.79 km) | 199.995 Hz | 1.60 | [0.9,23.6]@SNR1 / [58.4,91.9]@SNR2 | `f35789e6b3e9…837230` |
+| FORESEE (foresee) | Urbano, campus universitario | 2,137 | 2.0 m | 4,272.0 m (4.27 km) | 125.0 Hz | 1.75 | [0.9,23.6]@SNR1 / [43.3,81.9]@SNR2 | `ef8890b37bc8…89934b9580f5` |
+| Stanford-2 (stanford2_sandhill) | Urbano, vía pública | 352 | 8.16 m | 2,864.16 m (2.86 km) | 250.0 Hz | 1.77 | [0.0,16.1]@SNR1 / [43.3,81.9]@SNR2 | `c5756e8c796b…072f0a625` |
+| Valencia (valencia_submarine) | Submarino | 2,468 | 16.8 m | 41,445.6 m (41.45 km) | 250.0 Hz | 2.33 | [25.8,65.8]@SNR2 / [38.7,78.1]@SNR3 | `b1dff168b397…d21c8330` |
+| ridgecrest_north | Desierto/rural | 1,150 | 8.0 m | 9,192.0 m (9.19 km) | 100.0 Hz | 2.50 | [5.2,36.0]@SNR2 / [64.0,94.8]@SNR3 | `75cdc830f9b8…30e6c762b` |
+| FOSSA | Urbano — fibra oscura de telecom | 11,648 | 2.0 m | 23,294.0 m (23.29 km) | 500.0 Hz | 4.50 | [0.9,23.6]@SNR3 / [43.3,81.9]@SNR5 | `1f566023c027…4a78532ed3` |
+| stanford1_campus | Urbano, campus universitario | 626 | 8.16 m | 5,100.0 m (5.10 km) | 100.0 Hz | 7.73 | [0.0,16.1]@SNR5 / [34.2,74.2]@SNR8 | `326beaefd0b6…eefebfa9e7a9` |
+| arcata | — (no sourceado) | 3,020 | 5.104762077331543 m | 15,411.28 m (15.41 km) | 100.0 Hz | **8.00** | [5.2,36.0]@SNR5 / [29.9,70.1]@SNR8 | `37f9a215d180…9cec29ff630` |
+
+*(hashes truncados en la tabla por legibilidad — el sha256 completo de
+cada uno está en el commit que cerró la serie; ver
+`docs/observaciones.md` 2026-07-30 para los 64 caracteres completos de
+cada uno).*
 
 **Nota sobre orden**: filas ordenadas por SNR50 ascendente (menos sensible
 arriba de la escala de sensibilidad, es decir monterey_bay necesita el SNR
 sintético más chico para alcanzar 50% de recall — ver
 `docs/writeup.md`/`writeup.es.md` §4 sobre por qué SNR50 no es comparable
 entre arrays en unidades físicas absolutas, solo dentro de la escala propia
-de cada instalación).
+de cada instalación). **arcata pasó a ser el SNR50 más alto de la serie
+(8.00, no 7.73 de stanford1_campus)** tras su re-medición — ver nota
+abajo.
 
 **FOSSA — corrida completa cerrada 2026-07-29** (curva completa aprobada
 con Docker cerrado, ver hilo F1.6; commit `9a07ecc`, `pipeline_hash`
@@ -78,13 +91,28 @@ todavía — ver pendiente F1.6 (b) en `docs/observaciones.md`
 redondeado a 5.1) — reportado tal cual sale de la base, no limpiado, para
 que esta tabla sea trazable byte-a-byte contra la fuente.
 
-**Hallazgo 2026-07-30 (veta #1, `docs/observaciones.md`): arcata NO tiene
-una sola geometría en sus 15 archivos pre-registrados.** Los primeros 3
-(cronológicamente) son 7,550 canales @ 125Hz, dx=2.0419m; los otros 12
-son 3,020 canales @ 100Hz, dx=5.104762077331543m — esto último es lo que
-esta tabla y `array_profiles` reportan, pero es la geometría de 12/15
-archivos, no de los 15. No investigado más allá de dejarlo señalado —
-Bloque A intacto, SNR50=5.9 no se re-abre.
+**Hallazgo 2026-07-30 (veta #1, `docs/observaciones.md`) y su cierre:
+arcata NO tenía una sola geometría en sus 15 archivos pre-registrados.**
+Los primeros 3 (cronológicamente) son 7,550 canales @ 125Hz,
+dx=2.0419m; los otros 12 son 3,020 canales @ 100Hz,
+dx=5.104762077331543m (la de `array_profiles`/esta tabla). Auditados
+también `monterey_bay` y `ridgecrest_north` (misma era pre-F1.1) por la
+misma razón — **ambos homogéneos**, sin cambios.
+
+**Actualización — arcata SÍ se re-midió, por regla de decisión
+pre-declarada (heterogéneo → re-medición restringida a la geometría
+mayoritaria + provenance completa), no por decisión ad-hoc.** Corrida
+con `--files` explícito (los 12 archivos de 3,020ch/100Hz únicamente),
+provenance completa en `figures/snr_curve_arcata.json`
+(`input_files`/`noise_exclusion` con los 12 archivos y sus segmentos).
+**Resultado: SNR50 = 8.00** (antes 5.9, medido sobre el pool mezclado).
+El valor anterior (5.9) queda archivado con procedencia en
+`array_profile_history` (upsert automático de `catalog.py`, no
+sobrescritura silenciosa). Bloque A: esto NO es una corrida de datos
+NUEVOS ni un evento real re-evaluado — es la misma metodología de ruido
+sintético sobre el mismo pool de ruido real, restringida a la geometría
+consistente con la que la instalación fue caracterizada; se trata como
+corrección de medición, no como hallazgo de validación nuevo.
 
 **Pendiente (fase de paper, no ahora)**: sourcear el ambiente de arcata
 desde la documentación de GorDAS/`quakeflow_das` antes de que esta tabla
