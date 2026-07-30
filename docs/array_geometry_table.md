@@ -27,21 +27,45 @@ un IC sintetizado.
 | Array | Ambiente | n_ch | spacing (dx) | apertura | fs | SNR50 | IC95% (escalones que bracketan 50%) |
 |---|---|---|---|---|---|---|---|
 | monterey_bay | Submarino (SeaFOAM) | 2,845 | 5.2 m | 14,788.8 m (14.79 km) | 199.995 Hz | 1.60 | [0.9,23.6]@SNR1 / [58.4,91.9]@SNR2 |
-| Stanford-2 (stanford2_sandhill) | Urbano, vía pública | 352 | 8.16 m | 2,864.16 m (2.86 km) | 250.0 Hz | 1.77 | [0.0,16.1]@SNR1 / [43.3,81.9]@SNR2 |
 | FORESEE (foresee) | Urbano, campus universitario | 2,137 | 2.0 m | 4,272.0 m (4.27 km) | 125.0 Hz | 1.75 | [0.9,23.6]@SNR1 / [43.3,81.9]@SNR2 |
+| Stanford-2 (stanford2_sandhill) | Urbano, vía pública | 352 | 8.16 m | 2,864.16 m (2.86 km) | 250.0 Hz | 1.77 | [0.0,16.1]@SNR1 / [43.3,81.9]@SNR2 |
 | Valencia (valencia_submarine) | Submarino | 2,468 | 16.8 m | 41,445.6 m (41.45 km) | 250.0 Hz | 2.33 | [25.8,65.8]@SNR2 / [38.7,78.1]@SNR3 |
 | ridgecrest_north | Desierto/rural | 1,150 | 8.0 m | 9,192.0 m (9.19 km) | 100.0 Hz | 2.50 | [5.2,36.0]@SNR2 / [64.0,94.8]@SNR3 |
+| FOSSA | Urbano — fibra oscura de telecom | 11,648 | 2.0 m | 23,294.0 m (23.29 km) | 500.0 Hz | 4.50 | [0.9,23.6]@SNR3 / [43.3,81.9]@SNR5 |
 | arcata | — (no sourceado) | 3,020 | 5.104762077331543 m | 15,411.28 m (15.41 km) | 100.0 Hz | 5.9 | [18.1,56.7]@SNR5 / [64.0,94.8]@SNR8 |
 | stanford1_campus | Urbano, campus universitario | 626 | 8.16 m | 5,100.0 m (5.10 km) | 100.0 Hz | 7.73 | [0.0,16.1]@SNR5 / [34.2,74.2]@SNR8 |
-| FOSSA | Urbano — fibra oscura de telecom | 11,648 (nominal, PubDAS) | 2.0 m | 23,300 m (23.3 km) | 500.0 Hz | **pendiente** | curva completa aún no corrida — ver `docs/observaciones.md` 2026-07-28/29 (I/O 12×, extrapolación 7h27); solo `figures/snr_curve_fossa_smoketest.json` existe hoy, no en `array_profiles` |
 
-**Nota sobre orden**: filas 1-7 ordenadas por SNR50 ascendente (menos sensible
+**Nota sobre orden**: filas ordenadas por SNR50 ascendente (menos sensible
 arriba de la escala de sensibilidad, es decir monterey_bay necesita el SNR
 sintético más chico para alcanzar 50% de recall — ver
 `docs/writeup.md`/`writeup.es.md` §4 sobre por qué SNR50 no es comparable
 entre arrays en unidades físicas absolutas, solo dentro de la escala propia
-de cada instalación). FOSSA al final porque no tiene SNR50 medido todavía,
-no por su geometría.
+de cada instalación).
+
+**FOSSA — corrida completa cerrada 2026-07-29** (curva completa aprobada
+con Docker cerrado, ver hilo F1.6; commit `9a07ecc`, `pipeline_hash`
+inyectado post-hoc en `figures/snr_curve_fossa.json` — ver nota de
+provenance ahí mismo). Runtime real: 27,480.4s (7h38, cerca de la
+extrapolación de 7h27). `array_profiles` actualizado por la propia
+corrida (`n_ch`/`aperture_m` reales del archivo, no el nominal de
+PubDAS — coinciden exacto: 11,648 canales × 2.0m = 23,294.0m). **Dato
+crudo, no investigado todavía**: la curva de recall de FOSSA NO es
+monótona en los escalones altos — 90%@SNR8 → 80%@SNR12 → 60%@SNR20 (IC
+Wilson se solapan, pasa el chequeo de monotonía-dentro-de-IC igual que
+Valencia) — mismo patrón cualitativo que la anomalía de Valencia
+(entrada 2026-07-27 de `docs/observaciones.md`), en el segundo arreglo
+de mayor apertura de la serie (23.3km, después de Valencia).
+**Corrección (ver `docs/observaciones.md`, fe de erratas 2026-07-29/30):
+NO es el mismo mecanismo W/T que Valencia** — verificado con aritmética,
+no asumido: para FOSSA, `v* = 0.30·L/W ≈ 1,997 m/s` cae DEBAJO de todo
+el rango inyectado (2,000-6,500 m/s), así que el techo geométrico de
+`coincidence_fraction` va de 30.05% a 97.7% dentro de ese rango —
+insuficiente para explicar un 40% de no-hits en SNR=20 (solo ~15% de los
+sorteos caen bajo un techo de 40%). Para Valencia, `v*≈3,553 m/s` SÍ caía
+DENTRO del rango, lo que hacía el mecanismo geométrico suficiente por sí
+solo. La no-monotonicidad de FOSSA queda sin explicación mecánica
+todavía — ver pendiente F1.6 (b) en `docs/observaciones.md`
+(hipótesis candidata: autosupresión STA/LTA, no verificada).
 
 **Nota de reconciliación arcata**: `array_profiles.dx` trae
 `5.104762077331543` (float con ruido de precisión de punto flotante, no

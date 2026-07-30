@@ -9,6 +9,106 @@ podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
 (ese es trabajo declarado y concreto; esto es más crudo, todavía sin
 decidir si es trabajo).
 
+## 2026-07-30 — Bug propio: `python -c` con acento inline corrompió un string antes de llegar a Python (mojibake silencioso, no detectado sin releer)
+
+**Operacional, no de física.** Al parchear `figures/snr_curve_fossa.json`
+con el campo `pipeline_hash_source: "inyección manual post-corrida"`
+vía `python -c "..."` en la terminal de Windows, el acento de
+"inyección" se corrompió a nivel de la propia línea de comando (la
+consola no está en codepage UTF-8) ANTES de que el string llegara al
+intérprete de Python — `json.dump` escribió fielmente un `�` de
+reemplazo al archivo, sin error ni warning de ningún lado. Se detectó
+releyendo el campo con `repr()` inmediatamente después de escribir (no
+se asumió que el patch había salido bien por no haber excepción).
+Arreglado escribiendo el patch como archivo `.py` en UTF-8 (vía la
+herramienta de escritura de archivos, no la terminal) y verificado con
+`assert` sobre el valor releído. **Para qué sirve**: cualquier patch
+futuro de un JSON con texto no-ASCII vía `python -c` inline en esta
+terminal corre el mismo riesgo silencioso — preferir un archivo `.py`
+explícito en UTF-8 cuando el string tiene tildes/ñ, y releer+verificar
+el campo después de escribir en vez de confiar en la ausencia de
+excepción.
+
+## 2026-07-30 — Cierre de la serie N=8 (FOSSA corrida completa): spread 4.83× estable desde N=4
+
+**F1.6, cierre.** Con FOSSA cerrada (SNR50=4.50, 140/140 trials válidos,
+`array_profiles` actualizado, commit `9a07ecc` + `pipeline_hash`
+post-hoc en `figures/snr_curve_fossa.json`), la serie completa de 8
+arreglos queda: monterey_bay 1.60, FORESEE 1.75, Stanford-2 1.77,
+Valencia 2.33, ridgecrest_north 2.50, FOSSA 4.50, arcata 5.9,
+stanford1_campus 7.73. **Spread = 7.73/1.60 = 4.83× — idéntico al ya
+observado con N=4 y N=7** (ver entradas previas de
+`sample_plan_fase1.md`/`docs/observaciones.md`). FOSSA cayó DENTRO del
+rango ya observado, no lo amplió por ningún extremo — cuarta
+confirmación consecutiva de que el spread no es un artefacto de muestra
+chica. Tabla consolidada final: `docs/array_geometry_table.md`.
+
+## 2026-07-30 — FE DE ERRATAS: mi atribución del dip de FOSSA al mecanismo W/T de Valencia era incorrecta
+
+**Corrección a mi propia atribución, no un hallazgo de otra persona —
+mismo criterio que la fe de erratas de FORESEE (`docs/snr50_extension_fase1.md`,
+F1.2b): el error se documenta, no se edita en silencio.** Al reportar el
+cierre de FOSSA, escribí en `docs/array_geometry_table.md` que la
+no-monotonicidad de su curva (90%@SNR8 → 80%@SNR12 → 60%@SNR20) era
+"consistente con la hipótesis W/T ya cerrada para Valencia" — sin
+verificar la aritmética primero. **Verificado después (aritmética
+simple, `L=23,294m`, `W=coincidence_window_s=3.5s`, ambos reales):
+NO lo es.**
+
+Despejando `v` de `W/T = seismic_min_coincidence` (0.30) se obtiene la
+velocidad `v*` bajo la cual el techo geométrico de `coincidence_fraction`
+cae por debajo del piso de 30%:
+
+- **FOSSA**: `v* = 0.30 × 23,294 / 3.5 ≈ 1,997 m/s` — cae DEBAJO de todo
+  el rango de `v_app` inyectado (2,000-6,500 m/s, uniforme). Dentro de
+  ese rango, el techo W/T va de 30.05% (a 2,000 m/s, el extremo lento
+  sorteable) a 97.7% (a 6,500 m/s) — prácticamente todo el rango queda
+  por ENCIMA del piso de coincidencia. Solo ~15% de los sorteos caen
+  bajo un techo de 40% (`v < 2,663 m/s`). Esto es estructuralmente
+  insuficiente para explicar un 40% de no-hits en SNR=20 (8/20 trials):
+  el mecanismo geométrico puro de Valencia, aplicado a la geometría de
+  FOSSA, predice que la enorme mayoría de los sorteos deberían pasar el
+  gate de coincidencia sin problema.
+- **Valencia, en contraste**: `v* ≈ 3,553 m/s` (recalculado con el mismo
+  método, `L=41,446m`) cae DENTRO del rango inyectado — una fracción
+  sustancial de los sorteos aleatorios de `v_app` caen por construcción
+  bajo el piso de coincidencia, sin importar el SNR. Ahí el mecanismo
+  geométrico SÍ es suficiente por sí solo (ver entrada del 2026-07-29
+  de abajo, verificada contra los 11 trials no-hit reales).
+
+**Son dos fenómenos distintos, no el mismo mecanismo escalado a otra
+apertura.** La no-monotonicidad de FOSSA queda sin explicación mecánica
+— abierta como pendiente F1.6 (b), abajo. Corregido en
+`docs/array_geometry_table.md` (nota de FOSSA), no editado en silencio.
+
+## PENDIENTE F1.6 (declarado, NO ejecutado todavía) — dos lecturas read-only sobre diagnósticos ya en disco
+
+**(a) Veta #1 — largo de coherencia espacial del ruido vs. SNR50, n=8.**
+Con los 8 SNR50 ya medidos y cerrados, explorar si el largo de
+coherencia espacial del ruido de fondo (no el ambiente categórico, una
+métrica continua) correlaciona con SNR50 entre arreglos.
+**Pre-registrar métrica, umbral y criterio ANTES de correr** — mismo
+estándar que el resto del proyecto (pre-registro antes de ver el
+resultado), no ajustar la métrica después de ver si correlaciona.
+
+**(b) No-monotonicidad de FOSSA — ¿concentrada o repartida?** Con
+`trial_diagnostics` de FOSSA ya en disco (`--dump-trial-diagnostics`
+estuvo activo en la corrida completa): ¿los no-hits de SNR=12/20 se
+concentran en el extremo lento de `v_app` con `coincidence_fraction`
+cerca de 0.30 (i.e., el mecanismo SÍ actúa pero con más margen del que
+la aritmética de arriba sugiere — a re-verificar con los datos reales,
+no solo la aritmética teórica), o están repartidos por todo el rango de
+velocidades? Si están repartidos (no concentrados en el extremo lento):
+**hipótesis a verificar EN CÓDIGO, no asumir** — autosupresión de
+STA/LTA: una señal fuerte (SNR alto) infla el LTA (long-term average)
+de los canales/ventanas posteriores, elevando el piso de disparo y
+suprimiendo el trigger en parte del arreglo — lo que explicaría recall
+DECRECIENTE con SNR creciente (patrón inverso al esperado, visto tanto
+en FOSSA como en Valencia). Leer la definición exacta de la ventana LTA
+(`triage.py` o donde esté implementado el STA/LTA) antes de sostener
+esta hipótesis — no asumir el mecanismo de la ventana sin confirmarlo
+en el código primero.
+
 ## 2026-07-27 — Valencia: curva SNR50 no llega a 100% de recall (única de 7 arrays con esta forma)
 
 **Observación, no experimento — F1.5.** Las 7 curvas SNR50 medidas
