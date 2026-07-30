@@ -13,9 +13,12 @@ referencia rápida de un solo lugar. Generada leyendo directo
 curva en `figures/snr_curve_*.json` (columna IC) el 2026-07-29 — no
 recalculada ni re-derivada de memoria.
 
-**Fuente de "Ambiente"**: `sample_plan_fase1.md` §"Spread de 7 arrays". `—`
-significa no sourceado todavía (arcata) — no se completa acá con un valor
-inventado.
+**Fuente de "Ambiente"**: `sample_plan_fase1.md` §"Spread de 7 arrays"
+para los 7 arreglos medidos antes de FOSSA. Para FOSSA (la 8va fila,
+agregada en este documento después de que su corrida completa cerró):
+`docs/snr50_extension_fase1.md`, tabla de candidatos F1.2, fila #3
+("Urbano — fibra oscura de telecom", verbatim). `—` significa no
+sourceado todavía (arcata) — no se completa acá con un valor inventado.
 
 **Fuente de "IC" (columna final)**: no existe un IC directo sobre el SNR50
 interpolado (es una interpolación lineal entre dos escalones medidos, no un
@@ -48,7 +51,10 @@ inyectado post-hoc en `figures/snr_curve_fossa.json` — ver nota de
 provenance ahí mismo). Runtime real: 27,480.4s (7h38, cerca de la
 extrapolación de 7h27). `array_profiles` actualizado por la propia
 corrida (`n_ch`/`aperture_m` reales del archivo, no el nominal de
-PubDAS — coinciden exacto: 11,648 canales × 2.0m = 23,294.0m). **Dato
+PubDAS — coinciden exacto: apertura = (n_ch−1)×dx = 11,647×2.0m =
+23,294.0m, `ArrayGeometry.aperture_m` en `contracts.py` — NO
+n_ch×dx, que da 23,296.0m; apertura es la distancia punta-a-punta del
+arreglo, no `n_ch` veces el espaciado). **Dato
 crudo, no investigado todavía**: la curva de recall de FOSSA NO es
 monótona en los escalones altos — 90%@SNR8 → 80%@SNR12 → 60%@SNR20 (IC
 Wilson se solapan, pasa el chequeo de monotonía-dentro-de-IC igual que

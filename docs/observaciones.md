@@ -1,13 +1,20 @@
-# Observaciones — Bloque C
+# Observaciones — Bloque C y extensión SNR50 (F1)
 
-Bitácora de comportamientos raros, capacidades inesperadas, o ideas tipo
-"esto también serviría para..." que aparecen mientras se construye C
-(operable). No todo acá tiene que tener sentido todavía — es el insumo
-crudo para la fase de exploración posterior, no un documento pulido. Cada
-entrada: fecha, de qué fase salió, qué se observó, y (si aplica) para qué
-podría servir. No confundir con el backlog de `PLAN_CIERRE_Y_LANZAMIENTO.md`
-(ese es trabajo declarado y concreto; esto es más crudo, todavía sin
-decidir si es trabajo).
+Bitácora de comportamientos raros, capacidades inesperadas, hallazgos
+verificados, correcciones a atribuciones propias, y pendientes
+declarados que aparecen mientras se construye C (operable) o se corre la
+extensión de SNR50 a más instalaciones (F1, ver
+`docs/snr50_extension_fase1.md`). Empezó como insumo crudo de una sola
+fase (no todo acá tiene que tener sentido todavía) pero hoy es también
+el artefacto principal de traspaso de F1 — el registro donde vive el
+razonamiento detrás de los números de `docs/array_geometry_table.md` y
+`docs/writeup.md`/`writeup.es.md` §6/§7, no solo el resultado final.
+Cada entrada: fecha, de qué fase salió, qué se observó, y (si aplica)
+para qué podría servir. No confundir con el backlog de
+`PLAN_CIERRE_Y_LANZAMIENTO.md` (ese es trabajo declarado y concreto;
+esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
+entradas de F1, como las fe de erratas y los pendientes marcados
+"declarado", ya cruzan esa línea).
 
 ## 2026-07-30 — Bug propio: `python -c` con acento inline corrompió un string antes de llegar a Python (mojibake silencioso, no detectado sin releer)
 
@@ -108,6 +115,28 @@ en FOSSA como en Valencia). Leer la definición exacta de la ventana LTA
 (`triage.py` o donde esté implementado el STA/LTA) antes de sostener
 esta hipótesis — no asumir el mecanismo de la ventana sin confirmarlo
 en el código primero.
+
+**Anotación adicional (2026-07-30), solo registro — NO ejecutar, NO es
+conclusión**: los dos únicos arreglos de los 8 con cola no-monótona
+(Valencia y FOSSA) son, también, las dos aperturas mayores de la serie
+— puestos 1 y 2 (41.4km y 23.3km); el tercero por apertura (arcata,
+15.4km) sube monótono a 100%, y los otros cinco también. **Etiquetado
+explícitamente como post-hoc**: la probabilidad de que los 2 arreglos
+marcados a mano (por tener cola no-monótona) coincidan exactos con el
+top-2 por apertura, si no hubiera ninguna relación real, es
+`1/C(8,2) = 1/28 ≈ 3.6%` — mismo orden de magnitud que la hipótesis de
+`fs` que en su momento pareció prometedora (~2.9%) y resultó falsa. No
+se sostiene como hallazgo, es un patrón a tener en cuenta. Sí afina la
+pregunta (b) de arriba: el mecanismo geométrico W/T simple ya quedó
+descartado para FOSSA (fe de erratas de arriba), pero si existe un
+mecanismo real que escala con apertura y no es ese, la autosupresión
+STA/LTA sigue siendo candidata coherente con esta observación — el
+tránsito del frente de onda a través del arreglo es proporcional a `L`
+(mismo `T=L/v_app` del hallazgo W/T), así que el tiempo durante el cual
+el LTA de un canal tardío queda contaminado por la energía de canales
+tempranos también escalaría con la apertura. Verificar en código antes
+de sostenerla, como ya está anotado arriba — esto no adelanta esa
+verificación, solo la motiva un poco más.
 
 ## 2026-07-27 — Valencia: curva SNR50 no llega a 100% de recall (única de 7 arrays con esta forma)
 
