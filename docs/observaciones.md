@@ -16,6 +16,48 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-07-30 — Cuantificación Spearman: ningún proxy geométrico/de muestreo predice SNR50 sobre los 8 arrays medidos (n_ch, apertura, fs)
+
+**F1.6, dato nuevo y verificado — recalculado de forma independiente
+desde `docs/array_geometry_table.md` antes de registrar los números
+propuestos, no tomado de memoria.** Convierte a cuantitativo el claim
+cualitativo ya existente ("la detectabilidad es por instalación, no una
+constante geométrica", `docs/writeup.md`/`writeup.es.md` §6/§7) —
+material directo para §5.2 cuando se escriba esa sección.
+
+Los 8 puntos (n_ch, apertura_m, fs_hz, SNR50) salen tal cual de
+`array_geometry_table.md` (a su vez de `array_profiles` +
+`figures/snr_curve_*.json`). Spearman ρ de cada proxy contra SNR50
+(recalculado con `scipy.stats.spearmanr`, que maneja empates —
+`fs` tiene dos empates reales: 250.0 Hz en Stanford-2/Valencia, 100.0 Hz
+en ridgecrest_north/arcata/stanford1_campus):
+
+| Proxy | ρ (Spearman) | p (aprox., t de Student n=8) |
+|---|---|---|
+| n_ch | +0.0714 | 0.8665 |
+| apertura | +0.2381 | 0.5702 |
+| fs | −0.3805 | 0.3524 |
+
+**Umbral confirmatorio, por enumeración EXACTA (no aproximación
+asintótica) de las 8! = 40,320 permutaciones posibles de rangos para
+n=8** (verificado corriendo la enumeración completa, no citado de una
+tabla): dos colas `|ρ| ≥ 0.7381` (P exacto = 0.0458); una cola
+`ρ ≥ 0.6429` (P exacto = 0.0481). Los tres proxies quedan muy por debajo
+de cualquiera de los dos umbrales — ninguno se acerca a significativo.
+
+**Por qué importa la apertura en particular**: de los tres, es el
+candidato geométrico más obvio para cualquier revisor externo (más
+apertura → más canales potencialmente coherentes con el beam → mejor
+stacking, es el razonamiento intuitivo) y NUNCA se había testeado como
+proxy antes de esta entrada — solo se había usado para explicar
+mecanismos puntuales (el techo `v_app_max_resoluble`, el gate W/T de
+Valencia). Puesta a prueba directamente contra los 8 SNR50 medidos,
+queda refutada como predictor (ρ=+0.24, muy lejos de 0.7381). Esto no
+contradice los hallazgos W/T de Valencia/FOSSA (esos son afirmaciones
+sobre el MECANISMO de un array puntual con datos por-trial, no sobre si
+la apertura predice el SNR50 AGREGADO entre arrays — son preguntas
+distintas, ambas pueden ser ciertas a la vez).
+
 ## 2026-07-30 — Bug propio: `python -c` con acento inline corrompió un string antes de llegar a Python (mojibake silencioso, no detectado sin releer)
 
 **Operacional, no de física.** Al parchear `figures/snr_curve_fossa.json`
