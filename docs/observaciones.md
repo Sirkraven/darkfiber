@@ -16,6 +16,82 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-07-30 — Veta #1 EJECUTADA: resultado NULO — L_c no predice SNR50 (rho=-0.2515, signo contrario al predicho, no llega a sugestivo)
+
+**F1.6, resultado del pre-registro `docs/prereg_veta1_coherencia_ruido.md`
+(commit `9f4c550`), corrido tal cual quedó fijado — cero ajustes al
+protocolo después de ver el número final.** Lectura pura de los pools
+pre-registrados, Bloque A intacto.
+
+### Resultado
+
+| Array | L_c (m) | Estado | SNR50 |
+|---|---|---|---|
+| FOSSA | 4.00 | censurado (piso) | 4.50 |
+| arcata | 10.21 | censurado (piso) | 5.9 |
+| monterey_bay | 10.40 | censurado (piso) | 1.60 |
+| Stanford-2 | 16.32 | censurado (piso) | 1.7692 |
+| stanford1_campus | 16.32 | censurado (piso) | 7.7273 |
+| FORESEE | 16.38 | **medido** | 1.75 |
+| ridgecrest_north | 20.52 | **medido** | 2.50 |
+| Valencia | 33.60 | censurado (piso) | 2.3333 |
+
+**Spearman ρ(L_c, SNR50) = −0.2515** (p≈0.548, aproximado). **Resultado:
+NULO** — ni siquiera entra en la zona sugestiva pre-registrada
+(`0.5≤|ρ|<0.7381`), y el signo es NEGATIVO, contrario a la dirección
+predicha (positiva). Bajo las reglas fijadas de antemano (§8 del
+pre-registro), esto es inequívocamente un no-hallazgo: no hace falta
+invocar la condición de validez del signo porque ni la magnitud alcanza
+el umbral sugestivo.
+
+**Caveat honesto sobre el poder del test, declarado ahora que se ve**:
+6 de los 8 arrays (todos menos FORESEE y ridgecrest_north) quedaron
+**censurados en el piso** — el ancho de bin fijado (20m) resultó más
+grueso que `2·dx` para la mayoría de los arrays de spacing chico (2-8m),
+así que el método no pudo resolver nada más fino que su propio bin más
+cercano al origen para esos 6. Esto reduce la varianza real explotable
+por Spearman (6 de 8 valores son, en los hechos, una función monótona
+de `dx` solamente, no de una medición independiente de coherencia) — el
+resultado nulo es genuino bajo las reglas fijadas, pero el test tuvo
+menos poder real del que el pre-registro asumía implícitamente. Queda
+como limitación del EXPERIMENTO ejecutado (no del pre-registro en sí,
+que fijó la regla de censura correctamente y de antemano) para cualquier
+lectura futura de este número.
+
+### Dos problemas encontrados y corregidos DURANTE la ejecución (no ajustes al protocolo)
+
+**(1) Bug de encoding, igual que el de FOSSA (2026-07-30, entrada de
+abajo).** La primera corrida murió en Valencia: `sanitize()`
+(`run_on_stanford.py`) imprime "→" en su reporte de canales muertos, y
+la consola de Windows en cp1252 no lo puede codificar — `UnicodeEncodeError`,
+no un bug del análisis. Arreglado forzando `PYTHONIOENCODING=utf-8` en
+la corrida, no tocando el código del pipeline.
+
+**(2) Hallazgo real, no un bug de mi script: arcata tiene DOS geometrías
+distintas entre sus 15 archivos pre-registrados.** Los primeros 3
+archivos cronológicos (2022-12-26 a 2023-01-11) son **7,550 canales @
+125Hz, dx=2.0419m**; los otros 12 (2023-02-15 en adelante) son **3,020
+canales @ 100Hz, dx=5.104762077331543m** — esto último coincide EXACTO
+con lo que `array_profiles.arcata` tiene registrado. Mi primera corrida
+tomó los 2 primeros archivos de la lista (la geometría minoritaria,
+7,550ch) sin saberlo, dando un `L_c` calculado sobre canales/spacing que
+NO son los de la instalación que `array_profiles` describe. Corregido
+tomando archivos de la geometría de 100Hz/3020ch (coincidencia
+casualmente: el `rho` final no cambió, aunque el `L_c` de arcata sí,
+10.21m en vez de 4.08m — quedó en el mismo lugar del ranking, 2do más
+bajo, en ambos casos).
+
+**Esto último es, en sí, un hallazgo que excede la veta #1**: arcata
+cambió de configuración de adquisición (fs/dx/n_ch) a mitad de su propia
+serie de 15 archivos pre-registrados, algo que ni el census F1.2 ni la
+medición original de SNR50 (F1.0, anterior a este documento) señalan
+explícitamente. No se investiga más acá ni se re-abre Bloque A (el
+SNR50=5.9 de arcata queda como está, congelado) — pero `array_profiles`
+y `docs/array_geometry_table.md` describen arcata con UNA sola fila de
+geometría cuando en los archivos reales hay dos. Vale la pena que quede
+anotado para quien revise el dataset de arcata más de cerca (fase de
+paper o auditoría externa) — no se resuelve acá.
+
 ## 2026-07-30 — Cuantificación Spearman: ningún proxy geométrico/de muestreo predice SNR50 sobre los 8 arrays medidos (n_ch, apertura, fs)
 
 **F1.6, dato nuevo y verificado — recalculado de forma independiente

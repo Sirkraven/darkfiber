@@ -78,6 +78,14 @@ todavía — ver pendiente F1.6 (b) en `docs/observaciones.md`
 redondeado a 5.1) — reportado tal cual sale de la base, no limpiado, para
 que esta tabla sea trazable byte-a-byte contra la fuente.
 
+**Hallazgo 2026-07-30 (veta #1, `docs/observaciones.md`): arcata NO tiene
+una sola geometría en sus 15 archivos pre-registrados.** Los primeros 3
+(cronológicamente) son 7,550 canales @ 125Hz, dx=2.0419m; los otros 12
+son 3,020 canales @ 100Hz, dx=5.104762077331543m — esto último es lo que
+esta tabla y `array_profiles` reportan, pero es la geometría de 12/15
+archivos, no de los 15. No investigado más allá de dejarlo señalado —
+Bloque A intacto, SNR50=5.9 no se re-abre.
+
 **Pendiente (fase de paper, no ahora)**: sourcear el ambiente de arcata
 desde la documentación de GorDAS/`quakeflow_das` antes de que esta tabla
 alimente cualquier claim tipo "ningún proxy geométrico/de ambiente
