@@ -16,6 +16,27 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-07-30 — FE DE ERRATAS (QA-3.2): los 4 rho de proxies cambian con arcata=8.00, conclusión no cambia
+
+**QA E2E, gate pre-paper.** Recalculados los 4 Spearman ρ (n_ch, dx,
+apertura, fs vs SNR50) sobre la tabla CONGELADA final (arcata=8.00, no
+5.9 — la geometría de arcata no cambió, solo su SNR50). Valores viejos
+(registrados 2026-07-30, entrada "Cuantificación Spearman", más abajo)
+vs. nuevos:
+
+| Proxy | ρ viejo (arcata=5.9) | ρ nuevo (arcata=8.00) | p nuevo |
+|---|---|---|---|
+| n_ch | +0.0714 | **+0.1905** | 0.6514 |
+| dx | +0.0843 | **0.0000** | 1.0000 |
+| apertura | +0.2381 | **+0.3095** | 0.4556 |
+| fs | −0.3805 | −0.3805 (sin cambio) | 0.3524 |
+
+Los 4 siguen muy por debajo de `|ρ|=0.7381` — **la conclusión no
+cambia** (ningún proxy geométrico/de muestreo predice SNR50), pero los
+números sí, y quedan corregidos acá para que nadie cite los viejos
+después de este commit. Ver `docs/QA_REPORT.md` QA-3.2 para el detalle
+de la verificación.
+
 ## 2026-07-30 — CIERRE: serie de 8 SNR50 CONGELADA — arcata re-medido (8.00, antes 5.9), spread corregido a 5.0×
 
 **Cierre de la auditoría de la entrada de abajo, por la regla de decisión
@@ -60,7 +81,7 @@ legibilidad):
 | ridgecrest_north | 2.50 | `75cdc830f9b88ed477b31507c9c32b0a7fbd0e2e74e6823b7a95ba530e6c762b` |
 | FOSSA | 4.50 | `1f566023c027233091a269f668add82f393e001e0c208c97d1445a4e78532ed3` |
 | stanford1_campus | 7.727272727272727 | `326beaefd0b689af126c8f10fd26e2a57b011711495dc62a2598eefebfa9e7a9` |
-| arcata | **8.00** | `37f9a215d1802fbcfd8c04c2065b26304e2eb0067bb755c03ffad9cec29ff630` |
+| arcata | **8.00** | `bfaa1254fdb00954a4d0693ccf2ea3a294d82dbd6dc5215188d9d6e878e25409` (recalculado tras inyectar `pipeline_hash`; el valor previo `37f9a215d180…9cec29ff630` quedó stale — ver QA-3.1, `docs/QA_REPORT.md`) |
 
 Commit que cierra esta serie: ver el próximo commit de este mismo día
 en `git log` (mensaje "F1.6: cierre de serie"). El JSON de arcata lleva
