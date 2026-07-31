@@ -35,14 +35,32 @@ de auditoría byte-a-byte de cada fila.
 
 | Array | Ambiente | n_ch | spacing (dx) | apertura | fs | SNR50 | IC95% (escalones que bracketan 50%) | sha256 de `snr_curve_<id>.json` |
 |---|---|---|---|---|---|---|---|---|
-| monterey_bay | Submarino (SeaFOAM) | 2,845 | 5.2 m | 14,788.8 m (14.79 km) | 199.995 Hz | 1.60 | [0.9,23.6]@SNR1 / [58.4,91.9]@SNR2 | `f35789e6b3e9…837230` |
+| monterey_bay | Submarino (SeaFOAM) | 2,845 | 5.2 m | 14,788.8 m (14.79 km) | 199.995 Hz | **1.50** | [11.2,46.9]@SNR1 / [53.1,88.8]@SNR2 | `41908b46a149…78d7af` |
 | FORESEE (foresee) | Urbano, campus universitario | 2,137 | 2.0 m | 4,272.0 m (4.27 km) | 125.0 Hz | 1.75 | [0.9,23.6]@SNR1 / [43.3,81.9]@SNR2 | `ef8890b37bc8…89934b9580f5` |
 | Stanford-2 (stanford2_sandhill) | Urbano, vía pública | 352 | 8.16 m | 2,864.16 m (2.86 km) | 250.0 Hz | 1.77 | [0.0,16.1]@SNR1 / [43.3,81.9]@SNR2 | `c5756e8c796b…072f0a625` |
 | Valencia (valencia_submarine) | Submarino | 2,468 | 16.8 m | 41,445.6 m (41.45 km) | 250.0 Hz | 2.33 | [25.8,65.8]@SNR2 / [38.7,78.1]@SNR3 | `b1dff168b397…d21c8330` |
-| ridgecrest_north | Desierto/rural | 1,150 | 8.0 m | 9,192.0 m (9.19 km) | 100.0 Hz | 2.50 | [5.2,36.0]@SNR2 / [64.0,94.8]@SNR3 | `75cdc830f9b8…30e6c762b` |
+| ridgecrest_north | Desierto/rural | 1,150 | 8.0 m | 9,192.0 m (9.19 km) | 100.0 Hz | **2.67** | [2.8,30.1]@SNR2 / [48.1,85.5]@SNR3 | `5f78e38755a0…881d24e` |
 | FOSSA | Urbano — fibra oscura de telecom | 11,648 | 2.0 m | 23,294.0 m (23.29 km) | 500.0 Hz | 4.50 | [0.9,23.6]@SNR3 / [43.3,81.9]@SNR5 | `1f566023c027…4a78532ed3` |
 | stanford1_campus | Urbano, campus universitario | 626 | 8.16 m | 5,100.0 m (5.10 km) | 100.0 Hz | 7.73 | [0.0,16.1]@SNR5 / [34.2,74.2]@SNR8 | `326beaefd0b6…eefebfa9e7a9` |
 | arcata | — (no sourceado) | 3,020 | 5.104762077331543 m | 15,411.28 m (15.41 km) | 100.0 Hz | **8.00** | [5.2,36.0]@SNR5 / [29.9,70.1]@SNR8 | `bfaa1254fdb0…6e878e25409` |
+
+**Actualización 2026-07-31 (QA gate, item 1/2 del cierre)**: `monterey_bay`
+y `ridgecrest_north` re-medidos con `--files` explícito + provenance
+completa, mismo criterio que arcata (ver nota más abajo). Sus valores
+`1.60`/`2.50` anteriores quedan **superseded** en
+`array_profile_history` — `ridgecrest_north` además marcado **NO
+REPRODUCIBLE** (ver la nota de arcata más abajo, mismo hallazgo B5).
+`monterey_bay` SÍ cambió de valor (1.60→1.50, con la misma herramienta
+y umbral verificado=4.0 — no se investigó por qué difiere del anterior,
+es la misma situación de fondo que arcata/ridgecrest: lista de archivos
+de la era pre-F1.1 no registrada). **Verificado antes de adoptar**: el
+orden de rango de los 8 SNR50 no cambia con ninguno de los dos valores
+nuevos (`monterey_bay` sigue siendo el mínimo, `ridgecrest_north` sigue
+entre Valencia y FOSSA) — los 4 ρ de Spearman quedan IDÉNTICOS
+(n_ch +0.1905, dx 0.0000, apertura +0.3095, fs −0.3805). El **spread SÍ
+cambia**: 8.00/1.50 = **5.33×**, no 5.00× (que a su vez ya había
+reemplazado el 4.83×/3.7× originales) — pendiente de cascada a los
+documentos narrativos, ver conversación que cerró este gate.
 
 *(hashes truncados en la tabla por legibilidad — el sha256 completo de
 cada uno está en el commit que cerró la serie; ver

@@ -16,6 +16,71 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-07-31 — Los 3 arrays pre-F1.1 quedan re-medidos con herramienta actual — monterey_bay cambia (1.60→1.50), ridgecrest_north adoptado (2.67), spread pasa a 5.33×
+
+**QA E2E, cierre de items 1/2 del gate.**
+
+**Item 1 — ridgecrest_north**: antes de adoptar 2.67 como valor
+publicado, verifiqué (no asumí) que no cambia nada aguas abajo: el
+orden de rango de los 8 SNR50 es idéntico con 2.50 o con 2.67
+(`ridgecrest_north` sigue entre Valencia y FOSSA en ambos casos), así
+que los 4 ρ de Spearman quedan EXACTOS (n_ch +0.1905, dx 0.0000,
+apertura +0.3095, fs −0.3805) y el spread (definido por max/min, que no
+involucra a ridgecrest_north) tampoco se mueve por este cambio en
+particular. Corrida oficial vía `darkfiber-snr-curve` (no el script de
+diagnóstico usado para B5) con `--files` explícito (los 12 archivos,
+alfabetizados) y provenance completa: **SNR50=2.67**, threshold=8.0
+auto-resuelto desde `array_profiles` (A7/A8), 140/140 trials, curva
+monótona dentro de IC. `array_profiles` actualizado; el 2.50 anterior
+archivado en `array_profile_history` como **superseded Y NO
+REPRODUCIBLE** (mismo hallazgo de B5 ya documentado arriba).
+
+**Item 2 — monterey_bay**: threshold verificado ANTES de correr (no
+asumido) — `array_profiles.thresholds_json` = `{"threshold": 4.0,
+"tier0_threshold_calibration_note": "A8: barrido... default retenido,
+sin evidencia de descalibración"}` — 4.0 es el valor real, confirmado,
+no una suposición (a diferencia del error cometido con
+ridgecrest_north). Corrida oficial con `--files` explícito (los 15
+archivos pre-registrados), threshold=4.0 auto-resuelto: **SNR50=1.50**
+(CAMBIÓ de 1.60 — a diferencia de ridgecrest_north/threshold, que dio
+el mismo número con o sin el bug, acá el valor en sí es distinto).
+140/140 trials, curva monótona. `array_profiles` actualizado; el 1.60
+anterior archivado en `array_profile_history` como **superseded**
+(mismo patrón que arcata/ridgecrest_north — lista de archivos de la era
+pre-F1.1 no registrada, no investigado más allá de eso, no se intentó
+diagnosticar la causa exacta como se hizo con B5/arcata).
+
+**Verificado antes de adoptar** (no asumido): con monterey_bay=1.50, el
+orden de rango de los 8 sigue idéntico (monterey_bay sigue siendo el
+mínimo — 1.50 sigue por debajo de FORESEE 1.75) — los 4 ρ de Spearman
+quedan, de nuevo, EXACTOS. **El spread SÍ cambia**: `8.00/1.50 = 5.33×`
+— no `5.00×` (que ya había reemplazado el `4.83×`/`3.7×` originales
+hace apenas un commit). Pendiente: cascadear esta corrección a los
+documentos narrativos (`writeup.md`/`.es.md`/`writeup_data.md`/
+`pilot_kit.md`/`announcement_v1.1/*`, CHANGELOG.md) donde `5.00×` ya se
+había escrito — no aplicado todavía, a la espera de confirmación (fuera
+del alcance explícito pedido para este cierre, que solo pedía
+actualizar esta tabla y observaciones).
+
+**Con esto, los 3 arrays de provenance pre-F1.1 quedan los 3 re-medidos
+con la herramienta actual, `--files` explícito y provenance completa —
+2 de 3 (arcata, monterey_bay) dieron un valor DISTINTO al archivado; el
+tercero (ridgecrest_north) dio un valor distinto pero ya fue adoptado
+sin volver a investigar la causa exacta (a diferencia de arcata, donde
+la heterogeneidad de geometría SÍ se identificó). En los 3 casos, el
+código quedó verificado estable (sin cambios funcionales, QA-3.0) — la
+explicación atribuida es lista de archivos no registrada, en los 3.
+Esto es la justificación empírica, no solo de diseño, de dos piezas de
+trabajo que este proyecto ya tiene en marcha: el campo `input_files`
+que F1.1 agregó al schema (antes de eso, no había forma de saber qué
+archivos habían producido un SNR50 — exactamente el agujero que hizo
+irresoluble esta investigación para los 3 valores pre-F1.1), y el
+auto-sello de versión que está en el backlog de
+`PLAN_CIERRE_Y_LANZAMIENTO.md` (sin la lista de archivos exacta
+registrada, ni el hash de commit, un valor pre-F1.1 es, en los hechos,
+imposible de auditar retroactivamente — el problema visto desde su
+consecuencia, no desde su diseño original).
+
 ## 2026-07-31 — QA-3.0/3.1/3.2 CERRADO: sin cambios de código desde antes de F1.1; ridgecrest_north TAMPOCO reproduce con el código actual — "lista de archivos" en ambos, por regla de decisión pre-declarada
 
 **QA E2E, cierre de B5.**
