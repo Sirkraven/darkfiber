@@ -298,7 +298,7 @@ def run_demo(make_figs: bool = False, out_dir: str = "figures") -> int:
                     dx,
                     -v_vehiculo,
                     v_medium,
-                    x_start_m=n_ch * dx + 150.0,
+                    x_start_m=(n_ch - 1) * dx + 150.0,
                     t_start_s=4.0,
                     t_end_s=dur_s - 2,
                     amp=40.0,

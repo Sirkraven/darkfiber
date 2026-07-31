@@ -8,6 +8,17 @@ something to hide.
 
 ### Added
 
+- **QA gate (2026-07-31): the SNR50 spread figures published in `[1.1.0]`
+  below (3.7×, arcata 5.9 vs. monterey_bay 1.6) are superseded by the
+  frozen N=8 series** — arcata's SNR50 was re-measured to 8.00 after a
+  data-heterogeneity fix (its pool mixed two acquisition configurations,
+  3,020ch@100Hz and 7,550ch@125Hz on the same physical cable; see
+  `docs/observaciones.md` 2026-07-30/31), so the current spread is
+  **5.00×** (8.00/1.6), not 3.7×. `[1.1.0]`'s release/DOI/writeup PDF are
+  historical artifacts and are not edited retroactively (this is a
+  forward erratum, not a rewrite of the past) — the frozen series with
+  full sha256 provenance lives in `docs/array_geometry_table.md`, commit
+  `1090fc4` onward.
 - **F1.5→F1.6: per-trial diagnostics propagation, Valencia's non-hit
   cause identified, FOSSA I/O contention diagnosed (full curve still not
   run)** — `CoherenceResult` already computed `boundary_pinned` and an

@@ -403,33 +403,49 @@ def test_sta_lta_warmup_boundary_exact_at_each_real_fs(fs):
 
 
 def test_no_naked_n_ch_times_dx_aperture_formula_in_source():
-    """QA-1.8: barre src/ y docs/ buscando el patron n_ch*dx (apertura
-    MAL calculada, ya paso una vez en docs/array_geometry_table.md, ver
-    docs/observaciones.md 2026-07-30) que NO sea parte de (n_ch-1)*dx.
-    Falla listando cada ocurrencia encontrada -- ver docs/QA_REPORT.md
-    QA-1.8 para el resultado real de esta corrida contra este repo."""
+    """QA-1.8/QA-08 (E2, 2026-07-31): barre src/**/*.py y los docs
+    SUSTANTIVOS (writeup.md/.es.md, writeup_data.md, pilot_kit.md)
+    buscando variantes semanticas de "conteo de canales * spacing" que
+    NO sean (n_ch-1)*dx -- apertura MAL calculada, ya paso dos veces
+    (docs/array_geometry_table.md y src/darkfiber/interferometry.py:301,
+    ambas corregidas, ver docs/observaciones.md 2026-07-30/31).
+
+    docs/QA_REPORT.md y docs/observaciones.md quedan EXCLUIDOS a
+    proposito: son registros historicos punto-en-el-tiempo que CITAN
+    este mismo patron en prosa para describirlo, y no se editan (no son
+    "codigo en uso", son bitacora -- incluirlos produce falsos positivos
+    autoreferenciales, ya observado una vez en esta misma sesion)."""
     import re
     from pathlib import Path
 
     repo = Path(__file__).resolve().parents[2]
-    pattern = re.compile(r"n_ch(annels)?\s*\*\s*dx\b")
+    # variantes: n_ch/n_channels * dx/spacing/spacing_m/channel_spacing(_m),
+    # y len(...) * dx (conteo de canales via len() en vez de una variable
+    # n_ch con nombre convencional).
+    pattern = re.compile(
+        r"\b(n_ch(annels)?|len\([^)]*\))\s*\*\s*(dx|spacing(_m)?|channel_spacing(_m)?)\b"
+    )
     naked_matches = []
-    for sub in ("src", "docs"):
-        for p in (repo / sub).rglob("*"):
-            if p.suffix not in (".py", ".md"):
-                continue
-            try:
-                text = p.read_text(encoding="utf-8")
-            except UnicodeDecodeError:
-                continue
-            for m in pattern.finditer(text):
-                start = max(0, m.start() - 15)
-                context = text[start : m.end() + 5]
-                if "-1" in context or "− 1" in context or "−1" in context:
-                    continue  # es (n_ch-1)*dx con espacios/unicode, no el bug
-                line_no = text.count("\n", 0, m.start()) + 1
-                naked_matches.append(f"{p.relative_to(repo)}:{line_no}: {context!r}")
-    assert not naked_matches, "n_ch*dx (SIN -1) encontrado:\n" + "\n".join(naked_matches)
+    scan_targets = list((repo / "src").rglob("*.py"))
+    for name in ("writeup.md", "writeup.es.md", "writeup_data.md", "pilot_kit.md"):
+        p = repo / "docs" / name
+        if p.exists():
+            scan_targets.append(p)
+    for p in scan_targets:
+        try:
+            text = p.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for m in pattern.finditer(text):
+            start = max(0, m.start() - 15)
+            context = text[start : m.end() + 5]
+            if "-1" in context or "− 1" in context or "−1" in context:
+                continue  # es (n_ch-1)*dx con espacios/unicode, no el bug
+            line_no = text.count("\n", 0, m.start()) + 1
+            naked_matches.append(f"{p.relative_to(repo)}:{line_no}: {context!r}")
+    assert not naked_matches, "conteo-de-canales*spacing SIN -1 encontrado:\n" + "\n".join(
+        naked_matches
+    )
 
 
 # ---------------------------------------------------------------------------

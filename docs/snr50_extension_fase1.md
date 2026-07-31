@@ -128,6 +128,13 @@ doble de SNR que arcata (la segunda menos sensible) para alcanzar 50%
 de recall. No se intenta ninguna explicación causal acá (N=4, todavía
 descriptivo) — eso es trabajo de F1.6.
 
+**⚠️ Superseded 2026-07-31 (QA gate)**: este era el estado real a N=4
+(F1.1) — no se edita, es historia. La serie CONGELADA final (N=8) tiene
+arcata=8.00 (no 5.9, corregido por heterogeneidad de pool, ver
+`docs/observaciones.md` 2026-07-30/31) y stanford1_campus ya NO es el
+máximo — arcata lo es. Spread vigente: 5.00× (8.00/1.6). Tabla final:
+`docs/array_geometry_table.md`.
+
 ---
 
 ## F1.2 — Census de candidatos (cerrado)

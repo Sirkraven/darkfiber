@@ -137,7 +137,7 @@ arrays (e.g. raw digitizer counts rather than microstrain-rate). This does
 an injected wavelet by the *local* noise RMS
 (`amp = target_snr · RMS(noise) / RMS(wavelet)`), so it is scale-invariant
 by construction — a SNR50 of 1.6 means the same thing on monterey_bay's
-scale as arcata's 5.9 means on arcata's. What it does mean: no comparison
+scale as arcata's 8.00 means on arcata's. What it does mean: no comparison
 of *absolute* amplitude, semblance offset, or raw-unit thresholds across
 arrays should be drawn from this dataset, and confirming the actual
 physical units of the monterey_bay source file is open, declared work
@@ -240,9 +240,9 @@ with Wilson 95% confidence intervals at each step (n=20 trials/step):
 |---|---|
 | ridgecrest_north | 2.5 |
 | monterey_bay | 1.6 |
-| arcata | 5.9 |
+| arcata | 8.00 |
 
-Arcata's 5.9 vs. monterey_bay's 1.6 is a 3.7× spread (5.9 / 1.6 = 3.6875)
+Arcata's 8.00 vs. monterey_bay's 1.6 is a 5.00× spread (8.00 / 1.6 = 5.00)
 across installations with broadly comparable channel counts and spacing:
 detectability is a property of the specific installation's real noise
 floor, not of "how many channels" or "how long is the array." The
@@ -374,7 +374,7 @@ that aperture, where error grows sharply.
 ![Figure 10: velocity measurement error vs. true velocity, swept across apertures — the geometric resolution limit.](../figures/fig5_limite_apertura.png)
 
 **Detectability is per-installation, not a geometric constant.** §4.2's
-3.7× spread in SNR50 (arcata 5.9 vs. monterey_bay 1.6) across three
+5.00× spread in SNR50 (arcata 8.00 vs. monterey_bay 1.6) across three
 arrays with broadly similar channel counts means "will this array see a
 given event" cannot be answered from geometry alone; it requires
 measuring against that installation's real noise.
@@ -478,7 +478,7 @@ the correct output is "not in the record," not a plausible-sounding guess.
   SEG-Y → NPZ), `darkfiber-snr-curve` (§4.2 recall curves),
   `darkfiber-replay` (real-time-paced file replay for the streaming path,
   `CHANGELOG.md [Unreleased]`).
-- **Tests**: `pytest` (20/20 passing) and `darkfiber-validate` (29/29
+- **Tests**: `pytest` (102/102 passing) and `darkfiber-validate` (29/29
   synthetic checks) are both required green before any change to the
   decision tree is considered validated; re-confirmed in this same
   documentation pass (`CHANGELOG.md`).

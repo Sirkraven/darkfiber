@@ -81,6 +81,15 @@ Per-array breakdown (same file):
 
 ## §5 Recall-vs-SNR curves (SNR50)
 
+**⚠️ Superseded 2026-07-31 (QA gate)** — this table is a 3-array
+snapshot from this document's earliest verification pass (predates even
+Stanford-2/F1.1's 4th array). arcata's SNR50 changed from 5.9 to 8.00
+after a data-heterogeneity fix (mixed acquisition-configuration pool,
+see `docs/observaciones.md` 2026-07-30/31). The current, frozen 8-array
+series with sha256-verified provenance lives in
+`docs/array_geometry_table.md`, not here — this table is left as
+historical record of what this pass verified, not edited in place.
+
 | Array | SNR50 | Source |
 |---|---|---|
 | arcata | 5.9 | `figures/snr_curve_arcata.json` field `snr50`; matches `array_profiles.snr50` |
@@ -272,7 +281,10 @@ and the `synth_recall=0.0` hypothesis check). Sources:
   RMS(wavelet)`) and its scale-invariance: `src/darkfiber/synth.py`,
   function docstring, verified by reading the implementation.
 - 3.7× SNR50 spread: 5.9 / 1.6 = 3.6875 (both values already sourced
-  above, §5.2).
+  above, §5.2). **⚠️ Superseded 2026-07-31**: arcata's SNR50 is now
+  8.00 (data-heterogeneity fix, see §5 note above) — current spread is
+  5.00× (8.00 / 1.6), not 3.7×. This bullet is left as historical record
+  of what this verification pass checked, not edited in place.
 
 ## PLAN_CIERRE_Y_LANZAMIENTO, FASE F1 — README v1.0 residue audit
 
@@ -323,7 +335,10 @@ pass:
 - **3.7× SNR50 spread, DOIs, aperture/margin numbers, the two-artifact
   case study (§6, untouched per instruction).** All identical to the
   pre-F4.1 draft — re-read after every edit pass to confirm no
-  incidental change; none found.
+  incidental change; none found. **⚠️ Superseded 2026-07-31**: the 3.7×
+  figure itself is now stale (arcata re-measured to 8.00, spread is
+  5.00× — see §5 note above); this bullet describes what was verified
+  unchanged AT THAT TIME, not the current value.
 - **Figure renumbering (1-11, sequential).** Not a data change — verified
   the new numbering assigns each of the 11 files under `figures/` to
   exactly one number, in document order, with no repeats and no gaps

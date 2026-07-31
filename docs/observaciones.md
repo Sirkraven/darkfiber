@@ -16,6 +16,67 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-07-31 — QA-2.3 CERRADO: determinismo total confirmado, descarta aleatoriedad sin sembrar como causa de B5 en TODA la serie
+
+**QA E2E, auditoría exhaustiva (D1.2/D1.3).** La aleatoriedad sin
+sembrar queda **DESCARTADA como causa** en toda la serie — no solo en
+las corridas pre-F1.1: 14 sitios `default_rng(...)` en
+`src/darkfiber/`, TODOS con entero explícito (`1_000+step_idx` en
+`snr_curve.py`, `seed` encadenado en `selftest.py`/`synth.py`, seeds
+fijos en el harness sintético de Bloque A); **cero** `default_rng()`/
+`default_rng(None)` sin argumento; **cero** `np.random.rand`/
+`random.random()`/`random.shuffle`/`random.choice` sueltos en todo el
+árbol. Orden de archivos también determinístico: las 4 rutas de
+construcción de `files` en `snr_curve.py` (auto/segy/tdms/`--files`
+explícito) están las 4 envueltas en `sorted(...)`, mismo patrón en
+`calibrate.py`/`run_on_quakeflow.py`/`pipeline_daemon.py`. Con esto, la
+discrepancia de B5 (arcata: 5.90 archivado vs. 7.33 reconstruido con
+seeds idénticos) se explica por **lista de archivos o cambio de código
+entre versiones** — nunca por aleatoriedad, en ningún array de la
+serie.
+
+**De paso, cierra QA-10**: la propia auditoría de homogeneidad de pools
+(entrada 2026-07-30, "Auditoría de homogeneidad de pool") leyó los
+attrs (`dt_s`/`dx_m`) de TODOS los archivos de los 3 pools QuakeFlow
+(monterey_bay 15, ridgecrest_north 12, arcata 15) con éxito, sin
+recurrir nunca al default silencioso de `load_quakeflow_h5`
+(`run_on_quakeflow.py:132-133`, `dt_s`→0.01/`dx_m`→8.0 si faltan).
+Declarado explícito: **el default existe en el código, pero nunca se
+ejerció en ninguna corrida publicada de la serie de 8.**
+
+## 2026-07-31 — FE DE ERRATAS: off-by-one en `interferometry.py:301` corregido (QA-08/E1)
+
+**QA E2E, seguimiento.** El demo sintético de interferometría
+(`run_demo`, `interferometry.py`) intenta posicionar la fuente del
+segundo pase 150m simétricamente respecto del primero (`x_start_m=-150.0`
+antes del arreglo, `x_start_m=<fin del arreglo>+150.0` después) — pero
+el "fin del arreglo" estaba mal calculado como `n_ch*dx` en vez de
+`(n_ch-1)*dx` (mismo patrón exacto que el bug ya corregido de
+`docs/array_geometry_table.md`, ver entrada 2026-07-30). El standoff
+real del segundo pase era 158m, no los 150m intencionales (con
+`dx=8.0m` del demo, 1 canal de diferencia sobre 150m ≈ 5.3%).
+
+**Impacto, verificado antes de decidir la severidad (no asumido)**:
+`interferometry.py` no lo importa ningún otro módulo de
+`src/darkfiber` — no toca el path de medición de SNR50 ni ningún
+`array_profiles`. Sí alimenta `docs/writeup.md`/`writeup.es.md`
+(Figura 11, `fig4_interferometria.png`) y el claim "4/4" de
+`tests/test_interferometry.py::test_interferometry_demo_passes_all_four_checks`.
+De los 4 checks del demo, los 2 que miden precisión de velocidad
+(`err1<=10%`, `r2_1>=0.90`) usan el pase ÚNICO (`two_passes=False`) —
+nunca tocan la línea del bug. El único check que sí depende del pase
+asimétrico es la ganancia de SNR por stacking (`snr2>=snr1`), una
+desigualdad direccional que un desfasaje de 8m sobre 158m no podía
+voltear. La Figura 11 se construye solo con los datos del pase único.
+**Clasificación final: MENOR** (impacto acotado, verificado con
+evidencia — no asumido de entrada).
+
+**Corregido**: `x_start_m=n_ch * dx + 150.0` → `x_start_m=(n_ch - 1) * dx + 150.0`.
+Re-verificado tras el fix: `run_demo()` sigue dando **4/4**, ningún
+check se volvió inestable (de hecho `v2` pasó a medir exacto 400 m/s,
+igual al real, aunque `v2` nunca estuvo assertado). `tests/test_interferometry.py`
+verde.
+
 ## 2026-07-30 — FE DE ERRATAS (QA-3.2): los 4 rho de proxies cambian con arcata=8.00, conclusión no cambia
 
 **QA E2E, gate pre-paper.** Recalculados los 4 Spearman ρ (n_ch, dx,
