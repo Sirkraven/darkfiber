@@ -16,6 +16,94 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-07-31 — QA-3.0/3.1/3.2 CERRADO: sin cambios de código desde antes de F1.1; ridgecrest_north TAMPOCO reproduce con el código actual — "lista de archivos" en ambos, por regla de decisión pre-declarada
+
+**QA E2E, cierre de B5.**
+
+**3.0 — git log discriminante.** `git log --oneline --since=2026-07-19`
+sobre los 5 módulos del path de medición
+(`snr_curve.py`/`selftest.py`/`synth.py`/`coherence.py`/`triage.py`) da
+6 commits (`11c76a5`, `11ba713`, `649a345`, `c948875`, `9a07ecc`,
+`d9d32de`). Diff exacto de cada uno contra las líneas que consumen el
+generador aleatorio (`run_step`, `run_trial`, `inject_and_verify`,
+`inject_and_verify_sized`): **`run_step` es BYTE-IDÉNTICO** entre el
+commit que documentó arcata=5.9 por primera vez (`da4e4d5e`,
+2026-07-24) y HEAD — las únicas adiciones son un parámetro
+`diagnostics=None` opcional (no-op si no se pide) y campos puramente
+aditivos en `CoherenceResult`/`SelfTestResult` (`onset_agrees`, etc.).
+`triage.py` (`d9d32de`, ANTERIOR a la primera medición de arcata) ganó
+`seg_numbers`/`sample_offset` para streaming, pero con default `None`
+preserva "el comportamiento exacto anterior... para todo llamador
+existente, batch incluido" (verbatim del propio mensaje de commit).
+**Conclusión: sin cambios funcionales en el path de medición** desde
+antes de que arcata se midiera por primera vez.
+
+**3.1 — reconstrucción de ridgecrest_north (pool homogéneo, sin
+ambigüedad de geometría).** Primer intento: 12 archivos en el orden
+`ridgecrest_already_used + ridgecrest_new_random` (el orden que vengo
+usando toda la sesión), threshold=4.0 → **SNR50=2.90, NO reproduce
+2.50**. Encontré y corregí un bug propio antes de sacar conclusiones:
+ese orden NO es el alfabético (`sorted(glob(...))`, lo que el código
+real usa cuando no se pasa `--files`) — reordené alfabéticamente:
+**SNR50=2.67, sigue sin reproducir**. Encontré un segundo error propio:
+usé threshold=4.0 (default), pero ridgecrest_north tiene calibración
+A7/A8 real, threshold=8.0 (`array_profiles.thresholds_json`) — corregido
+y re-corrido: **SNR50=2.67 otra vez, IDÉNTICO bajo threshold=4.0 y
+8.0**. Esto último no es un bug — coincide EXACTO con el hallazgo ya
+documentado el 2026-07-24 ("SNR50 de ridgecrest_north: idéntico bajo
+threshold 4.0 y 8.0", más abajo en este archivo): para este array, el
+cruce de 50% recall está gobernado aguas abajo (coherencia/semblanza),
+no por el umbral Tier0 — confirmado de nuevo, de forma independiente,
+en esta reconstrucción.
+
+**Con los dos bugs propios corregidos (orden de archivo, threshold), la
+reconstrucción SIGUE sin reproducir 2.50 (da 2.67).**
+
+**Aplicando la regla de decisión pre-declarada, literal**: no
+reproduce → ambiguo entre código y lista de archivos → 3.0 desempata →
+3.0 confirma CERO cambios funcionales → **conclusión: es lista de
+archivos, en arcata Y en ridgecrest_north, y se documenta así, sin
+disparar re-medición** (la re-medición estaba condicionada a que 3.0
+mostrara cambios funcionales, y no los mostró). No pude identificar el
+subconjunto/orden exacto de archivos que reproduciría 2.50 — la lista
+de 12 archivos en `sample_plan_draw.json` es la única registrada, y ni
+en su orden original ni alfabetizada reproduce el valor archivado. Esto
+queda como límite de reproducibilidad de la era pre-F1.1, no como
+código inestable.
+
+**3.2 — corrección del registro**: el 5.90 de arcata pasa de
+"superseded" a **"superseded Y NO REPRODUCIBLE"** (la reconstrucción
+con seeds/código idénticos dio 7.33, no 5.90). El 2.50 de
+ridgecrest_north **sigue vigente** (no se re-mide, por la regla de
+arriba) pero queda anotado con el mismo caveat: **no reproducible con
+las herramientas y el archivo de pool actuales** — mismo patrón que
+arcata, un nivel de severidad por debajo (acá no hay evidencia de
+heterogeneidad de geometría de por medio; el pool es homogéneo,
+verificado). monterey_bay no se testeó de la misma forma (no pedido por
+la regla) — queda con el mismo caveat implícito de "provenance
+pre-F1.1, no re-verificado", ya cubierto por QA-05.
+
+## 2026-07-31 — QA-3.3: robustez del claim central verificada — inmune a que los 3 arrays pre-F1.1 estén equivocados
+
+**QA E2E, verificado antes de registrar (no tomado de la palabra del
+usuario).** Los 4 ρ de proxies contra la tabla congelada (arcata=8.00):
+n_ch +0.1905, dx 0.0000, apertura +0.3095, fs −0.3805 — coinciden con lo
+ya registrado en la entrada "FE DE ERRATAS (QA-3.2)" de 2026-07-30.
+
+**Sensibilidad extrema, verificada por enumeración exhaustiva (no
+analítica)**: dejando que monterey_bay, ridgecrest_north Y arcata (los
+3 arrays con provenance pre-F1.1, ver QA-05) tomen **cualquier** SNR50
+en `[0.5, 15.0]` simultáneamente (barrido de todas las combinaciones de
+"slot" relevantes entre los 5 valores fijos de FORESEE/Stanford-2/
+Valencia/FOSSA/stanford1_campus — Spearman solo depende del orden, así
+que alcanza con probar una posición por cada hueco entre valores fijos,
+no un continuo), el **máximo ρ alcanzable en valor absoluto por
+cualquiera de los 4 proxies es 0.6545 (fs)** — confirmado por cómputo
+exhaustivo, no estimado. **Ninguno cruza 0.7381** en el peor caso
+posible. El claim central ("ningún proxy geométrico/de muestreo predice
+SNR50") es robusto a que los 3 arrays con provenance más débil de toda
+la serie estén completamente equivocados.
+
 ## 2026-07-31 — QA-2.3 CERRADO: determinismo total confirmado, descarta aleatoriedad sin sembrar como causa de B5 en TODA la serie
 
 **QA E2E, auditoría exhaustiva (D1.2/D1.3).** La aleatoriedad sin

@@ -108,7 +108,17 @@ provenance completa en `figures/snr_curve_arcata.json`
 **Resultado: SNR50 = 8.00** (antes 5.9, medido sobre el pool mezclado).
 El valor anterior (5.9) queda archivado con procedencia en
 `array_profile_history` (upsert automático de `catalog.py`, no
-sobrescritura silenciosa). Bloque A: esto NO es una corrida de datos
+sobrescritura silenciosa) marcado **superseded Y NO REPRODUCIBLE**: una
+reconstrucción con archivos/seeds/threshold idénticos (QA gate,
+2026-07-31, `docs/observaciones.md`) dio 7.33, no 5.90 — código estable
+(verificado sin cambios funcionales desde antes de la medición
+original), así que la discrepancia es de lista de archivos, no de
+código. La misma verificación sobre ridgecrest_north (pool homogéneo,
+sin ambigüedad de geometría) tampoco reprodujo su 2.50 vigente (dio
+2.67) — su valor NO se re-mide (regla de decisión pre-declarada: solo
+dispara re-medición si hay cambios de código, y no los hay), pero queda
+con el mismo caveat de no-reproducibilidad con las herramientas
+actuales. Bloque A: esto NO es una corrida de datos
 NUEVOS ni un evento real re-evaluado — es la misma metodología de ruido
 sintético sobre el mismo pool de ruido real, restringida a la geometría
 consistente con la que la instalación fue caracterizada; se trata como
