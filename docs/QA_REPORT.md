@@ -31,6 +31,14 @@ código, y el claim central de la serie es robusto incluso si esos 3
 arrays estuvieran mal medidos (máximo ρ alcanzable en el peor caso:
 0.65, no cruza 0.7381).
 
+**Addendum 2026-08-01 (Bloque 4, ver 2.6/2.8)**: cerrar QA-06 (CI
+verificable) agregó un décimoquinto hallazgo — QA-15, MAYOR, con fix
+aplicado — sobre un gap real de reproducibilidad para terceros
+(`ci.yml`/`tests/test_replay_tdms.py`), no solo de configuración de CI.
+Con QA-15 corregido, las 3 versiones soportadas (3.10/3.11/3.12) corren
+la suite completa en verde por primera vez desde que existe esa suite
+ampliada.
+
 ---
 
 ## QA-1 — Física: validación contra soluciones cerradas
@@ -100,18 +108,19 @@ monterey_bay/stanford1_campus (Bloque A, y para monterey_bay/
 ridgecrest_north además porque 3.0/3.1 confirmaron que la brecha es de
 lista de archivos, no de código — ver QA-3 abajo).
 
-**2.6 — CI multi-versión — HALLAZGO NUEVO, sin resolver**: se hizo
-`git push origin dev` (commit `3a6a097`) para disparar la verificación
-pedida. **Descubrimiento: `.github/workflows/ci.yml` dispara SOLO en
-`push: branches: [main]` y en `pull_request`** — un push a `dev` no
-ejecuta CI en absoluto (confirmado vía API pública de GitHub: el último
-run visible es de un PR anterior, 2026-07-22, nada posterior al push de
-hoy). **No se abrió un PR dev→main unilateralmente** — eso cruza la
-Fase F3 de `PLAN_CIERRE_Y_LANZAMIENTO.md` ("Claude Code prepara la
-rama y el texto del PR; ALEJANDRO aprueba el merge"), y abrir uno ahora
-adelantaría ese hito fuera de secuencia. Queda pendiente de decisión:
-¿abrir un PR (borrador, sin mergear) solo para correr CI, o dejar la
-verificación de 3.10/3.11/3.12 para cuando llegue F3 naturalmente?
+**2.6 — CI multi-versión — CERRADO 2026-08-01 (ver Bloque 4 más abajo)**:
+se hizo `git push origin dev` (commit `3a6a097`) para disparar la
+verificación pedida. **Descubrimiento original: `.github/workflows/ci.yml`
+dispara SOLO en `push: branches: [main]` y en `pull_request`** — un push
+a `dev` no ejecuta CI en absoluto (confirmado vía API pública de GitHub:
+el último run visible era de un PR anterior, 2026-07-22, nada posterior
+al push de ese día). Se abrió un PR draft (#3, dev→main, "sin mergear",
+sin cruzar la Fase F3 de `PLAN_CIERRE_Y_LANZAMIENTO.md`) exclusivamente
+para poder disparar CI. **Resultado final (Bloque 4, 2026-08-01): las 3
+versiones (3.10/3.11/3.12) corren la suite COMPLETA y las 5 etapas
+(lint, format, mypy, tests, validación E2E) en verde** — pero llegar
+ahí destapó un hallazgo real nuevo, no solo un problema de trigger de
+CI. Ver QA-15 abajo.
 
 **2.7 (QA-08, antes clasificado MENOR→MAYOR→MENOR, CERRADO CON FIX)**:
 `interferometry.py:301` tenía el mismo off-by-one de apertura
@@ -126,6 +135,76 @@ desigualdad direccional (ganancia de SNR por stacking) que un desfasaje
 de 8m sobre 158m no podía voltear. **Corregido** (`(n_ch-1)*dx`),
 re-verificado 4/4 sin inestabilidad. Fe de erratas en
 `docs/observaciones.md` 2026-07-31.
+
+**2.8 (QA-15, MAYOR, hallazgo nuevo, 2026-08-01) — la suite nunca había
+corrido de punta a punta en el entorno real de CI, y el gap es
+reproducible por cualquier tercero, no solo un problema de config**:
+cerrar 2.6 (llevar el PR draft #3 a verde) requirió tres rondas de
+diagnóstico-fix-repush, cada una exponiendo una capa distinta:
+
+1. **Formato (`ruff format`), drift pre-existente**: dos archivos
+   (`src/darkfiber/snr_curve.py`, `tests/analytical/test_closed_form.py`)
+   ya estaban mal formateados para `ruff==0.16.1` desde antes de esta
+   sesión — `pyproject.toml` tenía `ruff>=0.6` sin pin exacto, así que
+   un entorno local con una versión vieja de ruff (0.12.0, confirmado) y
+   CI (que instala la última en cada corrida) podían discrepar en
+   `ruff format --check .` con **cero cambios de código de por medio**.
+   Corregido: `ruff==0.16.1` pineado (mismo patrón ya usado para
+   `numpy==2.2.6`/`mypy==2.3.0` en este archivo, con el mismo comentario
+   explicando el mecanismo), `ruff format .` re-corrido contra el pin.
+2. **mypy, 2 errores reales, expuestos porque la verificación local
+   previa NO usaba las dependencias pineadas del proyecto**: el entorno
+   de trabajo tenía `mypy==1.17.1`/`numpy==2.3.5` sueltos (no los pines
+   de `pyproject.toml`). Un venv limpio con Python 3.10 +
+   `pip install -e ".[dev,h5,figs]"` (el comando exacto de `ci.yml`)
+   reprodujo 2 errores reales: un `# type: ignore[import-untyped]`
+   obsoleto en `installation_config.py:82` (removido) y un conflicto de
+   tipo de shape entre dos ramas de asignación en `replay.py:145`
+   (`data: np.ndarray` declarado antes del `if/elif`, fix mínimo).
+3. **La colección de pytest fallaba — este es el hallazgo real**: con
+   mypy limpio, `pytest` nunca llegaba a correr ni un test:
+   `tests/test_replay_tdms.py:12` importa `nptdms` a nivel de módulo,
+   sin guarda, y `ci.yml` **nunca incluyó el extra `tdms`** en su
+   install (`pip install -e ".[dev,h5,figs]"`) — gap presente desde que
+   el archivo se agregó en F1.5 (commit `649a345`, 2026-07-28); `ci.yml`
+   no se había tocado desde el release inicial (2026-07-14). Nadie lo
+   había visto porque CI jamás había llegado tan lejos: los intentos de
+   2026-07-31 en adelante fallaban antes (format/mypy), y los últimos
+   runs verdes (2026-07-22) son anteriores a que el archivo existiera.
+   **Confirmado reproducible localmente**, no solo en CI: el mismo venv
+   3.10 con el mismo comando de install de `ci.yml` (sin `tdms`) revienta
+   igual — cualquier tercero que clone el repo e instale solo los extras
+   que cree necesitar (siguiendo el patrón documentado por-feature de
+   `pyproject.toml`) se lleva el mismo `ModuleNotFoundError`. Esto es
+   MAYOR, no config de CI: afecta reproducibilidad por terceros, el
+   estándar que este proyecto sostiene explícitamente.
+   **Corregido con dos fixes complementarios** (uno no sustituye al
+   otro): `ci.yml` ahora instala `tdms` (CI debe ejercitar la suite
+   completa, incluido el loader de FOSSA, no saltearlo); y
+   `test_replay_tdms.py` ahora usa `pytest.importorskip("nptdms")` antes
+   del import real, para que un clon sin el extra degrade limpio en vez
+   de romper la colección — alineado con el patrón **ya existente**
+   `test_dashboard.py:19` (`pytest.importorskip("streamlit")`), que el
+   diagnóstico inicial no había visto (se corrigió la afirmación de "no
+   hay precedente" en cuanto apareció evidencia de lo contrario).
+   Nota relacionada, fuera de alcance de este fix: `test_replay_hdf5_generic.py`
+   importa `h5py` a nivel de módulo con el mismo patrón sin guarda: hoy
+   no rompe nada porque `h5` siempre está en el install de CI, pero es
+   la misma clase de fragilidad si algún día ese extra se saca de la
+   lista por defecto. Backlog, no bloqueante.
+
+   **Verificación final, PR draft #3, commit `e234cf9`**: 3.10/3.11/3.12
+   verdes en las 5 etapas (lint, format, mypy, tests, validación E2E).
+   Conteo de tests confirmado localmente en el venv 3.10 fiel a CI:
+   **101 passed + 1 skipped** (streamlit/dashboard, extra no instalado a
+   propósito, correctamente guardado) — igual a los 102 de siempre.
+   Límite de verificación declarado: la API pública de GitHub no expone
+   el log de texto de los jobs sin permisos de admin (confirmado, 403),
+   así que el conteo exacto en 3.11/3.12 no se leyó literalmente del
+   log — se infiere de que las 3 corridas comparten instalación
+   idéntica de dependencias pineadas y de que no existe ningún
+   `sys.version_info`/`skipif` condicional por versión en todo el
+   repo (`tests/`, `src/darkfiber/`, grep sin matches).
 
 ---
 
@@ -221,7 +300,8 @@ physics-first".
 | QA-03 | MAYOR | `triage.py` 89%<90% | **CERRADO por contenido** — de las 13 líneas sin cubrir: 4 defensivas (estados imposibles), 1 función de reporting sin relación al árbol de decisión, 1 rama de fallback rara pero no-taxonómica, y 5 líneas (`sta_lta_ratio` bloqueado por canal) que SÍ son producción real pero ya verificadas por `darkfiber-validate` (29/29, "Bloqueo por canal: mismo raster") — invisibles a `pytest --cov` pero no es un gap real. Cero líneas de clasificación/umbral/taxonomía sin cubrir. |
 | QA-04 | MAYOR | `mypy --strict`, 144 errores | Backlog documentado (`PLAN_CIERRE_Y_LANZAMIENTO.md`), no se arregla ahora |
 | QA-05 | MAYOR | Provenance incompleta 3/8 + sin seeds/checksum nativos | Documentado para limitaciones del paper; ligado al backlog de auto-sello |
-| QA-06 | MAYOR | CI no verificable | **Hallazgo nuevo**: push a `dev` no dispara CI (trigger config). Pendiente de decisión (¿PR borrador?) |
+| QA-06 | MAYOR (resuelto) | CI no verificable | **CERRADO 2026-08-01**: PR draft #3 abierto solo para disparar CI; 3.10/3.11/3.12 verdes en las 5 etapas tras resolver QA-15. PR se cierra sin mergear (F3 sigue gateada) |
+| QA-15 | MAYOR (con fix) | `ci.yml` sin el extra `tdms` — colección de pytest rota, reproducible por terceros sin ese extra | **CORREGIDO** — `ci.yml` instala `tdms`; `test_replay_tdms.py` usa `pytest.importorskip` (alineado con precedente `test_dashboard.py`). Ver 2.8. Nota relacionada sin resolver: `test_replay_hdf5_generic.py` tiene la misma fragilidad teórica con el extra `h5`, backlog |
 | QA-07 | MAYOR (resuelto) | sha256 de arcata stale | Corregido inline, re-verificado en 3.5 |
 | QA-08 | MENOR (con fix) | off-by-one `interferometry.py:301` | **CORREGIDO**, 4/4 re-verificado, fe de erratas registrada |
 | QA-09 | MENOR | `ArrayGeometry` default silencioso | Backlog (`PLAN_CIERRE_Y_LANZAMIENTO.md`) |
