@@ -23,18 +23,17 @@ from darkfiber.coherence import (
     v_app_max_resoluble,
 )
 from darkfiber.contracts import ArrayGeometry, CoherenceConfig, Tier0Config, TriggerEvent
-from darkfiber.selftest import inject_and_verify, inject_and_verify_sized, pipeline_margin_s
+from darkfiber.selftest import inject_and_verify_sized
 from darkfiber.snr_curve import interpolate_snr50, wilson_ci
 from darkfiber.synth import (
     add_plane_wave,
-    bandpass,
     make_noise,
     noise_rms,
     ricker,
     snr_to_amplitude,
     wavelet_rms,
 )
-from darkfiber.triage import sta_lta_ratio, trigger_raster
+from darkfiber.triage import sta_lta_ratio
 
 # ---------------------------------------------------------------------------
 # QA-1.1 — snr_to_amplitude round-trip + invariancia a escala/dtype de origen
@@ -294,30 +293,61 @@ def test_velocity_outside_grid_triggers_boundary_pinned():
 
 
 @pytest.mark.parametrize(
-    "aperture_m,fs_hz", [(9192.0, 100.0), (15411.28, 100.0), (41445.6, 250.0), (2864.16, 250.0)]
+    "n_ch,dx,fs_hz",
+    [
+        (1150, 8.0, 100.0),  # ridgecrest_north real
+        (3020, 5.104762077331543, 100.0),  # arcata real (geometria mayoritaria)
+        (2468, 16.8, 250.0),  # valencia real
+        (352, 8.16, 250.0),  # stanford-2 real
+    ],
 )
-def test_noise_floor_constants_rederived_from_real_code(aperture_m, fs_hz):
-    """QA-1.5: RE-DERIVA min_len_s desde las piezas REALES que
-    selftest.inject_and_verify_sized usa (Tier0Config().warmup_s,
-    pipeline_margin_s real, ricker() real -- no la formula documentada
-    copiada) y la compara contra "13.6 + 0.001833*aperture_m"
-    (docs/snr50_extension_fase1.md). worst case v_app=2000 m/s (el mas
-    lento de V_APP_RANGE_MPS real)."""
+def test_noise_floor_constants_rederived_from_real_code(n_ch, dx, fs_hz):
+    """QA-1.5, REESCRITO (encontrado hueco en la version anterior, ver
+    docs/observaciones.md/QA_REPORT.md 2026-07-31): la version anterior
+    NUNCA llamaba a selftest.inject_and_verify_sized -- reconstruia su
+    aritmetica a mano en el test (con piezas reales: t0_cfg.warmup_s,
+    pipeline_margin_s(), ricker(), pero sin ejercitar la funcion real) y
+    comparaba contra la formula documentada. Un bug real en como
+    inject_and_verify_sized ENSAMBLA esas piezas no se habria detectado.
+
+    Este test llama la funcion REAL con ruido de longitud justo por
+    debajo y justo por encima del piso -- si `inject_and_verify_sized`
+    decide None/no-None exactamente donde la formula documentada
+    predice, la formula queda verificada contra el COMPORTAMIENTO real,
+    no contra una relectura de su codigo. worst case v_app=2000 m/s (el
+    mas lento de V_APP_RANGE_MPS real)."""
+    geom = ArrayGeometry(n_channels=n_ch, channel_spacing_m=dx, fs_hz=fs_hz)
     t0_cfg = Tier0Config()
     coh_cfg = CoherenceConfig()
-    n_ch = int(aperture_m / 8.0) + 1  # dx nominal, no afecta el calculo de min_len_s
-    dx = aperture_m / (n_ch - 1)
-    wav = ricker(6.0, fs_hz)
-    moveout_s = aperture_m / 2000.0  # peor caso real: v_app=2000 m/s
-    pmargin_s = pipeline_margin_s(coh_cfg, aperture_m)
-    t0_s = t0_cfg.warmup_s + pmargin_s + 1.0
-    min_len_s_rederived = t0_s + moveout_s + len(wav) / fs_hz + pmargin_s + 1.0
+    aperture_m = geom.aperture_m
 
-    documented = 13.6 + 0.001833 * aperture_m
-    rel_err = abs(min_len_s_rederived - documented) / documented
-    assert rel_err < 0.01, (
-        f"re-derivado={min_len_s_rederived:.2f}s vs documentado={documented:.2f}s "
-        f"(aperture={aperture_m}m, fs={fs_hz}Hz) -- diff {rel_err:.2%}"
+    documented_min_len_s = 13.6 + 0.001833 * aperture_m
+    predicted_min_len_n = int(documented_min_len_s * fs_hz)
+    margin_n = int(1.0 * fs_hz)  # +-1s de holgura contra el redondeo de la aproximacion documentada
+
+    short_len = predicted_min_len_n - margin_n
+    long_len = predicted_min_len_n + margin_n
+    assert short_len > 0, "parametrizacion invalida: el piso predicho es demasiado chico"
+
+    noise_short = make_noise(n_ch, short_len, fs_hz, seed=11)
+    noise_long = make_noise(n_ch, long_len, fs_hz, seed=12)
+
+    result_short = inject_and_verify_sized(
+        noise_short, geom, t0_cfg, coh_cfg, v_app_mps=2000.0, snr=8.0, seed=1
+    )
+    result_long = inject_and_verify_sized(
+        noise_long, geom, t0_cfg, coh_cfg, v_app_mps=2000.0, snr=8.0, seed=1
+    )
+
+    assert result_short is None, (
+        f"n_ch={n_ch} dx={dx} fs={fs_hz}: ruido de {short_len / fs_hz:.1f}s (1s bajo el piso "
+        f"documentado, {documented_min_len_s:.1f}s) deberia ser rechazado (None) y NO lo fue -- "
+        "la funcion real acepta ruido mas corto de lo que la formula documentada predice"
+    )
+    assert result_long is not None, (
+        f"n_ch={n_ch} dx={dx} fs={fs_hz}: ruido de {long_len / fs_hz:.1f}s (1s sobre el piso "
+        f"documentado, {documented_min_len_s:.1f}s) fue rechazado (None) y no deberia -- la "
+        "funcion real exige mas ruido del que la formula documentada predice"
     )
 
 

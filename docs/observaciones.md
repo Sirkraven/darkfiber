@@ -16,6 +16,37 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-08-01 — QA-1.5 reescrito: la versión original nunca ejercitaba `inject_and_verify_sized`
+
+**Erratum puntual post-gate** (el gate QA E2E cerró en `1090fc4`/
+`78fa16d` sin segunda pasada; esto entra como la excepción ya declarada
+en el cierre: "lo que aparezca durante la escritura del paper se trata
+como errata puntual, no como reapertura del gate").
+
+`test_noise_floor_constants_rederived_from_real_code`
+(`tests/analytical/test_closed_form.py`, QA-1.5) decía re-derivar
+`13.6+0.001833·aperture_m` "desde las piezas reales de
+`inject_and_verify_sized`", pero en realidad nunca llamaba a esa
+función: reconstruía su aritmética a mano dentro del propio test
+(`Tier0Config().warmup_s + pipeline_margin_s(...) + ... `) usando piezas
+reales, y comparaba ese cálculo de mano contra la fórmula documentada.
+Un bug real en cómo `inject_and_verify_sized` ENSAMBLA esas piezas
+(orden de operaciones, un término de más/menos) no se habría detectado
+— el test se habría estado verificando contra sí mismo.
+
+Reescrito para llamar la función real dos veces por combinación
+`(n_ch, dx, fs_hz)`: ruido de `predicted_min_len - 1s` (debe devolver
+`None`, rechazado) y `predicted_min_len + 1s` (debe devolver no-`None`,
+aceptado), con `v_app_mps=2000.0` (peor caso, el más lento de
+`V_APP_RANGE_MPS`) y las 4 geometrías reales del proyecto (ridgecrest_north,
+arcata, valencia, stanford-2). **Mismo resultado que antes — la fórmula
+documentada sigue confirmada correcta** — pero ahora contra el
+comportamiento real de la función, no contra una relectura de su
+código. 49/49 en `tests/analytical/test_closed_form.py`, suite completa
+sin cambios de conteo. Ningún número publicado cambia; solo el método de
+verificación. `docs/QA_REPORT.md` fila 1.5 actualizada con la misma
+nota.
+
 ## 2026-07-31 — Los 3 arrays pre-F1.1 quedan re-medidos con herramienta actual — monterey_bay cambia (1.60→1.50), ridgecrest_north adoptado (2.67), spread pasa a 5.33×
 
 **QA E2E, cierre de items 1/2 del gate.**
