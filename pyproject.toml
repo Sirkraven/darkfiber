@@ -45,7 +45,17 @@ dashboard = ["streamlit>=1.30"]
 ops = ["pyyaml>=6.0"]
 dev = [
     "pytest>=8.0",
-    "ruff>=0.6",
+    # Pinned exactly, not >=: same local-green/CI-red drift as numpy/mypy
+    # below, but for `ruff format` specifically -- its formatting opinions
+    # change between minor versions (2026-08-01: 0.12.0 vs 0.16.1 disagreed
+    # on two files that were already in the repo, unrelated to any code
+    # change). An unpinned `ruff>=0.6` resolves to whatever's newest at
+    # install time, so CI (fresh install) and a dev machine (whatever was
+    # installed last) can silently disagree on `ruff format --check .` even
+    # with zero code changes between runs. Bump deliberately, re-run
+    # `ruff format .` locally against the new pin, and re-run the full CI
+    # matrix in the same change.
+    "ruff==0.16.1",
     # Pinned exactly, not >=: numpy>=2.3's bundled .pyi stubs use PEP 695
     # `type` statements, which mypy refuses to parse when python_version
     # (below) is <3.12 — even inside third-party stub files, not just our

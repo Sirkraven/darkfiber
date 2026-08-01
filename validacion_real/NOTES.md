@@ -123,6 +123,7 @@ solo guarda los resultados livianos (JSONL + consola) de cada corrida.
   a mano contra USGS. Descarga directa en una línea:
   ```python
   from huggingface_hub import hf_hub_download  # requiere también: pip install hf_xet
+
   hf_hub_download("AI4EPS/quakeflow_das", "ridgecrest_north/data/<event_id>.h5", repo_type="dataset")
   ```
   Formato: HDF5, dataset `data` (canales×tiempo), ya en microstrain/s (no hace
