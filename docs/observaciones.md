@@ -16,6 +16,62 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-08-01 — Fase 2, ambiente de arcata sourceado: el sub-grupo "urbano-telecom" (4/8 arrays) ya muestra 4.52× de spread por sí solo
+
+**Contexto**: con el ambiente de arcata recién sourceado (McGuire et al.
+2025, GorDAS — ver `docs/array_geometry_table.md`), los 8 ambientes
+tienen fuente primaria por primera vez. Eso hace visible un dato que
+antes no se podía calcular con los 8 completos: cuatro de las ocho
+instalaciones comparten el mismo tipo de ambiente — "urbano, fibra de
+telecomunicaciones" — y ese subgrupo por sí solo ya cubre casi todo el
+spread de la serie completa.
+
+**Los 4 arrays urbano-telecom, con cita de por qué cada uno entra en la
+categoría** (no es un agrupamiento por nombre — cada uno tiene fuente
+verificada, con confianza distinta caso por caso):
+
+| Array | SNR50 | Fuente de "telecom" |
+|---|---|---|
+| Stanford-2 (Sand Hill Road) | 1.7692307692307692 | `docs/snr50_extension_fase1.md` census F1.2, fila 7: "Urbano — fibra oscura de telecom bajo una vía pública (hospital → SLAC)" — declarado, no inferido |
+| FOSSA | 4.5 | `docs/snr50_extension_fase1.md` census F1.2, fila 3: "Urbano — fibra oscura de telecom" — declarado, no inferido |
+| stanford1_campus | 7.727272727272727 | Datos descargados literalmente de la carpeta Globus/PubDAS `Campus Stanford-1` (`validacion_real/NOTES.md`, Caso 2) — no es una inferencia por nombre (esa duda ya había sido marcada como "menos verificada" en el census F1.2, fila de descarte de PubDAS; queda resuelta por el path real de descarga). La literatura pública de ese array (Biondi et al., arXiv:2203.05932) lo describe verbatim como "fiber cables in telecommunication conduits under Stanford University campus" |
+| arcata | 8.0 | McGuire et al. 2025 (GorDAS), "buried telecom fiber" — ver `docs/array_geometry_table.md`, sourceado hoy |
+
+**Verificado con cómputo, no de memoria** (`python3`):
+```
+min=1.7692307692307692 (Stanford-2), max=8.0 (arcata)
+ratio urbano-telecom (4 arrays) = 8.0 / 1.7692307692307692 = 4.521739130434783
+ratio serie completa (8 arrays) = 8.00 / 1.50 = 5.333333333333333
+fracción = 4.5217/5.3333 = 0.8478 (84.8%)
+```
+
+**El sub-grupo "urbano-telecom" (4.52×) por sí solo cubre el 84.8% del
+spread total de la serie (5.33×, los 8 arrays, todos los ambientes
+combinados)** — desierto/rural, submarino, y urbano-campus incluidos.
+Redondeando como en el resto de la tabla: **4.52× dentro de UN SOLO
+ambiente, contra 5.33× entre TODOS los ambientes.**
+
+**Implicación para §5.2 del paper — la forma más fuerte del claim
+central, sin necesitar estadístico**: si el ambiente de instalación
+predijera SNR50, los 4 arrays urbano-telecom deberían agruparse cerca
+de un valor común. En cambio van de 1.77 a 8.00 — el mismo rango de
+variación que separa a un array submarino (monterey_bay, 1.50) de uno
+de desierto (ridgecrest_north, 2.67) o de otro urbano-campus
+(stanford1_campus, 7.73). El ambiente de instalación no predice SNR50
+**ni siquiera comparando dentro de una misma categoría declarada** — se
+lee directo de la tabla, no hace falta el ρ de Spearman (que ya está
+calculado aparte, ver 2026-07-30, y tampoco lo encuentra: ρ=+0.3095
+para apertura, ninguno de los 4 proxies cruza 0.7381).
+
+**Confianza no uniforme, declarada**: Stanford-2/FOSSA/arcata tienen
+cita textual directa y específica de este proyecto o de su fuente
+primaria exacta. `stanford1_campus` se apoya en evidencia indirecta
+pero sólida (path real de descarga + literatura general del array, no
+un paper que describa exactamente este subset de 626 canales) — un
+nivel de confianza distinto, no inventado, y vale la pena que quien
+escriba §5.2 lo sepa antes de presentarlo como cuatro fuentes
+igualmente fuertes.
+
 ## 2026-08-01 — Cierre del gate de QA: hashes finales de los 8 (E.1) y verificación cruzada en las 3 fuentes (E.4)
 
 **Reemplaza, para efectos de auditoría, la tabla de hashes del
