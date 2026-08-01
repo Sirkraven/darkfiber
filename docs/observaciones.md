@@ -16,6 +16,46 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-08-01 — Cierre del gate de QA: hashes finales de los 8 (E.1) y verificación cruzada en las 3 fuentes (E.4)
+
+**Reemplaza, para efectos de auditoría, la tabla de hashes del
+2026-07-30 más abajo** (esa entrada queda intacta como registro
+histórico — a esa fecha `monterey_bay`/`ridgecrest_north` todavía no
+se habían re-medido con `--files` explícito). Recalculados los 8
+`sha256` directo sobre `figures/snr_curve_<id>.json` (no de memoria, no
+copiados de ningún documento):
+
+| Array | SNR50 (valor exacto del ledger/JSON, coinciden) | sha256 completo | ¿Cambió desde 2026-07-30? |
+|---|---|---|---|
+| monterey_bay | 1.5 | `41908b46a149f271ae8198d8a6c7106ea5c2315e4e1080fdd781b1116378d7af` | **SÍ** — re-medido 2026-07-31 (1.60→1.50) |
+| FORESEE | 1.75 | `ef8890b37bc8247c8fa738234011149397ee7e47e4957e283d5089934b9580f5` | No |
+| Stanford-2 | 1.7692307692307692 | `c5756e8c796b8ce6761607c9f39d8067c6be3a24646287c841fe3c5072f0a625` | No |
+| Valencia | 2.3333333333333335 | `b1dff168b3972236675c55e0575337bfb573a6c2d1884794eb9c0cf1d21c8330` | No |
+| ridgecrest_north | 2.666666666666667 | `5f78e38755a0ff7fdbb20dfcc2c44fc3ca9ee157f04775e160b867bce881d24e` | **SÍ** — re-medido 2026-07-31 (2.50→2.67) |
+| FOSSA | 4.5 | `1f566023c027233091a269f668add82f393e001e0c208c97d1445a4e78532ed3` | No |
+| stanford1_campus | 7.727272727272727 | `220904ff7f640e890303fffd06b556044e2e261b5dc2f138f2320fde7821ad82` | **SÍ, solo el hash** — re-medido 2026-08-01 (PASO B), SNR50 idéntico bit-a-bit; el hash cambia porque el JSON ahora trae `input_files`/`noise_exclusion` (provenance completa) que la corrida anterior no tenía |
+| arcata | 8.0 | `bfaa1254fdb00954a4d0693ccf2ea3a294d82dbd6dc5215188d9d6e878e25409` | No (sin cambios desde el 2026-07-30) |
+
+**E.4 — Verificación cruzada de consistencia, los 8 en las 3 fuentes**
+(`array_profiles` del ledger `D:\darkfiber\ledger\quakeflow_ledger.db`,
+`docs/array_geometry_table.md`, y `snr50` dentro de cada
+`snr_curve_<id>.json`): **las 3 coinciden exacto para los 8 arrays** —
+ledger y JSON coinciden en el valor de punto flotante completo (ej.
+`ridgecrest_north`: `2.666666666666667` en ambos, sin truncar); la tabla
+documentada redondea a 2 decimales de forma consistente con esos
+mismos valores (2.67, 1.50, 7.73, etc.) — **cero discrepancias**. La
+tabla de hashes de arriba, cruzada contra `docs/array_geometry_table.md`
+(hashes truncados) y contra el sha256 recalculado directo sobre cada
+archivo: **coinciden los 8**, incluida la actualización de
+`stanford1_campus` aplicada en esta misma entrada.
+
+Con esto, QA-05 (`docs/QA_REPORT.md`) pasa de "provenance incompleta
+3/8" a **0/8**: las 8 corridas activas tienen `input_files`/
+`noise_exclusion` completos. Sigue abierto, sin cambios, el sub-punto de
+"ninguna de las 8 tiene `seeds`/`checksum` nativos" — ligado al backlog
+ya declarado de auto-sello de versión (`git rev-parse HEAD` al arrancar
+la corrida).
+
 ## 2026-08-01 — stanford1_campus re-medido con `--files` explícito: NO cambia (7.73), última de las 3 provenance-incompletas cerrada
 
 **QA gate, cierre de PASO B (queda pendiente desde el gate de 2026-07-31,

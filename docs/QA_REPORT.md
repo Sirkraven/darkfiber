@@ -100,16 +100,24 @@ serie, no solo en las corridas pre-F1.1. Registrado en
 en `PLAN_CIERRE_Y_LANZAMIENTO.md`** con desglose completo por módulo —
 el diagnóstico ya respondió lo que importaba.
 
-**2.5 — Provenance**: 3/8 corridas (monterey_bay, ridgecrest_north,
-stanford1_campus) con schema incompleto por ser anteriores a que
-existiera; ninguna de las 8 tiene `seeds`/`checksum` nativos. **Ligado
-explícitamente**, en `PLAN_CIERRE_Y_LANZAMIENTO.md`, al backlog ya
-declarado de auto-sello de versión (`git rev-parse HEAD` al arrancar la
-corrida) — es el mismo problema visto desde el lado de datos y desde el
-lado de diseño, una sola entrada de backlog. No se re-corren
-monterey_bay/stanford1_campus (Bloque A, y para monterey_bay/
-ridgecrest_north además porque 3.0/3.1 confirmaron que la brecha es de
-lista de archivos, no de código — ver QA-3 abajo).
+**2.5 — Provenance — CERRADO 2026-08-01, pasa de 3/8 a 0/8**: al
+momento de este hallazgo, 3/8 corridas (monterey_bay, ridgecrest_north,
+stanford1_campus) tenían schema incompleto por ser anteriores a que
+`--files` explícito existiera como práctica estándar. Las 3 quedaron
+re-medidas con provenance completa: monterey_bay y ridgecrest_north el
+2026-07-31 (2 de 3 dieron valores distintos a los archivados — ver
+QA-3/investigación B5), stanford1_campus el 2026-08-01 (sin cambio de
+valor, ver `docs/observaciones.md`). **Las 8 corridas activas tienen
+hoy `input_files`/`noise_exclusion` completos** — verificación cruzada
+en las 3 fuentes (ledger, `array_geometry_table.md`, JSON) en
+`docs/observaciones.md` 2026-08-01, cero discrepancias.
+
+**Sigue abierto, sin cambios**: ninguna de las 8 tiene `seeds`/
+`checksum` nativos. **Ligado explícitamente**, en
+`PLAN_CIERRE_Y_LANZAMIENTO.md`, al backlog ya declarado de auto-sello de
+versión (`git rev-parse HEAD` al arrancar la corrida) — es el mismo
+problema visto desde el lado de datos y desde el lado de diseño, una
+sola entrada de backlog.
 
 **2.6 — CI multi-versión — CERRADO 2026-08-01 (Bloque 4)**: el claim "CI
 verde en 3.10/3.11/3.12" estaba sin verificar, y no por una sola razón —
@@ -362,7 +370,7 @@ physics-first".
 | QA-02 | CRÍTICO | "pytest 20/20" obsoleto | **CORREGIDO** — 102/102 real |
 | QA-03 | MAYOR | `triage.py` 89%<90% | **CERRADO por contenido** — de las 13 líneas sin cubrir: 4 defensivas (estados imposibles), 1 función de reporting sin relación al árbol de decisión, 1 rama de fallback rara pero no-taxonómica, y 5 líneas (`sta_lta_ratio` bloqueado por canal) que SÍ son producción real pero ya verificadas por `darkfiber-validate` (29/29, "Bloqueo por canal: mismo raster") — invisibles a `pytest --cov` pero no es un gap real. Cero líneas de clasificación/umbral/taxonomía sin cubrir. |
 | QA-04 | MAYOR | `mypy --strict`, 144 errores | Backlog documentado (`PLAN_CIERRE_Y_LANZAMIENTO.md`), no se arregla ahora |
-| QA-05 | MAYOR | Provenance incompleta 3/8 + sin seeds/checksum nativos | Documentado para limitaciones del paper; ligado al backlog de auto-sello |
+| QA-05 | MAYOR (parcialmente resuelto) | Provenance incompleta 3/8 + sin seeds/checksum nativos | **3/8→0/8 CERRADO 2026-08-01** (las 3 re-medidas con `--files` explícito). Sub-punto "sin seeds/checksum nativos" sigue abierto, ligado al backlog de auto-sello |
 | QA-06 | MAYOR (resuelto) | "CI verde en 3.10/3.11/3.12" sin verificar por **tres causas independientes**: (a) trigger de `ci.yml` no dispara en push a `dev`, (b) extra `tdms` faltante → pytest no colecciona (QA-15), (c) `ruff` sin pin exacto → verde local/rojo CI (QA-16) | **CERRADO 2026-08-01**: PR draft #3 abierto solo para disparar CI; (a)(b)(c) resueltas una por una (cada una ocultaba a la siguiente); 3.10/3.11/3.12 verdes en las 5 etapas, commit `e234cf9`. PR cerrado sin mergear por Alejandro, rama `dev` intacta, F3 sigue gateada |
 | QA-15 | MAYOR (con fix) | `ci.yml` sin el extra `tdms` — colección de pytest rota, reproducible por terceros sin ese extra | **CORREGIDO** — `ci.yml` instala `tdms`; `test_replay_tdms.py` usa `pytest.importorskip` (alineado con precedente `test_dashboard.py`). Ver 2.8. Nota relacionada sin resolver: `test_replay_hdf5_generic.py` tiene la misma fragilidad teórica con el extra `h5`, backlog |
 | QA-16 | MAYOR (con fix) | `ruff>=0.6` sin pin exacto — mismo patrón "local-green/CI-red" ya documentado para numpy/mypy, nunca generalizado a las herramientas de lint/format | **CORREGIDO** — `ruff==0.16.1` pineado en `pyproject.toml` con el mismo estilo de comentario que numpy/mypy; 3 archivos reformateados contra el pin. Ver 2.9 |

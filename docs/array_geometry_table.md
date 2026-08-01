@@ -27,11 +27,20 @@ DOS escalones que bracketan el cruce de recall=50% (`interpolate_snr50`),
 n=20 cada uno — son los números reales que sostienen la interpolación, no
 un IC sintetizado.
 
-**SERIE CONGELADA 2026-07-30** — tras la re-medición de arcata (ver nota
-más abajo), no se corren más mediciones/auditorías sobre esta serie de 8.
-Los hashes (`sha256` completo del propio `figures/snr_curve_<id>.json`,
-calculados directo sobre el archivo — no de memoria) son la referencia
-de auditoría byte-a-byte de cada fila.
+**SERIE CONGELADA 2026-07-30, REABIERTA 2026-07-31→2026-08-01 y
+RE-CONGELADA 2026-08-01** — el gate de QA E2E post-cierre (ver
+`docs/QA_REPORT.md`, QA-05) encontró que 3 de las 8 corridas
+(`monterey_bay`, `ridgecrest_north`, `stanford1_campus`) tenían
+provenance incompleta (anteriores a que `--files` explícito existiera
+como práctica estándar) — condición pre-declarada para re-medir con la
+herramienta actual. Las 3 quedaron re-medidas con provenance completa
+(2 de 3 dieron valores distintos a los archivados: `monterey_bay`
+1.60→1.50, `ridgecrest_north` 2.50→2.67; `stanford1_campus` sin cambio,
+7.73→7.73). Con esto cerrado, la serie vuelve a estar congelada — no se
+corren más mediciones/auditorías salvo que aparezca una razón igualmente
+pre-declarada. Los hashes (`sha256` completo del propio
+`figures/snr_curve_<id>.json`, calculados directo sobre el archivo — no
+de memoria) son la referencia de auditoría byte-a-byte de cada fila.
 
 | Array | Ambiente | n_ch | spacing (dx) | apertura | fs | SNR50 | IC95% (escalones que bracketan 50%) | sha256 de `snr_curve_<id>.json` |
 |---|---|---|---|---|---|---|---|---|
@@ -41,7 +50,7 @@ de auditoría byte-a-byte de cada fila.
 | Valencia (valencia_submarine) | Submarino | 2,468 | 16.8 m | 41,445.6 m (41.45 km) | 250.0 Hz | 2.33 | [25.8,65.8]@SNR2 / [38.7,78.1]@SNR3 | `b1dff168b397…d21c8330` |
 | ridgecrest_north | Desierto/rural | 1,150 | 8.0 m | 9,192.0 m (9.19 km) | 100.0 Hz | **2.67** | [2.8,30.1]@SNR2 / [48.1,85.5]@SNR3 | `5f78e38755a0…881d24e` |
 | FOSSA | Urbano — fibra oscura de telecom | 11,648 | 2.0 m | 23,294.0 m (23.29 km) | 500.0 Hz | 4.50 | [0.9,23.6]@SNR3 / [43.3,81.9]@SNR5 | `1f566023c027…4a78532ed3` |
-| stanford1_campus | Urbano, campus universitario | 626 | 8.16 m | 5,100.0 m (5.10 km) | 100.0 Hz | 7.73 | [0.0,16.1]@SNR5 / [34.2,74.2]@SNR8 | `326beaefd0b6…eefebfa9e7a9` |
+| stanford1_campus | Urbano, campus universitario | 626 | 8.16 m | 5,100.0 m (5.10 km) | 100.0 Hz | 7.73 | [0.0,16.1]@SNR5 / [34.2,74.2]@SNR8 | `220904ff7f64…7821ad82` |
 | arcata | — (no sourceado) | 3,020 | 5.104762077331543 m | 15,411.28 m (15.41 km) | 100.0 Hz | **8.00** | [5.2,36.0]@SNR5 / [29.9,70.1]@SNR8 | `bfaa1254fdb0…6e878e25409` |
 
 **Actualización 2026-07-31 (QA gate, item 1/2 del cierre)**: `monterey_bay`
@@ -59,13 +68,22 @@ nuevos (`monterey_bay` sigue siendo el mínimo, `ridgecrest_north` sigue
 entre Valencia y FOSSA) — los 4 ρ de Spearman quedan IDÉNTICOS
 (n_ch +0.1905, dx 0.0000, apertura +0.3095, fs −0.3805). El **spread SÍ
 cambia**: 8.00/1.50 = **5.33×**, no 5.00× (que a su vez ya había
-reemplazado el 4.83×/3.7× originales) — pendiente de cascada a los
-documentos narrativos, ver conversación que cerró este gate.
+reemplazado el 4.83×/3.7× originales) — **cascada aplicada 2026-08-01**
+a los 9 documentos narrativos afectados (incluidos `README.md`/`.es.md`,
+que el barrido original nunca había tocado), ver `docs/observaciones.md`.
+
+**Actualización 2026-08-01**: `stanford1_campus` re-medido con `--files`
+explícito (última de las 3 corridas con provenance incompleta, QA-05) —
+**SNR50 sin cambio** (7.727272727272727, idéntico bit-a-bit), pero su
+`sha256` SÍ cambió (`326beaefd0b6…eefebfa9e7a9` → `220904ff7f64…7821ad82`)
+porque el JSON ahora incluye `input_files`/`noise_exclusion` que la
+corrida anterior no tenía — mismo mecanismo que ya se aplicó a
+monterey_bay/ridgecrest_north, no una discrepancia. Detalle en
+`docs/observaciones.md` 2026-08-01.
 
 *(hashes truncados en la tabla por legibilidad — el sha256 completo de
-cada uno está en el commit que cerró la serie; ver
-`docs/observaciones.md` 2026-07-30 para los 64 caracteres completos de
-cada uno).*
+cada uno está en `docs/observaciones.md`, entrada 2026-08-01 con la
+tabla final de los 8).*
 
 **Nota sobre orden**: filas ordenadas por SNR50 ascendente (menos sensible
 arriba de la escala de sensibilidad, es decir monterey_bay necesita el SNR
