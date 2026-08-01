@@ -130,6 +130,7 @@ def load_hdf5_generic(
                 )
             ds = fh[candidates[0]]
 
+        data: np.ndarray
         if ds.ndim == 3:
             n_blocks, samples_per_block, n_ch = ds.shape
             if samples_per_block != round(fs):

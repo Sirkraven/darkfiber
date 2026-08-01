@@ -79,7 +79,7 @@ class InstallationConfig(BaseModel):
 
 def load_installation_config(path: str) -> InstallationConfig:
     try:
-        import yaml  # type: ignore[import-untyped]
+        import yaml
     except ImportError as exc:
         raise SystemExit(
             "Falta pyyaml -- instalá el extra 'ops': pip install 'darkfiber[ops]'"

@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from nptdms import ChannelObject, RootObject, TdmsWriter
 
-from darkfiber.replay import load_tdms
+pytest.importorskip("nptdms")
+from nptdms import ChannelObject, RootObject, TdmsWriter  # noqa: E402
+
+from darkfiber.replay import load_tdms  # noqa: E402
 
 FS = 500.0
 DX = 2.0

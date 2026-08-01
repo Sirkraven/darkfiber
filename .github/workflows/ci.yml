@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install
-        run: pip install -e ".[dev,h5,figs]"
+        run: pip install -e ".[dev,h5,figs,tdms]"
       - name: Lint (ruff)
         run: ruff check .
       - name: Format check (ruff)
