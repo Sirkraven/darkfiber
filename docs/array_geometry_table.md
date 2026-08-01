@@ -133,10 +133,18 @@ reconstrucción con archivos/seeds/threshold idénticos (QA gate,
 original), así que la discrepancia es de lista de archivos, no de
 código. La misma verificación sobre ridgecrest_north (pool homogéneo,
 sin ambigüedad de geometría) tampoco reprodujo su 2.50 vigente (dio
-2.67) — su valor NO se re-mide (regla de decisión pre-declarada: solo
-dispara re-medición si hay cambios de código, y no los hay), pero queda
-con el mismo caveat de no-reproducibilidad con las herramientas
-actuales. Bloque A: esto NO es una corrida de datos
+2.67) — ***fe de erratas 2026-08-01: la frase original acá decía "su
+valor NO se re-mide (regla de decisión pre-declarada: solo dispara
+re-medición si hay cambios de código, y no los hay)". Esa afirmación
+quedó superseded por la actualización 2026-07-31 (QA gate, item 1/2,
+más abajo): ridgecrest_north SÍ se re-midió y 2.67 fue adoptado. La
+regla pre-declarada original solo contemplaba re-medir ante fallas de
+código — no anticipó el caso "irreproducible con código verificado
+estable" que 3.0/3.1 confirmaron acá, así que la decisión de
+no-re-medir basada en esa regla quedó obsoleta en cuanto se completó
+esa verificación. Se corrige la prosa, no el registro: la
+investigación B5 completa y sus números quedan intactos abajo y en
+`docs/observaciones.md` 2026-07-31.*** Bloque A: esto NO es una corrida de datos
 NUEVOS ni un evento real re-evaluado — es la misma metodología de ruido
 sintético sobre el mismo pool de ruido real, restringida a la geometría
 consistente con la que la instalación fue caracterizada; se trata como

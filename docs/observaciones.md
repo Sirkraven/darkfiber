@@ -16,6 +16,48 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-08-01 — stanford1_campus re-medido con `--files` explícito: NO cambia (7.73), última de las 3 provenance-incompletas cerrada
+
+**QA gate, cierre de PASO B (queda pendiente desde el gate de 2026-07-31,
+QA-05 "provenance incompleta 3/8": monterey_bay y ridgecrest_north ya se
+habían re-medido ese día; stanford1_campus era el último de los tres).**
+
+**B.0 — umbral verificado antes de correr, no asumido** (mismo error que
+ya se había cometido una vez con ridgecrest_north, threshold=4.0 supuesto
+en vez del 8.0 real): dos fuentes independientes, `docs/snr50_extension_fase1.md`
+§3 ("stanford1_campus nunca tuvo una calibración A7/A8 aplicada;
+confirmado antes de correr, no asumido") y `figures/snr_curve_stanford1_campus.json`
+(`threshold_source: "default global (sin propuesta aplicada)"`), coinciden
+en **threshold=4.0**. Certeza suficiente para no pausar.
+
+**B.1 — corrida**: `python -m darkfiber.snr_curve --dir D:/darkfiber/data/stanford
+--array-id stanford1_campus --db D:/darkfiber/ledger/quakeflow_ledger.db
+--fs 100 --dx 8.16 --exclude-s 395 455 --files D:/darkfiber/data/stanford/eastfoothills_real.npz --figs`
+(mismos parámetros que la corrida original de F1.2, más `--files` explícito
+para provenance completa — el mismo fix que ya se había aplicado a
+monterey_bay/ridgecrest_north). Runtime 78.0s (ref. 76.2s).
+
+**B.2 — resultado: SNR50 = 7.727272727272727, idéntico bit-a-bit al valor
+vigente.** Curva completa también idéntica (recall 0/0/0/0/55/85/85% en
+los 7 escalones de SNR, 140/140 trials válidos, IC Wilson 95% sin
+cambios). El pool es un único archivo verificado
+(`eastfoothills_real.npz`) sin la ambigüedad de lista-de-archivos que
+afectó a monterey_bay/ridgecrest_north/arcata — determinismo total
+(seeds explícitos en todos los sitios, confirmado en el gate 2.3 del
+2026-07-31) explica la reproducción exacta. **No dispara ningún cambio
+aguas abajo**: spread se mantiene 8.00/1.50=5.33× y los 4 ρ de Spearman
+quedan en los mismos valores (n_ch +0.1905, dx 0.0000, apertura +0.3095,
+fs −0.3805).
+
+El perfil anterior quedó archivado en `array_profile_history` (mismo
+valor, con nota de reemplazo) y el perfil vigente de `array_profiles`
+ahora tiene provenance completa vía `input_files`/`noise_exclusion` en
+`figures/snr_curve_stanford1_campus.json` — **cierra QA-05
+("provenance incompleta 3/8"): las 8 corridas activas ya tienen
+provenance completa vía `--files` explícito** (sigue abierto,
+sin cambios, el sub-punto de "sin seeds/checksum nativos", ligado al
+backlog de auto-sello de versión).
+
 ## 2026-08-01 — QA-1.5 reescrito: la versión original nunca ejercitaba `inject_and_verify_sized`
 
 **Erratum puntual post-gate** (el gate QA E2E cerró en `1090fc4`/
