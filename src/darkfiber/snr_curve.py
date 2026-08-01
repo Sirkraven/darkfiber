@@ -944,7 +944,9 @@ def main() -> None:
                     complete=False,
                 ),
             )
-            print(f"  checkpoint guardado en {out_json} ({step_idx + 1}/{len(SNR_STEPS)} escalones)")
+            print(
+                f"  checkpoint guardado en {out_json} ({step_idx + 1}/{len(SNR_STEPS)} escalones)"
+            )
     else:
         sources = gather_noise_sources(
             files,

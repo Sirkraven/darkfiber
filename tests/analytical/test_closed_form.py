@@ -178,8 +178,7 @@ def test_semblance_white_noise_near_one_over_n_channels():
     # banda ancha a proposito (orden de magnitud, no valor exacto): es una
     # propiedad estadistica, no una identidad algebraica cerrada.
     assert expected / 4 < mean_sem < expected * 6, (
-        f"semblanza media de ruido={mean_sem:.5f}, esperado orden de "
-        f"1/n_ch={expected:.5f}"
+        f"semblanza media de ruido={mean_sem:.5f}, esperado orden de 1/n_ch={expected:.5f}"
     )
 
 
@@ -512,8 +511,10 @@ def test_interpolate_snr50_exact_crossing_at_a_step():
     """QA-1.9: si un escalon da recall EXACTO 0.5, la interpolacion debe
     devolver ese SNR exacto (frac=1.0 o 0.0 segun el bracket)."""
     curve = [
-        dict(snr=1, recall=0.0), dict(snr=5, recall=0.15),
-        dict(snr=8, recall=0.5), dict(snr=12, recall=0.65),
+        dict(snr=1, recall=0.0),
+        dict(snr=5, recall=0.15),
+        dict(snr=8, recall=0.5),
+        dict(snr=12, recall=0.65),
     ]
     assert interpolate_snr50(curve) == pytest.approx(8.0)
 
@@ -530,8 +531,10 @@ def test_interpolate_snr50_non_monotonic_still_finds_first_crossing():
     escalones altos) -- interpolate_snr50 encuentra el PRIMER cruce
     ascendente, no se confunde por el dip posterior."""
     curve = [
-        dict(snr=1, recall=0.1), dict(snr=2, recall=0.3),
-        dict(snr=3, recall=0.6), dict(snr=5, recall=0.55),
+        dict(snr=1, recall=0.1),
+        dict(snr=2, recall=0.3),
+        dict(snr=3, recall=0.6),
+        dict(snr=5, recall=0.55),
         dict(snr=8, recall=0.4),
     ]
     result = interpolate_snr50(curve)
