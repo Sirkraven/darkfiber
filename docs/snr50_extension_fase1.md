@@ -132,7 +132,8 @@ descriptivo) — eso es trabajo de F1.6.
 (F1.1) — no se edita, es historia. La serie CONGELADA final (N=8) tiene
 arcata=8.00 (no 5.9, corregido por heterogeneidad de pool, ver
 `docs/observaciones.md` 2026-07-30/31) y stanford1_campus ya NO es el
-máximo — arcata lo es. Spread vigente: 5.00× (8.00/1.6). Tabla final:
+máximo — arcata lo es. Spread vigente: 5.33× (8.00/1.50, monterey_bay
+re-medido 2026-07-31, ver `docs/observaciones.md`). Tabla final:
 `docs/array_geometry_table.md`.
 
 ---

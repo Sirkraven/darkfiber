@@ -38,7 +38,7 @@ explicado por una curva directamente medida, no una suposición.
 
 El hallazgo central es que la detectabilidad misma es una propiedad de la
 instalación, no de la geometría del arreglo: recall-vs-SNR, medido contra
-el ruido de fondo real propio de cada arreglo, da un factor de 5.00× de
+el ruido de fondo real propio de cada arreglo, da un factor de 5.33× de
 dispersión en SNR50 entre instalaciones de tamaño ampliamente comparable
 — el número que un operador necesitaría en la práctica para evaluar si un
 arreglo dado puede ver un evento dado. Dos confirmaciones aparentes de
@@ -197,7 +197,7 @@ socava los resultados de SNR50/recall de arriba: `snr_to_amplitude()`,
 la única definición operativa de SNR del proyecto, escala un wavelet
 inyectado por el RMS de ruido *local*
 (`amp = target_snr · RMS(ruido) / RMS(wavelet)`), así que es invariante
-de escala por construcción — un SNR50 de 1.6 significa lo mismo en la
+de escala por construcción — un SNR50 de 1.50 significa lo mismo en la
 escala de monterey_bay que el 8.00 de arcata significa en la escala de
 arcata. Lo que sí significa: no debería sacarse de este dataset ninguna
 comparación de amplitud *absoluta*, offset de semblanza, o umbrales en
@@ -306,12 +306,12 @@ cada escalón (n=20 intentos/escalón):
 
 | Arreglo | SNR50 |
 |---|---|
-| ridgecrest_north | 2.5 |
-| monterey_bay | 1.6 |
+| ridgecrest_north | 2.67 |
+| monterey_bay | 1.50 |
 | arcata | 8.00 |
 
-El 8.00 de arcata contra el 1.6 de monterey_bay es un factor de 5.00×
-(8.00 / 1.6 = 5.00) entre instalaciones con conteos de canal y
+El 8.00 de arcata contra el 1.50 de monterey_bay es un factor de 5.33×
+(8.00 / 1.50 = 5.33) entre instalaciones con conteos de canal y
 espaciados ampliamente comparables: la detectabilidad es una propiedad
 del piso de ruido real de esa instalación específica, no de "cuántos
 canales" o "qué tan largo es el arreglo". La implicancia práctica es lo
@@ -454,7 +454,7 @@ crece fuertemente.
 ![Figura 10: error de medición de velocidad vs. velocidad real, barrido en distintas aperturas — el límite geométrico de resolución.](../figures/fig5_limite_apertura.png)
 
 **La detectabilidad es por instalación, no una constante geométrica.**
-El factor de 5.00× de §5.2 en SNR50 (arcata 8.00 vs. monterey_bay 1.6)
+El factor de 5.33× de §5.2 en SNR50 (arcata 8.00 vs. monterey_bay 1.50)
 entre tres arreglos con conteos de canal ampliamente similares implica
 que "¿este arreglo va a ver un evento dado?" no puede responderse solo
 desde la geometría; hace falta medir contra el ruido real de esa

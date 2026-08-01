@@ -29,7 +29,7 @@ aperture, 6 below the array's own measured detection floor, each bucket
 explained by a directly measured curve. The finding we think is most
 useful to this list: detectability (SNR50) is a property of the
 installation, not geometry — measured per array against real noise, it
-varies 5.00x between installations with similar channel counts.
+varies 5.33x between installations with similar channel counts.
 
 This is v1.1.0 specifically because v1.0.0 had reported one confirmed
 event that turned out to be a block-fusion artifact plus a

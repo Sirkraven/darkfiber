@@ -84,8 +84,8 @@ simultaneously "too far/emergent for this array to measure a velocity" and
 "not a false positive". [`docs/adr/0002`](docs/adr/0002-regional-emergent-class.md)
 and [`characterize_aperture.py`](src/darkfiber/characterize_aperture.py)
 document this with two synthetic sweeps. Detectability itself (SNR50) is
-measured per installation, not assumed from geometry: arcata 5.9 vs.
-monterey_bay 1.6, a 3.7× spread — see
+measured per installation, not assumed from geometry: arcata 8.00 vs.
+monterey_bay 1.50, a 5.33× spread — see
 [the writeup](docs/writeup.md) §5.2 and
 [`docs/adr/0007`](docs/adr/0007-recall-as-curve-not-scalar.md).
 

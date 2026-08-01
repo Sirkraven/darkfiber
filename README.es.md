@@ -86,7 +86,7 @@ una velocidad" y "no un falso positivo". [`docs/adr/0002`](docs/adr/0002-regiona
 y [`characterize_aperture.py`](src/darkfiber/characterize_aperture.py)
 documentan esto con dos barridos sintéticos. La detectabilidad misma
 (SNR50) se mide por instalación, no se asume desde la geometría: arcata
-5.9 vs. monterey_bay 1.6, un factor de 3.7× — ver
+8.00 vs. monterey_bay 1.50, un factor de 5.33× — ver
 [el writeup](docs/writeup.md) §5.2 y
 [`docs/adr/0007`](docs/adr/0007-recall-as-curve-not-scalar.md).
 

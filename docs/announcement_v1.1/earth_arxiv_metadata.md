@@ -53,7 +53,7 @@ false alarms, zero signals discarded, zero clean confirmations — intact.)
 >
 > The central finding is that detectability itself is a property of the
 > installation, not the array's geometry: recall-vs-SNR, measured against
-> each array's own real background noise, gives a 5.00× spread in SNR50
+> each array's own real background noise, gives a 5.33× spread in SNR50
 > between installations of broadly comparable size — the number an
 > operator would actually need to evaluate whether a given array can see
 > a given event. Two apparent confirmations from earlier validation

@@ -35,7 +35,7 @@ with every real event landing in an honestly-labeled bucket
 (weak-but-present, regional/beyond-resolvable-aperture, or below the
 array's measured detection floor) instead of a forced binary. Side
 finding: detectability itself (SNR50) turns out to be a property of the
-specific installation, not array geometry — it varies 5.00x between two
+specific installation, not array geometry — it varies 5.33x between two
 arrays with similar channel counts, measured against each array's own
 real noise.
 

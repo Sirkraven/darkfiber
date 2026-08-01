@@ -136,7 +136,7 @@ arrays (e.g. raw digitizer counts rather than microstrain-rate). This does
 `snr_to_amplitude()`, the project's one operative SNR definition, scales
 an injected wavelet by the *local* noise RMS
 (`amp = target_snr · RMS(noise) / RMS(wavelet)`), so it is scale-invariant
-by construction — a SNR50 of 1.6 means the same thing on monterey_bay's
+by construction — a SNR50 of 1.50 means the same thing on monterey_bay's
 scale as arcata's 8.00 means on arcata's. What it does mean: no comparison
 of *absolute* amplitude, semblance offset, or raw-unit thresholds across
 arrays should be drawn from this dataset, and confirming the actual
@@ -238,11 +238,11 @@ with Wilson 95% confidence intervals at each step (n=20 trials/step):
 
 | Array | SNR50 |
 |---|---|
-| ridgecrest_north | 2.5 |
-| monterey_bay | 1.6 |
+| ridgecrest_north | 2.67 |
+| monterey_bay | 1.50 |
 | arcata | 8.00 |
 
-Arcata's 8.00 vs. monterey_bay's 1.6 is a 5.00× spread (8.00 / 1.6 = 5.00)
+Arcata's 8.00 vs. monterey_bay's 1.50 is a 5.33× spread (8.00 / 1.50 = 5.33)
 across installations with broadly comparable channel counts and spacing:
 detectability is a property of the specific installation's real noise
 floor, not of "how many channels" or "how long is the array." The
@@ -374,7 +374,7 @@ that aperture, where error grows sharply.
 ![Figure 10: velocity measurement error vs. true velocity, swept across apertures — the geometric resolution limit.](../figures/fig5_limite_apertura.png)
 
 **Detectability is per-installation, not a geometric constant.** §4.2's
-5.00× spread in SNR50 (arcata 8.00 vs. monterey_bay 1.6) across three
+5.33× spread in SNR50 (arcata 8.00 vs. monterey_bay 1.50) across three
 arrays with broadly similar channel counts means "will this array see a
 given event" cannot be answered from geometry alone; it requires
 measuring against that installation's real noise.

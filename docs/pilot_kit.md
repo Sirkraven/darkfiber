@@ -72,7 +72,7 @@ putting the operator's own monitoring on the line.
   noise** — not a generic spec. This is the actual performance number
   that matters: at what SNR does this specific installation's own noise
   floor let DarkFiber detect a real event 50% of the time. Across the
-  eight installations validated so far this varies 5.00× (1.6 to 8.00)
+  eight installations validated so far this varies 5.33× (1.50 to 8.00)
   between arrays of broadly similar channel count — geometry alone does
   not predict it, so we don't report a generic spec, we measure yours
   (`darkfiber-snr-curve`, same method as `docs/writeup.md` §4.2).
@@ -154,7 +154,7 @@ and file paths, not signal data).
 Every figure above is reproducible from this project's own public
 record, not asserted from memory: the Tier 0 throughput benchmark and
 the 570× figure come from `darkfiber-validate`'s own benchmark section
-(re-run to confirm before this kit is sent to anyone); the 5.00× SNR50
+(re-run to confirm before this kit is sent to anyone); the 5.33× SNR50
 spread and the 16-event validation matrix are in `docs/writeup.md` §4
 and `validacion_real/scoreboard.md`; the streaming performance limit is
 in `CHANGELOG.md`'s `[Unreleased]` "Known limits" section. Code,
