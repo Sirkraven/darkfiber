@@ -17,8 +17,9 @@ recalculada ni re-derivada de memoria.
 para los 7 arreglos medidos antes de FOSSA. Para FOSSA (la 8va fila,
 agregada en este documento después de que su corrida completa cerró):
 `docs/snr50_extension_fase1.md`, tabla de candidatos F1.2, fila #3
-("Urbano — fibra oscura de telecom", verbatim). `—` significa no
-sourceado todavía (arcata) — no se completa acá con un valor inventado.
+("Urbano — fibra oscura de telecom", verbatim). Para arcata, sourceado
+2026-08-01 (ver nota abajo) — ya no queda ningún `—` en esta columna,
+los 8 ambientes tienen fuente primaria.
 
 **Fuente de "IC" (columna final)**: no existe un IC directo sobre el SNR50
 interpolado (es una interpolación lineal entre dos escalones medidos, no un
@@ -51,7 +52,7 @@ de memoria) son la referencia de auditoría byte-a-byte de cada fila.
 | ridgecrest_north | Desierto/rural | 1,150 | 8.0 m | 9,192.0 m (9.19 km) | 100.0 Hz | **2.67** | [2.8,30.1]@SNR2 / [48.1,85.5]@SNR3 | `5f78e38755a0…881d24e` |
 | FOSSA | Urbano — fibra oscura de telecom | 11,648 | 2.0 m | 23,294.0 m (23.29 km) | 500.0 Hz | 4.50 | [0.9,23.6]@SNR3 / [43.3,81.9]@SNR5 | `1f566023c027…4a78532ed3` |
 | stanford1_campus | Urbano, campus universitario | 626 | 8.16 m | 5,100.0 m (5.10 km) | 100.0 Hz | 7.73 | [0.0,16.1]@SNR5 / [34.2,74.2]@SNR8 | `220904ff7f64…7821ad82` |
-| arcata | — (no sourceado) | 3,020 | 5.104762077331543 m | 15,411.28 m (15.41 km) | 100.0 Hz | **8.00** | [5.2,36.0]@SNR5 / [29.9,70.1]@SNR8 | `bfaa1254fdb0…6e878e25409` |
+| arcata | Urbano — fibra de telecom (ver nota "Ambiente de arcata, sourceado 2026-08-01" abajo) | 3,020 | 5.104762077331543 m | 15,411.28 m (15.41 km) | 100.0 Hz | **8.00** | [5.2,36.0]@SNR5 / [29.9,70.1]@SNR8 | `bfaa1254fdb0…6e878e25409` |
 
 **Actualización 2026-07-31 (QA gate, item 1/2 del cierre)**: `monterey_bay`
 y `ridgecrest_north` re-medidos con `--files` explícito + provenance
@@ -168,10 +169,40 @@ sintético sobre el mismo pool de ruido real, restringida a la geometría
 consistente con la que la instalación fue caracterizada; se trata como
 corrección de medición, no como hallazgo de validación nuevo.
 
-**Pendiente (fase de paper, no ahora)**: sourcear el ambiente de arcata
-desde la documentación de GorDAS/`quakeflow_das` antes de que esta tabla
-alimente cualquier claim tipo "ningún proxy geométrico/de ambiente
-predice SNR50" — ese claim exige los 8 ambientes sourceados, no 7 de 8
-con uno inferido o inventado. No se completa acá con un valor sin fuente
-primaria (mismo criterio que Brno en `docs/snr50_extension_fase1.md`
-F1.2b).
+**Ambiente de arcata, sourceado 2026-08-01 (cierra el pendiente de
+fase de paper)**: la investigación de census F1.2 (`docs/snr50_extension_fase1.md`)
+ya había identificado que "GorDAS" y `arcata` son el mismo array físico
+(conteo de archivos de evento idéntico, 2,470), pero nunca se leyó la
+documentación de GorDAS en sí para extraer el ambiente — solo se usó
+para descartar un candidato duplicado. Hecho ahora:
+
+- **Fuente primaria**: McGuire, J.J. et al. (2025), "The GorDAS
+  Distributed Acoustic Sensing Experiment Above the Cascadia Locked
+  Zone and Subducted Gorda Slab", *Seismological Research Letters*
+  96(4): 2489–2503, DOI [10.1785/0220240415](https://doi.org/10.1785/0220240415).
+  Cita textual del abstract (verificada por fetch directo de la página
+  de USGS que reproduce el abstract,
+  `usgs.gov/publications/gordas-distributed-acoustic-sensing-experiment-above-cascadia-locked-zone-and`):
+  **"We have begun a long-term DAS monitoring experiment on buried
+  telecom fiber in Arcata, California."**
+- **Ubicación e infraestructura**, de la ficha de datos USGS asociada
+  (fetch directo, verbatim): interrogador **Luna QuantX** instalado en
+  la **Arcata Police Station**, conectado a **"fiber owned by Vero
+  Communications that runs from Arcata to Eureka"** (`usgs.gov/data/arcata-california-distributed-acoustic-sensing-das-experiment-2022-m64-ferndale-aftershock`).
+  Cable de ~15 km — coincide con la apertura ya medida acá
+  (15,411.28 m), evidencia adicional de que es el mismo array.
+- **Corroboración independiente**: el dataset card de
+  `huggingface.co/datasets/AI4EPS/quakeflow_das` (fetch directo) cita
+  el mismo par de datasets USGS y el mismo paper de McGuire et al. 2025
+  como fuente del subset "Arcata", describiéndolo como "telecom fiber
+  rather than dedicated research infrastructure".
+- **Clasificación adoptada: "Urbano — fibra de telecom"** (Vero
+  Communications, Arcata↔Eureka, CA) — mismo tipo que FOSSA/Stanford-2
+  en esta tabla. **Precisión honesta, no silenciada**: ninguna de las
+  fuentes con fetch directo y verificable usa literalmente la palabra
+  "dark"/"oscura" (sí apareció en una síntesis de búsqueda que no pude
+  re-verificar abriendo la página fuente original, así que no se cita
+  como si fuera texto confirmado) — la clasificación se apoya en el
+  hecho verificado de que es fibra de un operador de telecomunicaciones
+  comercial (no trinchera dedicada, no borehole, no submarino), no en
+  la palabra exacta "oscura".
