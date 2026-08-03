@@ -82,14 +82,44 @@ EXPECTED_SNR50 = {
     "arcata": 8.00,
 }
 
-# Cota B (docs/plan_fase2_paper.md §2.5 / QA_REPORT.md 3.3): los 3 arrays de
-# provenance pre-F1.1 libres en un rango arbitrario compartido.
-COTA_B_FREE_ARRAYS = ("monterey_bay", "ridgecrest_north", "arcata")
+# Cota B: rango arbitrario compartido [0.5, 15.0], PARAMETRIZADO en dos
+# conjuntos con nombres literales -- cuál va al paper es decisión de Alex,
+# este módulo no elige, emite las dos (Comanda F2.A2, rev. 3, tarea 1):
+#
+#   SET_QA33: el conjunto que `QA_REPORT.md` §3.3 nombra EXPLÍCITAMENTE
+#   ("monterey_bay, ridgecrest_north Y arcata") -- los 3 que ese párrafo
+#   etiqueta "provenance pre-F1.1", aunque esa etiqueta contradiga a QA-05/
+#   §2.5 (ver docs/QA_REPORT.md, fe de erratas 2026-08-02).
+#
+#   SET_PRE_F11: los 4 arrays que QA-05/§2.5 identifican como provenance
+#   REALMENTE incompleta antes de F1.1 (monterey_bay, ridgecrest_north,
+#   stanford1_campus) MÁS arcata (que entró por heterogeneidad de
+#   geometría, no por provenance, pero comparte el mismo tratamiento de
+#   re-medición) -- el conjunto que la etiqueta "los 3/4 arrays pre-F1.1"
+#   señala si se sigue la definición de QA-05 en vez de la prosa de §3.3.
 COTA_B_FREE_RANGE = (0.5, 15.0)
+COTA_B_SETS: dict[str, tuple[str, ...]] = {
+    "SET_QA33": ("monterey_bay", "ridgecrest_north", "arcata"),
+    "SET_PRE_F11": ("monterey_bay", "ridgecrest_north", "stanford1_campus", "arcata"),
+}
 
-# Umbral crítico de referencia (tablas estándar de rho de Spearman, n=8, dos
-# colas, alfa=0.05) -- citado, no derivado acá.
-CRITICAL_RHO_N8_TWO_TAILED = 0.7381
+# Convención de rangos usada en TODO este módulo para Spearman: Pearson
+# sobre rangos promedio (empates comparten el rango medio) -- equivalente
+# a `scipy.stats.spearmanr` (que este proyecto no depende de: implementado
+# a mano, ver `_rankdata_average`/`spearman_rho`). Se declara explícita acá
+# porque `dx` y `fs` tienen empates REALES en la serie de 8 (dx: 2.0m en
+# FOSSA/FORESEE, 8.16m en Stanford-2/stanford1_campus; fs: 250.0Hz en
+# Valencia/Stanford-2, 100.0Hz en ridgecrest_north/stanford1_campus/arcata)
+# -- la fórmula clásica de Spearman por suma de diferencias al cuadrado
+# (Σd²) NO es válida con empates sin la corrección de rangos promedio, y
+# usar rangos ORDINALES en vez de promedio cambia el resultado (0.6667 vs
+# 0.6506 para Cota B/fs, SET_QA33 -- ver Comanda F2.A2 rev. 3, tarea 4).
+RANK_CONVENTION = (
+    "Pearson sobre rangos promedio (empates comparten rango medio), "
+    "equivalente a scipy.stats.spearmanr -- NO la fórmula Σd² con rangos "
+    "ordinales, que da resultados distintos cuando hay empates (dx y fs "
+    "los tienen en esta serie de 8)."
+)
 
 
 def sha256_file(path: str) -> str:
@@ -237,21 +267,154 @@ def cota_a(envelopes: dict[str, tuple[float, float]]) -> dict:
     )
 
 
-def cota_b(point_snr50: dict[str, float]) -> dict:
-    """Cota de robustez original (QA_REPORT.md 3.3): los 3 arrays de
-    provenance pre-F1.1 libres en [0.5, 15.0] compartido; el resto fijo en
-    su SNR50 medido."""
+def cota_b(point_snr50: dict[str, float], free_arrays: tuple[str, ...]) -> dict:
+    """Cota de robustez con un conjunto NOMBRADO de arrays libres en
+    `COTA_B_FREE_RANGE` compartido; el resto fijo en su SNR50 medido.
+    `free_arrays` es siempre explícito -- este módulo no elige entre
+    SET_QA33/SET_PRE_F11, los calcula ambos (ver `COTA_B_SETS`)."""
     intervals = {}
     for a in ARRAY_IDS:
-        intervals[a] = (
-            COTA_B_FREE_RANGE if a in COTA_B_FREE_ARRAYS else (point_snr50[a], point_snr50[a])
-        )
+        intervals[a] = COTA_B_FREE_RANGE if a in free_arrays else (point_snr50[a], point_snr50[a])
     orderings = enumerate_linear_extensions(intervals, ARRAY_IDS)
     return dict(
-        free_arrays=list(COTA_B_FREE_ARRAYS),
+        free_arrays=list(free_arrays),
         free_range=list(COTA_B_FREE_RANGE),
         n_orderings_feasible=len(orderings),
         max_abs_rho=max_abs_rho_per_proxy(orderings, ARRAY_IDS),
+    )
+
+
+def spread_bound(envelopes: dict[str, tuple[float, float]]) -> dict:
+    """Cociente max(SNR50)/min(SNR50) mínimo y máximo alcanzables con los 8
+    SNR50 libres, cada uno dentro de su propia envolvente -- a precisión
+    COMPLETA de la envolvente calculada (nunca redondeada antes de dividir;
+    redondear el numerador/denominador por separado antes de dividir es
+    justamente lo que produce la sensibilidad de redondeo que motivó este
+    cálculo: 3.4974x con envolventes a 2 decimales vs 3.5062x a 4).
+
+    Para un conjunto de intervalos independientes [lo_a, hi_a]:
+      - el menor `max(valores)` alcanzable es max_a(lo_a) (el "cuello de
+        botella" es el array con el lo_a más alto -- ningún otro puede
+        bajar más allá de su propio lo, así que el máximo del conjunto no
+        puede bajar de ahí; y SÍ es alcanzable, moviendo cada otro array a
+        un valor <= ese umbral dentro de su propio intervalo).
+      - el mayor `min(valores)` alcanzable es min_a(hi_a) (simétrico: el
+        cuello de botella es el array con el hi_a más bajo).
+    El cociente MÍNIMO alcanzable de max/min es entonces
+    max_a(lo_a) / min_a(hi_a); el MÁXIMO alcanzable es
+    max_a(hi_a) / min_a(lo_a) (mismo argumento, extremos opuestos).
+    """
+    los = {a: float(envelopes[a][0]) for a in ARRAY_IDS}
+    his = {a: float(envelopes[a][1]) for a in ARRAY_IDS}
+
+    bottleneck_lo_array = max(los, key=lambda a: los[a])  # fuerza el mínimo del max alcanzable
+    bottleneck_hi_array = min(his, key=lambda a: his[a])  # fuerza el máximo del min alcanzable
+    ceiling_array = max(his, key=lambda a: his[a])
+    floor_array = min(los, key=lambda a: los[a])
+
+    min_ratio = los[bottleneck_lo_array] / his[bottleneck_hi_array]
+    max_ratio = his[ceiling_array] / los[floor_array]
+
+    return dict(
+        min_ratio_exact=min_ratio,
+        max_ratio_exact=max_ratio,
+        min_ratio_achieved_by=dict(
+            numerator_array=bottleneck_lo_array,
+            numerator_value=los[bottleneck_lo_array],
+            denominator_array=bottleneck_hi_array,
+            denominator_value=his[bottleneck_hi_array],
+        ),
+        max_ratio_achieved_by=dict(
+            numerator_array=ceiling_array,
+            numerator_value=his[ceiling_array],
+            denominator_array=floor_array,
+            denominator_value=los[floor_array],
+        ),
+        note=(
+            "Calculado sobre la envolvente a precisión COMPLETA (float de "
+            "wilson_ci, sin redondear numerador ni denominador antes de "
+            "dividir). Redondear la envolvente ANTES de dividir es lo que "
+            "produce discrepancias en el 2do-3er decimal (3.4974x a 2 "
+            "decimales de envolvente vs 3.5062x a 4, ambos distintos del "
+            "valor exacto de acá). Para un claim defendible 'el spread es "
+            "AL MENOS X', usar floor() (truncar, no redondear) del valor "
+            "exacto a la cantidad de decimales que se vaya a publicar -- "
+            "truncar hacia abajo preserva la propiedad 'al menos' para "
+            "cualquier cantidad de decimales; redondear (que puede subir) "
+            "no la preserva."
+        ),
+    )
+
+
+def derive_critical_rho_n8_two_tailed(alpha: float = 0.05) -> dict:
+    """Umbral crítico de rho de Spearman para n=8, dos colas, RE-DERIVADO
+    por enumeración exacta de las 8!=40,320 permutaciones (no heredado de
+    una tabla citada) -- test de permutación exacto, la definición estándar
+    para Spearman con n tan chico que la aproximación normal no aplica.
+
+    Sin empates (una permutación de rangos 1..8 contra la identidad),
+    rho = 1 - 6*Sum(d_i^2)/(n*(n^2-1)) exacto (fórmula clásica, válida acá
+    porque no hay empates dentro de una permutación pura). Para cada
+    Sum(d^2) alcanzable (par, por paridad de la suma de desplazamientos),
+    el p-valor de dos colas convencional es 2 * P(rho >= rho_observado)
+    bajo la nula de permutación uniforme (el factor 2 sobre la cola
+    simple, NO "P(|rho|>=t)" contado directo -- ambas definiciones
+    coinciden en distribuciones perfectamente simétricas salvo por cómo
+    caen los valores discretos en el borde; se usa la convención de la
+    literatura/tablas estándar, verificada exacta contra los dos puntos de
+    referencia del pre-registro: Sum(d^2)=22 -> p=0.04583, Sum(d^2)=24 ->
+    p=0.05759).
+
+    Devuelve el rho crítico más alto (Sum(d^2) más chico) cuyo p de dos
+    colas no supera `alpha`, junto con el primer candidato que SÍ lo
+    supera (para mostrar que el umbral es el borde exacto, no un valor de
+    conveniencia).
+    """
+    import itertools
+    from collections import Counter
+
+    n = 8
+    ref = list(range(1, n + 1))
+    counts: Counter[int] = Counter()
+    for perm in itertools.permutations(ref):
+        d2 = sum((perm[i] - ref[i]) ** 2 for i in range(n))
+        counts[d2] += 1
+    total = sum(counts.values())
+    denom = n * (n * n - 1)
+
+    def rho_of(d2: int) -> float:
+        return 1 - 6 * d2 / denom
+
+    def two_tailed_p(d2: int) -> float:
+        rho = rho_of(d2)
+        one_tailed = sum(c for dd, c in counts.items() if rho_of(dd) >= rho) / total
+        return 2 * one_tailed
+
+    candidates = sorted(counts.keys())
+    critical = None
+    first_rejected = None
+    for d2 in candidates:
+        p = two_tailed_p(d2)
+        if p <= alpha:
+            critical = (d2, rho_of(d2), p)
+        else:
+            first_rejected = (d2, rho_of(d2), p)
+            break
+
+    if critical is None:
+        raise RuntimeError("ningún Sum(d^2) calificó -- revisar alpha/enumeración")
+
+    return dict(
+        n=n,
+        alpha=alpha,
+        total_permutations=total,
+        method="enumeración exacta de las 8! permutaciones, p de dos colas = 2*P(rho>=rho_obs)",
+        critical_sum_d2=critical[0],
+        critical_rho=critical[1],
+        critical_p=critical[2],
+        first_rejected_sum_d2=first_rejected[0] if first_rejected else None,
+        first_rejected_rho=first_rejected[1] if first_rejected else None,
+        first_rejected_p=first_rejected[2] if first_rejected else None,
     )
 
 
@@ -338,9 +501,14 @@ def build_report() -> dict:
             tolerance=1e-6,
             all_pass=all(row["aperture_invariant_ok"] for row in arrays_out),
         ),
+        rank_convention=RANK_CONVENTION,
         cota_a=cota_a(envelopes),
-        cota_b=cota_b(point_snr50),
-        critical_rho_n8_two_tailed=CRITICAL_RHO_N8_TWO_TAILED,
+        cota_b={
+            set_name: cota_b(point_snr50, free_arrays)
+            for set_name, free_arrays in COTA_B_SETS.items()
+        },
+        spread_bound=spread_bound(envelopes),
+        critical_rho_n8_two_tailed=derive_critical_rho_n8_two_tailed(),
     )
     return report
 
@@ -384,17 +552,32 @@ def main() -> None:
     for proxy, rho in ca["max_abs_rho"].items():
         print(f"  max|rho| {proxy:12s} = {rho:.4f}")
 
-    cb = report["cota_b"]
-    print(
-        f"\nCota B ({', '.join(cb['free_arrays'])} libres en {cb['free_range']}): "
-        f"{cb['n_orderings_feasible']} ordenamientos factibles"
-    )
-    for proxy, rho in cb["max_abs_rho"].items():
-        print(f"  max|rho| {proxy:12s} = {rho:.4f}")
+    for set_name, cb in report["cota_b"].items():
+        print(
+            f"\nCota B [{set_name}] ({', '.join(cb['free_arrays'])} libres en "
+            f"{cb['free_range']}): {cb['n_orderings_feasible']} ordenamientos factibles"
+        )
+        for proxy, rho in cb["max_abs_rho"].items():
+            print(f"  max|rho| {proxy:12s} = {rho:.4f}")
 
+    sb = report["spread_bound"]
     print(
-        f"\nUmbral crítico de referencia (n=8, dos colas): {report['critical_rho_n8_two_tailed']}"
+        f"\nCota de spread (max/min SNR50, envolvente completa, precisión exacta):\n"
+        f"  mínimo alcanzable = {sb['min_ratio_exact']:.10f}\n"
+        f"  máximo alcanzable = {sb['max_ratio_exact']:.10f}"
     )
+
+    cr = report["critical_rho_n8_two_tailed"]
+    print(
+        f"\nUmbral crítico (n=8, dos colas, alfa={cr['alpha']}, re-derivado por "
+        f"enumeración de {cr['total_permutations']} permutaciones):\n"
+        f"  Sum(d^2)={cr['critical_sum_d2']} -> rho={cr['critical_rho']:.4f}, "
+        f"p={cr['critical_p']:.5f}\n"
+        f"  siguiente candidato: Sum(d^2)={cr['first_rejected_sum_d2']} -> "
+        f"rho={cr['first_rejected_rho']:.4f}, p={cr['first_rejected_p']:.5f} (no califica)"
+    )
+
+    print(f"\nConvención de rangos usada: {report['rank_convention']}")
 
     out_path = os.path.abspath(args.out)
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)

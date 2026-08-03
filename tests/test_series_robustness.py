@@ -13,14 +13,16 @@ import pytest
 
 from darkfiber.series_robustness import (
     ARRAY_IDS,
-    CRITICAL_RHO_N8_TWO_TAILED,
+    COTA_B_SETS,
     EXPECTED_SNR50,
     GEOMETRY,
     build_report,
     compute_envelope,
+    derive_critical_rho_n8_two_tailed,
     enumerate_linear_extensions,
     load_curve_json,
     spearman_rho,
+    spread_bound,
 )
 
 # Envolventes de referencia del pre-registro (docs/plan_fase2_paper.md §2.3),
@@ -109,25 +111,107 @@ def test_cota_a_max_rho_matches_reference(report):
 
 
 def test_cota_a_never_crosses_critical_threshold(report):
+    critical_rho = report["critical_rho_n8_two_tailed"]["critical_rho"]
     for rho in report["cota_a"]["max_abs_rho"].values():
-        assert rho < CRITICAL_RHO_N8_TWO_TAILED
+        assert rho < critical_rho
 
 
-def test_cota_b_never_crosses_critical_threshold(report):
-    for rho in report["cota_b"]["max_abs_rho"].values():
-        assert rho < CRITICAL_RHO_N8_TWO_TAILED
+def test_cota_b_set_qa33_never_crosses_critical_threshold(report):
+    critical_rho = report["critical_rho_n8_two_tailed"]["critical_rho"]
+    for rho in report["cota_b"]["SET_QA33"]["max_abs_rho"].values():
+        assert rho < critical_rho
 
 
-def test_cota_b_is_deterministic_and_reproducible(report):
-    """El valor de referencia externo para Cota B/fs (0.6545, QA_REPORT.md
+def test_cota_b_set_pre_f11_DOES_cross_critical_threshold(report):
+    """HALLAZGO SUSTANTIVO, no un test que deba forzarse a pasar de otra
+    forma: bajo SET_PRE_F11 (4 arrays libres en vez de 3), 3 de los 4
+    proxies SÍ superan el umbral crítico (n_ch 0.881, aperture_m 0.952,
+    fs 0.970 -- todos > 0.7381; solo dx 0.494 se mantiene debajo). Esto
+    importa directo para la decisión pendiente de Alex (tarea 1 de la
+    Comanda F2.A2 rev.3): si SET_PRE_F11 es el conjunto correcto según la
+    definición de QA-05, el claim de robustez del negativo NO se sostiene
+    para ese conjunto -- se documenta explícitamente, no se oculta
+    debilitando este test."""
+    critical_rho = report["critical_rho_n8_two_tailed"]["critical_rho"]
+    rho = report["cota_b"]["SET_PRE_F11"]["max_abs_rho"]
+    assert rho["n_ch"] > critical_rho
+    assert rho["aperture_m"] > critical_rho
+    assert rho["fs"] > critical_rho
+    assert rho["dx"] < critical_rho
+
+
+def test_cota_b_sets_are_parametrized_not_chosen(report):
+    """Comanda F2.A2 rev.3, tarea 1: el módulo no elige entre SET_QA33 y
+    SET_PRE_F11 -- emite las dos. Nunca elegir por Alex."""
+    assert set(COTA_B_SETS) == {"SET_QA33", "SET_PRE_F11"}
+    assert set(report["cota_b"]) == {"SET_QA33", "SET_PRE_F11"}
+    assert COTA_B_SETS["SET_QA33"] == ("monterey_bay", "ridgecrest_north", "arcata")
+    assert COTA_B_SETS["SET_PRE_F11"] == (
+        "monterey_bay",
+        "ridgecrest_north",
+        "stanford1_campus",
+        "arcata",
+    )
+
+
+def test_cota_b_set_qa33_is_deterministic_and_reproducible(report):
+    """El valor de referencia externo para esta lista (0.6545, QA_REPORT.md
     3.3) NO se fuerza acá -- fue calculado fuera del repo, sin código. Este
     test fija el valor que el módulo REALMENTE deriva (verificado por dos
     métodos independientes: esta enumeración exhaustiva y una búsqueda
     aleatoria de 200k puntos en el prototipo de esta sesión, ambos de
     acuerdo en 0.6506, no en 0.6545) -- como regresión, no como reclamo de
     que 0.6545 esté mal fuera de este módulo."""
-    assert report["cota_b"]["max_abs_rho"]["fs"] == pytest.approx(0.6506, abs=5e-4)
-    assert report["cota_b"]["n_orderings_feasible"] == 336
+    cb = report["cota_b"]["SET_QA33"]
+    assert cb["n_orderings_feasible"] == 336
+    assert cb["max_abs_rho"]["fs"] == pytest.approx(0.6506, abs=5e-4)
+
+
+def test_cota_b_set_pre_f11_matches_comanda_reference(report):
+    """Comanda F2.A2 rev.3, tarea 1: SET_PRE_F11 esperado 1,680
+    ordenamientos, max|rho| 0.9698 (fs)."""
+    cb = report["cota_b"]["SET_PRE_F11"]
+    assert cb["n_orderings_feasible"] == 1680
+    assert cb["max_abs_rho"]["fs"] == pytest.approx(0.9698, abs=5e-4)
+
+
+def test_spread_bound_min_ratio_matches_comanda_reference(report):
+    """Comanda F2.A2 rev.3, tarea 2: a precisión completa el mínimo da
+    ~3.5062 (el ejemplo con envolventes redondeadas a 4 decimales daba
+    3.5062x; a 2 decimales daba 3.4974x -- la diferencia es justamente el
+    punto de la tarea, por eso se calcula a precisión completa acá)."""
+    sb = report["spread_bound"]
+    assert sb["min_ratio_exact"] == pytest.approx(3.5061978766918225, abs=1e-9)
+    assert sb["min_ratio_achieved_by"]["numerator_array"] == "stanford1_campus"
+    assert sb["min_ratio_achieved_by"]["denominator_array"] == "monterey_bay"
+
+
+def test_spread_bound_max_ratio(report):
+    sb = report["spread_bound"]
+    assert sb["max_ratio_exact"] == pytest.approx(7.444480411580644, abs=1e-9)
+
+
+def test_spread_bound_min_below_point_spread_below_max(report):
+    """El puntual (5.33x) debe caer DENTRO de [mínimo, máximo] alcanzables --
+    si no, algo está mal en la lógica de cuellos de botella."""
+    sb = report["spread_bound"]
+    point_spread = 8.00 / 1.50
+    assert sb["min_ratio_exact"] < point_spread < sb["max_ratio_exact"]
+
+
+def test_critical_rho_rederivation_matches_comanda_reference():
+    """Comanda F2.A2 rev.3, tarea 3: Sum(d^2)=22 -> rho=0.7381, p=0.04583;
+    el siguiente candidato Sum(d^2)=24 -> rho=0.7143, p=0.05759, no
+    califica. Re-derivado por enumeración exacta de las 8!=40,320
+    permutaciones, no heredado de una tabla citada."""
+    cr = derive_critical_rho_n8_two_tailed()
+    assert cr["total_permutations"] == 40320
+    assert cr["critical_sum_d2"] == 22
+    assert cr["critical_rho"] == pytest.approx(0.7380952380952381, abs=1e-12)
+    assert cr["critical_p"] == pytest.approx(0.04583, abs=5e-5)
+    assert cr["first_rejected_sum_d2"] == 24
+    assert cr["first_rejected_rho"] == pytest.approx(0.7142857142857143, abs=1e-12)
+    assert cr["first_rejected_p"] == pytest.approx(0.05759, abs=5e-5)
 
 
 def test_spearman_rho_no_ties_matches_manual_formula():
@@ -163,6 +247,34 @@ def test_enumerate_linear_extensions_toy_example():
     # C se solapa con A y con B -> debe poder ir en más de una posición
     positions_of_c = {order.index("C") for order in orderings}
     assert len(positions_of_c) >= 2
+
+
+def test_spread_bound_toy_example_bottleneck_logic():
+    """Ejemplo chico, a mano: A=[1,2], B=[3,4] (disjuntos), C=[1.5,3.5]
+    (se solapa con ambos). min(max/min) debe ser max(los)/min(his) =
+    max(1,3,1.5)/min(2,4,3.5) = 3/2 = 1.5. max(max/min) = max(his)/min(los)
+    = 4/1 = 4.0."""
+    toy_envelopes = {
+        "monterey_bay": (1.0, 2.0),
+        "foresee": (3.0, 4.0),
+        "stanford2_sandhill": (1.5, 3.5),
+        "valencia_submarine": (1.0, 2.0),
+        "ridgecrest_north": (1.0, 2.0),
+        "fossa": (1.0, 2.0),
+        "stanford1_campus": (1.0, 2.0),
+        "arcata": (1.0, 2.0),
+    }
+    sb = spread_bound(toy_envelopes)
+    assert sb["min_ratio_exact"] == pytest.approx(3.0 / 2.0, abs=1e-12)
+    assert sb["max_ratio_exact"] == pytest.approx(4.0 / 1.0, abs=1e-12)
+
+
+def test_rank_convention_is_declared(report):
+    """Comanda F2.A2 rev.3, tarea 4: declarar explícitamente Pearson sobre
+    rangos promedio (equivalente a scipy.stats.spearmanr)."""
+    assert "rank_convention" in report
+    assert "scipy" in report["rank_convention"].lower()
+    assert "promedio" in report["rank_convention"].lower()
 
 
 def test_report_output_schema_uses_envelope_not_ci_label(report):

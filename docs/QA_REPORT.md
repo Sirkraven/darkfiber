@@ -29,7 +29,8 @@ medición de arcata — la discrepancia de reproducibilidad (arcata Y
 ridgecrest_north) es de lista de archivos de la era pre-F1.1, no de
 código, y el claim central de la serie es robusto incluso si esos 3
 arrays estuvieran mal medidos (máximo ρ alcanzable en el peor caso:
-0.65, no cruza 0.7381).
+~~0.65~~ **0.6506** — corregido 2026-08-02, no cruza 0.7381; ver 3.3
+para el detalle y la fe de erratas completa).
 
 **Addendum 2026-08-01 (Bloque 4, ver 2.6/2.8/2.9)**: cerrar QA-06 (CI
 verificable) resultó ser tres hallazgos independientes apilados, no
@@ -293,9 +294,42 @@ Conclusión no cambia. Fe de erratas ya en `docs/observaciones.md`
 no tomado de la palabra de nadie)**: dejando que monterey_bay,
 ridgecrest_north Y arcata (los 3 arrays de provenance pre-F1.1) tomen
 CUALQUIER SNR50 en `[0.5,15.0]` simultáneamente, el máximo `|ρ|`
-alcanzable por cualquiera de los 4 proxies es **0.6545 (fs)** — no
+alcanzable por cualquiera de los 4 proxies es ~~**0.6545 (fs)**~~ — no
 cruza 0.7381 ni en el peor caso posible. Registrado en
 `docs/observaciones.md` 2026-07-31.
+
+**⚠️ Superseded 2026-08-02**: el 0.6545 de arriba **no reproduce**.
+Implementado en código commiteado y testeado
+(`src/darkfiber/series_robustness.py`, `cota_b`, ver
+`docs/plan_fase2_paper.md` §2.5 / Comanda F2.A2), verificado por
+enumeración exhaustiva de extensiones lineales (336 ordenamientos
+factibles para esta lista exacta) Y por una búsqueda aleatoria
+independiente de 200,000 puntos — ambos métodos coinciden en
+**0.6506 (fs)**, no 0.6545. Re-verificado además bajo las cuatro
+convenciones de ranking posibles (Pearson sobre rangos promedio ==
+`scipy.stats.spearmanr`, fórmula Σd² con rangos promedio, fórmula Σd²
+con rangos ordinales, Pearson sobre rangos ordinales): **ninguna de
+las cuatro da 0.6545** (0.6506 / 0.6012 / 0.6667 / 0.6667
+respectivamente). Es un error numérico genuino de cuando este cálculo
+se hizo fuera de código — no cambia la conclusión (0.6506 tampoco
+cruza 0.7381), pero el número exacto estaba mal. Valor correcto:
+**0.6506 (fs)**.
+
+**Nota de contradicción, sin resolver acá (decisión de Alex, ver
+`docs/plan_fase2_paper.md` F2.0/D3)**: este párrafo llama a
+`{monterey_bay, ridgecrest_north, arcata}` "los 3 arrays de provenance
+pre-F1.1" — pero **2.5/QA-05 identifican como provenance
+REALMENTE incompleta pre-F1.1** a `{monterey_bay, ridgecrest_north,
+stanford1_campus}` (arcata entró por heterogeneidad de geometría, no
+por provenance). Son dos definiciones distintas del mismo apodo. El
+módulo de código ahora calcula AMBAS explícitamente
+(`SET_QA33`/`SET_PRE_F11`, esta última con `stanford1_campus` en vez
+de o además de arcata) y no elige cuál va al paper — hallazgo
+sustantivo: bajo la definición de QA-05 (`SET_PRE_F11`, 4 arrays
+libres), el máximo `|ρ|` **SÍ cruza 0.7381** en 3 de los 4 proxies
+(n_ch 0.8810, apertura 0.9524, fs 0.9698 — solo `dx` 0.4940 se
+mantiene debajo). El claim de robustez del negativo depende de cuál
+definición se adopte.
 
 **3.4 — Investigación B5 (arcata 5.90 vs. reconstrucción 7.33) —
 CERRADA**:
@@ -321,10 +355,17 @@ CERRADA**:
   que reproduciría los valores archivados — límite de reproducibilidad
   de la era pre-F1.1, declarado, no resuelto.
 - **3.2**: arcata 5.90 → **"superseded Y NO REPRODUCIBLE"**.
-  ridgecrest_north 2.50 → sigue vigente (no se re-mide) pero anotado
+  ridgecrest_north 2.50 → ~~sigue vigente (no se re-mide)~~ pero anotado
   con el mismo caveat de no-reproducibilidad con las herramientas
   actuales. Ambos en `docs/observaciones.md`/`docs/array_geometry_table.md`
   2026-07-31.
+  **⚠️ Superseded 2026-08-02**: "sigue vigente (no se re-mide)" quedó
+  obsoleto el mismo 2026-07-31, más tarde el mismo día — el gate de QA
+  SÍ re-midió ridgecrest_north (junto con monterey_bay) y adoptó
+  **2.67**, exactamente como ya documenta `docs/array_geometry_table.md`
+  con su propia fe de erratas del 2026-08-01. Este `QA_REPORT.md` nunca
+  recibió esa corrección; queda hecha acá. El valor vigente de
+  ridgecrest_north es **2.67**, no 2.50.
 
 **3.5 — Verificación final de hashes**: recalculados los 8 sha256
 contra lo documentado — **los 7 no tocados coinciden exacto**; arcata

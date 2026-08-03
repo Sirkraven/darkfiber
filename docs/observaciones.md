@@ -332,11 +332,25 @@ en `[0.5, 15.0]` simultáneamente (barrido de todas las combinaciones de
 Valencia/FOSSA/stanford1_campus — Spearman solo depende del orden, así
 que alcanza con probar una posición por cada hueco entre valores fijos,
 no un continuo), el **máximo ρ alcanzable en valor absoluto por
-cualquiera de los 4 proxies es 0.6545 (fs)** — confirmado por cómputo
-exhaustivo, no estimado. **Ninguno cruza 0.7381** en el peor caso
-posible. El claim central ("ningún proxy geométrico/de muestreo predice
-SNR50") es robusto a que los 3 arrays con provenance más débil de toda
-la serie estén completamente equivocados.
+cualquiera de los 4 proxies es** ~~**0.6545 (fs)**~~ — confirmado por
+cómputo exhaustivo, no estimado. **Ninguno cruza 0.7381** en el peor
+caso posible. El claim central ("ningún proxy geométrico/de muestreo
+predice SNR50") es robusto a que los 3 arrays con provenance más débil
+de toda la serie estén completamente equivocados.
+
+**⚠️ Superseded 2026-08-02**: el 0.6545 no reproduce. Re-implementado en
+código commiteado y testeado (`src/darkfiber/series_robustness.py`,
+Comanda F2.A2) sobre esta misma lista exacta
+(`monterey_bay, ridgecrest_north, arcata`): 336 ordenamientos
+factibles, **máximo |ρ| = 0.6506 (fs)**, verificado por dos métodos
+independientes (enumeración exhaustiva de extensiones lineales +
+búsqueda aleatoria de 200,000 puntos) y re-chequeado bajo las cuatro
+convenciones de ranking posibles — ninguna da 0.6545 (0.6506 / 0.6012 /
+0.6667 / 0.6667). La conclusión no cambia (0.6506 tampoco cruza
+0.7381), el número exacto sí. Ver `docs/QA_REPORT.md` 3.3 para la fe de
+erratas completa y la nota sobre la contradicción de qué 3 (o 4) arrays
+son "provenance pre-F1.1" (QA-05 nombra a `stanford1_campus`, no a
+`arcata`, como el tercero).
 
 ## 2026-07-31 — QA-2.3 CERRADO: determinismo total confirmado, descarta aleatoriedad sin sembrar como causa de B5 en TODA la serie
 
