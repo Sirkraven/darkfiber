@@ -1,0 +1,317 @@
+{
+  "array_id": "ridgecrest_north",
+  "threshold": 8.0,
+  "threshold_source": "perfil del arreglo (calibrate.py --apply)",
+  "snr_steps": [
+    1.0,
+    2.0,
+    3.0,
+    5.0,
+    8.0,
+    12.0,
+    20.0
+  ],
+  "n_per_step": 20,
+  "curve": [
+    {
+      "snr": 1.0,
+      "n": 20,
+      "hits": 0,
+      "recall": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.16112515805281938
+    },
+    {
+      "snr": 2.0,
+      "n": 20,
+      "hits": 2,
+      "recall": 0.1,
+      "ci_low": 0.027866481213768224,
+      "ci_high": 0.3010336452284873
+    },
+    {
+      "snr": 3.0,
+      "n": 20,
+      "hits": 14,
+      "recall": 0.7,
+      "ci_low": 0.4810271816464765,
+      "ci_high": 0.8545227551323956
+    },
+    {
+      "snr": 5.0,
+      "n": 20,
+      "hits": 16,
+      "recall": 0.8,
+      "ci_low": 0.5839825677481064,
+      "ci_high": 0.919342337420202
+    },
+    {
+      "snr": 8.0,
+      "n": 20,
+      "hits": 17,
+      "recall": 0.85,
+      "ci_low": 0.6395811352592431,
+      "ci_high": 0.9476312541037835
+    },
+    {
+      "snr": 12.0,
+      "n": 20,
+      "hits": 12,
+      "recall": 0.6,
+      "ci_low": 0.38658150076225317,
+      "ci_high": 0.7811934676271829
+    },
+    {
+      "snr": 20.0,
+      "n": 20,
+      "hits": 16,
+      "recall": 0.8,
+      "ci_low": 0.5839825677481064,
+      "ci_high": 0.919342337420202
+    }
+  ],
+  "snr50": 2.666666666666667,
+  "runtime_s": 264.0335681999568,
+  "format": "auto",
+  "hdf5_key": null,
+  "channel_range": null,
+  "input_files": [
+    "ci37280444.h5",
+    "ci37283964.h5",
+    "ci38595194.h5",
+    "ci38609250.h5",
+    "ci39268999.h5",
+    "ci39274823.h5",
+    "ci39276375.h5",
+    "ci39280383.h5",
+    "ci39287087.h5",
+    "ci39491040.h5",
+    "ci39493944.h5",
+    "ci39495248.h5"
+  ],
+  "input_files_explicit_list": true,
+  "noise_exclusion": {
+    "margin_s": 5.0,
+    "manual_exclude_s": null,
+    "sources": [
+      {
+        "file": "ci37280444.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci37280444.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci37283964.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci37283964.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci38595194.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci38595194.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci38609250.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci38609250.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39268999.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39268999.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39274823.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39274823.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39276375.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39276375.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39280383.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39280383.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39287087.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39287087.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39491040.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39491040.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39493944.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39493944.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39495248.h5",
+        "segment_s": [
+          0.0,
+          25.0
+        ],
+        "duration_s": 25.0,
+        "exclusion_kind": "event_time_index"
+      },
+      {
+        "file": "ci39495248.h5",
+        "segment_s": [
+          35.0,
+          120.0
+        ],
+        "duration_s": 85.0,
+        "exclusion_kind": "event_time_index"
+      }
+    ]
+  },
+  "trial_diagnostics": null,
+  "complete": true
+}

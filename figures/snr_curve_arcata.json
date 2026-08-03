@@ -1,0 +1,211 @@
+{
+  "array_id": "arcata",
+  "threshold": 4.0,
+  "threshold_source": "default global (sin propuesta aplicada)",
+  "snr_steps": [
+    1.0,
+    2.0,
+    3.0,
+    5.0,
+    8.0,
+    12.0,
+    20.0
+  ],
+  "n_per_step": 20,
+  "curve": [
+    {
+      "snr": 1.0,
+      "n": 20,
+      "hits": 0,
+      "recall": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.16112515805281938
+    },
+    {
+      "snr": 2.0,
+      "n": 20,
+      "hits": 0,
+      "recall": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.16112515805281938
+    },
+    {
+      "snr": 3.0,
+      "n": 20,
+      "hits": 3,
+      "recall": 0.15,
+      "ci_low": 0.052368745896216595,
+      "ci_high": 0.36041886474075696
+    },
+    {
+      "snr": 5.0,
+      "n": 20,
+      "hits": 3,
+      "recall": 0.15,
+      "ci_low": 0.052368745896216595,
+      "ci_high": 0.36041886474075696
+    },
+    {
+      "snr": 8.0,
+      "n": 20,
+      "hits": 10,
+      "recall": 0.5,
+      "ci_low": 0.29929800819821234,
+      "ci_high": 0.7007019918017876
+    },
+    {
+      "snr": 12.0,
+      "n": 20,
+      "hits": 13,
+      "recall": 0.65,
+      "ci_low": 0.4328542766852363,
+      "ci_high": 0.8188081758989179
+    },
+    {
+      "snr": 20.0,
+      "n": 20,
+      "hits": 13,
+      "recall": 0.65,
+      "ci_low": 0.4328542766852363,
+      "ci_high": 0.8188081758989179
+    }
+  ],
+  "snr50": 8.0,
+  "runtime_s": 748.399509999901,
+  "format": "auto",
+  "hdf5_key": null,
+  "channel_range": null,
+  "input_files": [
+    "20230215T142504Z.h5",
+    "20230228T001004Z.h5",
+    "20230313T062204Z.h5",
+    "20230404T231428Z.h5",
+    "20230421T090028Z.h5",
+    "20230915T171719Z.h5",
+    "20240612T063748Z.h5",
+    "20240628T132048Z.h5",
+    "20241205T205720Z.h5",
+    "20241206T053920Z.h5",
+    "20241209T083020Z.h5",
+    "20241221T151620Z.h5"
+  ],
+  "input_files_explicit_list": true,
+  "noise_exclusion": {
+    "margin_s": 5.0,
+    "manual_exclude_s": null,
+    "sources": [
+      {
+        "file": "20230215T142504Z.h5",
+        "segment_s": [
+          0.0,
+          120.0
+        ],
+        "duration_s": 120.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20230228T001004Z.h5",
+        "segment_s": [
+          0.0,
+          120.0
+        ],
+        "duration_s": 120.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20230313T062204Z.h5",
+        "segment_s": [
+          0.0,
+          120.0
+        ],
+        "duration_s": 120.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20230404T231428Z.h5",
+        "segment_s": [
+          0.0,
+          120.0
+        ],
+        "duration_s": 120.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20230421T090028Z.h5",
+        "segment_s": [
+          0.0,
+          120.0
+        ],
+        "duration_s": 120.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20230915T171719Z.h5",
+        "segment_s": [
+          0.0,
+          420.0
+        ],
+        "duration_s": 420.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20240612T063748Z.h5",
+        "segment_s": [
+          0.0,
+          420.0
+        ],
+        "duration_s": 420.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20240628T132048Z.h5",
+        "segment_s": [
+          0.0,
+          420.0
+        ],
+        "duration_s": 420.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20241205T205720Z.h5",
+        "segment_s": [
+          0.0,
+          420.0
+        ],
+        "duration_s": 420.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20241206T053920Z.h5",
+        "segment_s": [
+          0.0,
+          420.0
+        ],
+        "duration_s": 420.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20241209T083020Z.h5",
+        "segment_s": [
+          0.0,
+          420.0
+        ],
+        "duration_s": 420.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "20241221T151620Z.h5",
+        "segment_s": [
+          0.0,
+          420.0
+        ],
+        "duration_s": 420.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      }
+    ]
+  },
+  "trial_diagnostics": null,
+  "complete": true,
+  "pipeline_hash": "1090fc4",
+  "pipeline_hash_source": "inyección manual post-corrida"
+}

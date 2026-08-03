@@ -1,0 +1,107 @@
+{
+  "array_id": "foresee",
+  "threshold": 4.0,
+  "threshold_source": "default global (sin propuesta aplicada)",
+  "snr_steps": [
+    1.0,
+    2.0,
+    3.0,
+    5.0,
+    8.0,
+    12.0,
+    20.0
+  ],
+  "n_per_step": 20,
+  "curve": [
+    {
+      "snr": 1.0,
+      "n": 20,
+      "hits": 1,
+      "recall": 0.05,
+      "ci_low": 0.008881448800795402,
+      "ci_high": 0.23613119344674205
+    },
+    {
+      "snr": 2.0,
+      "n": 20,
+      "hits": 13,
+      "recall": 0.65,
+      "ci_low": 0.4328542766852363,
+      "ci_high": 0.8188081758989179
+    },
+    {
+      "snr": 3.0,
+      "n": 20,
+      "hits": 19,
+      "recall": 0.95,
+      "ci_low": 0.763868806553258,
+      "ci_high": 0.9911185511992047
+    },
+    {
+      "snr": 5.0,
+      "n": 20,
+      "hits": 20,
+      "recall": 1.0,
+      "ci_low": 0.8388748419471806,
+      "ci_high": 1.0
+    },
+    {
+      "snr": 8.0,
+      "n": 20,
+      "hits": 20,
+      "recall": 1.0,
+      "ci_low": 0.8388748419471806,
+      "ci_high": 1.0
+    },
+    {
+      "snr": 12.0,
+      "n": 20,
+      "hits": 20,
+      "recall": 1.0,
+      "ci_low": 0.8388748419471806,
+      "ci_high": 1.0
+    },
+    {
+      "snr": 20.0,
+      "n": 20,
+      "hits": 20,
+      "recall": 1.0,
+      "ci_low": 0.8388748419471806,
+      "ci_high": 1.0
+    }
+  ],
+  "snr50": 1.75,
+  "runtime_s": 312.67286789999343,
+  "format": "hdf5-generic",
+  "hdf5_key": null,
+  "channel_range": null,
+  "input_files": [
+    "FORESEE_UTC_20190404_194804.hdf5",
+    "FORESEE_UTC_20190404_195804.hdf5"
+  ],
+  "input_files_explicit_list": true,
+  "noise_exclusion": {
+    "margin_s": 5.0,
+    "manual_exclude_s": null,
+    "sources": [
+      {
+        "file": "FORESEE_UTC_20190404_194804.hdf5",
+        "segment_s": [
+          0.0,
+          600.0
+        ],
+        "duration_s": 600.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "FORESEE_UTC_20190404_195804.hdf5",
+        "segment_s": [
+          0.0,
+          600.0
+        ],
+        "duration_s": 600.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      }
+    ]
+  }
+}

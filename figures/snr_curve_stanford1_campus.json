@@ -1,0 +1,111 @@
+{
+  "array_id": "stanford1_campus",
+  "threshold": 4.0,
+  "threshold_source": "default global (sin propuesta aplicada)",
+  "snr_steps": [
+    1.0,
+    2.0,
+    3.0,
+    5.0,
+    8.0,
+    12.0,
+    20.0
+  ],
+  "n_per_step": 20,
+  "curve": [
+    {
+      "snr": 1.0,
+      "n": 20,
+      "hits": 0,
+      "recall": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.16112515805281938
+    },
+    {
+      "snr": 2.0,
+      "n": 20,
+      "hits": 0,
+      "recall": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.16112515805281938
+    },
+    {
+      "snr": 3.0,
+      "n": 20,
+      "hits": 0,
+      "recall": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.16112515805281938
+    },
+    {
+      "snr": 5.0,
+      "n": 20,
+      "hits": 0,
+      "recall": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.16112515805281938
+    },
+    {
+      "snr": 8.0,
+      "n": 20,
+      "hits": 11,
+      "recall": 0.55,
+      "ci_low": 0.3420853424503424,
+      "ci_high": 0.7418021417443758
+    },
+    {
+      "snr": 12.0,
+      "n": 20,
+      "hits": 17,
+      "recall": 0.85,
+      "ci_low": 0.6395811352592431,
+      "ci_high": 0.9476312541037835
+    },
+    {
+      "snr": 20.0,
+      "n": 20,
+      "hits": 17,
+      "recall": 0.85,
+      "ci_low": 0.6395811352592431,
+      "ci_high": 0.9476312541037835
+    }
+  ],
+  "snr50": 7.727272727272727,
+  "runtime_s": 77.95573020004667,
+  "format": "auto",
+  "hdf5_key": null,
+  "channel_range": null,
+  "input_files": [
+    "eastfoothills_real.npz"
+  ],
+  "input_files_explicit_list": true,
+  "noise_exclusion": {
+    "margin_s": 5.0,
+    "manual_exclude_s": [
+      395.0,
+      455.0
+    ],
+    "sources": [
+      {
+        "file": "eastfoothills_real.npz",
+        "segment_s": [
+          0.0,
+          395.0
+        ],
+        "duration_s": 395.0,
+        "exclusion_kind": "manual (--exclude-s)"
+      },
+      {
+        "file": "eastfoothills_real.npz",
+        "segment_s": [
+          455.0,
+          899.99
+        ],
+        "duration_s": 444.99,
+        "exclusion_kind": "manual (--exclude-s)"
+      }
+    ]
+  },
+  "trial_diagnostics": null,
+  "complete": true
+}

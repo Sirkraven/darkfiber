@@ -1,0 +1,2802 @@
+{
+  "array_id": "valencia_submarine",
+  "threshold": 4.0,
+  "threshold_source": "default global (sin propuesta aplicada)",
+  "snr_steps": [
+    1.0,
+    2.0,
+    3.0,
+    5.0,
+    8.0,
+    12.0,
+    20.0
+  ],
+  "n_per_step": 20,
+  "curve": [
+    {
+      "snr": 1.0,
+      "n": 20,
+      "hits": 3,
+      "recall": 0.15,
+      "ci_low": 0.052368745896216595,
+      "ci_high": 0.36041886474075696
+    },
+    {
+      "snr": 2.0,
+      "n": 20,
+      "hits": 9,
+      "recall": 0.45,
+      "ci_low": 0.2581978582556243,
+      "ci_high": 0.6579146575496577
+    },
+    {
+      "snr": 3.0,
+      "n": 20,
+      "hits": 12,
+      "recall": 0.6,
+      "ci_low": 0.38658150076225317,
+      "ci_high": 0.7811934676271829
+    },
+    {
+      "snr": 5.0,
+      "n": 20,
+      "hits": 12,
+      "recall": 0.6,
+      "ci_low": 0.38658150076225317,
+      "ci_high": 0.7811934676271829
+    },
+    {
+      "snr": 8.0,
+      "n": 20,
+      "hits": 18,
+      "recall": 0.9,
+      "ci_low": 0.6989663547715128,
+      "ci_high": 0.9721335187862319
+    },
+    {
+      "snr": 12.0,
+      "n": 20,
+      "hits": 17,
+      "recall": 0.85,
+      "ci_low": 0.6395811352592431,
+      "ci_high": 0.9476312541037835
+    },
+    {
+      "snr": 20.0,
+      "n": 20,
+      "hits": 14,
+      "recall": 0.7,
+      "ci_low": 0.4810271816464765,
+      "ci_high": 0.8545227551323956
+    }
+  ],
+  "snr50": 2.3333333333333335,
+  "runtime_s": 2038.9777050998528,
+  "format": "hdf5-generic",
+  "hdf5_key": "fa1-20050027/Source1/Zone1/SR_Valencia",
+  "channel_range": [
+    510,
+    2977
+  ],
+  "input_files": [
+    "SR_Valencia_2020-09-01_13-21-28_UTC_10mins.h5",
+    "SR_Valencia_2020-09-01_13-31-28_UTC_10mins.h5",
+    "SR_Valencia_2020-09-01_13-41-28_UTC_10mins.h5"
+  ],
+  "input_files_explicit_list": true,
+  "noise_exclusion": {
+    "margin_s": 5.0,
+    "manual_exclude_s": null,
+    "sources": [
+      {
+        "file": "SR_Valencia_2020-09-01_13-21-28_UTC_10mins.h5",
+        "segment_s": [
+          0.0,
+          601.0
+        ],
+        "duration_s": 601.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "SR_Valencia_2020-09-01_13-31-28_UTC_10mins.h5",
+        "segment_s": [
+          0.0,
+          601.0
+        ],
+        "duration_s": 601.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "SR_Valencia_2020-09-01_13-41-28_UTC_10mins.h5",
+        "segment_s": [
+          0.0,
+          601.0
+        ],
+        "duration_s": 601.0,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      }
+    ]
+  },
+  "trial_diagnostics": [
+    {
+      "trial_idx": 0,
+      "snr": 1.0,
+      "v_app_mps": 4717.288311528483,
+      "seed": 1119667345,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": 5456.558921200861,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4712.340425531916,
+      "explanations": [
+        "Coincidencia: 83.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 59.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.037 en v_app = 5,457 m/s (canal 0 \u2192 N); 446 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,712 m/s (R\u00b2=0.98, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 5,457 m/s -- diferencia relativa 15% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 4563.7 m/s (km\u2191), R\u00b2=1.00, duraci\u00f3n 4.8s.",
+        "Disparo masivo (83.4% de los canales disparados, 59.0% del arreglo) sin moveout resoluble por semblanza (pico 0.037 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 1,
+      "snr": 1.0,
+      "v_app_mps": 4379.415615290237,
+      "seed": 436471632,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": 4958.7939734624715,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4367.823343848581,
+      "explanations": [
+        "Coincidencia: 72.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 71.2% del arreglo).",
+        "Slant-stack: pico de semblanza 0.017 en v_app = 4,959 m/s (canal 0 \u2192 N); 368 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,368 m/s (R\u00b2=0.94, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,959 m/s -- diferencia relativa 13% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 2055.8 m/s (km\u2191), R\u00b2=0.51, duraci\u00f3n 6.5s.",
+        "Disparo masivo (72.7% de los canales disparados, 71.2% del arreglo) sin moveout resoluble por semblanza (pico 0.017 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 2,
+      "snr": 1.0,
+      "v_app_mps": -5391.566984862173,
+      "seed": 604614568,
+      "hit": false,
+      "detected": false,
+      "classified_as": null,
+      "measured_velocity_mps": null,
+      "boundary_pinned": null,
+      "onset_agrees": null,
+      "v_app_onset_mps": null,
+      "explanations": []
+    },
+    {
+      "trial_idx": 3,
+      "snr": 1.0,
+      "v_app_mps": 5624.174994076648,
+      "seed": 1854829033,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": 6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5610.506566604129,
+      "explanations": [
+        "Coincidencia: 82.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 68.2% del arreglo).",
+        "Slant-stack: pico de semblanza 0.060 en v_app = 6,004 m/s (canal 0 \u2192 N); 818 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,611 m/s (R\u00b2=0.95, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,004 m/s -- diferencia relativa 7% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1440.7 m/s (km\u2191), R\u00b2=0.07, duraci\u00f3n 5.0s.",
+        "Disparo masivo (82.3% de los canales disparados, 68.2% del arreglo) sin moveout resoluble por semblanza (pico 0.060 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 4,
+      "snr": 1.0,
+      "v_app_mps": -6427.980118514774,
+      "seed": 407715687,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -6607.0016928714995,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -6489.830508474577,
+      "explanations": [
+        "Coincidencia: 94.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 69.4% del arreglo).",
+        "Slant-stack: pico de semblanza 0.216 en v_app = 6,607 m/s (canal N \u2192 0); 1438 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -6,490 m/s (R\u00b2=0.80, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -6,607 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 5,
+      "snr": 1.0,
+      "v_app_mps": -2917.609554233906,
+      "seed": 602117542,
+      "hit": false,
+      "detected": false,
+      "classified_as": null,
+      "measured_velocity_mps": null,
+      "boundary_pinned": null,
+      "onset_agrees": null,
+      "v_app_onset_mps": null,
+      "explanations": []
+    },
+    {
+      "trial_idx": 6,
+      "snr": 1.0,
+      "v_app_mps": -6044.633879368092,
+      "seed": 1401457095,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -6069.174967637461,
+      "explanations": [
+        "Coincidencia: 87.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 68.6% del arreglo).",
+        "Slant-stack: pico de semblanza 0.139 en v_app = 6,298 m/s (canal N \u2192 0); 1246 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -6,069 m/s (R\u00b2=0.93, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -6,298 m/s -- diferencia relativa 4% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 7,
+      "snr": 1.0,
+      "v_app_mps": 5145.901739165471,
+      "seed": 330567245,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": 6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5133.333333333333,
+      "explanations": [
+        "Coincidencia: 81.2% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 67.1% del arreglo).",
+        "Slant-stack: pico de semblanza 0.024 en v_app = 6,004 m/s (canal 0 \u2192 N); 404 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,133 m/s (R\u00b2=0.93, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,004 m/s -- diferencia relativa 16% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 3635.6 m/s (km\u2191), R\u00b2=0.88, duraci\u00f3n 5.0s.",
+        "Disparo masivo (81.2% de los canales disparados, 67.1% del arreglo) sin moveout resoluble por semblanza (pico 0.024 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 8,
+      "snr": 1.0,
+      "v_app_mps": 3309.612075173644,
+      "seed": 37609329,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": 3721.754407567086,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3309.2985318107667,
+      "explanations": [
+        "Coincidencia: 62.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 54.6% del arreglo).",
+        "Slant-stack: pico de semblanza 0.028 en v_app = 3,722 m/s (canal 0 \u2192 N); 385 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,309 m/s (R\u00b2=0.89, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,722 m/s -- diferencia relativa 12% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 2577.3 m/s (km\u2191), R\u00b2=0.92, duraci\u00f3n 6.5s.",
+        "Disparo masivo (62.4% de los canales disparados, 54.6% del arreglo) sin moveout resoluble por semblanza (pico 0.028 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 9,
+      "snr": 1.0,
+      "v_app_mps": -6241.451006052081,
+      "seed": 689402191,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": -6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -6289.411764705884,
+      "explanations": [
+        "Coincidencia: 93.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 65.8% del arreglo).",
+        "Slant-stack: pico de semblanza 0.103 en v_app = 6,298 m/s (canal N \u2192 0); 1420 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -6,289 m/s (R\u00b2=0.91, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -6,298 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 5676.1 m/s (km\u2193), R\u00b2=0.97, duraci\u00f3n 4.0s.",
+        "Disparo masivo (93.5% de los canales disparados, 65.8% del arreglo) sin moveout resoluble por semblanza (pico 0.103 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 10,
+      "snr": 1.0,
+      "v_app_mps": -3544.440830596582,
+      "seed": 293024827,
+      "hit": false,
+      "detected": false,
+      "classified_as": null,
+      "measured_velocity_mps": null,
+      "boundary_pinned": null,
+      "onset_agrees": null,
+      "v_app_onset_mps": null,
+      "explanations": []
+    },
+    {
+      "trial_idx": 11,
+      "snr": 1.0,
+      "v_app_mps": 2266.965611786747,
+      "seed": 318888437,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2306.926665868879,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2266.73161227472,
+      "explanations": [
+        "Coincidencia: 40.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 64.1% del arreglo).",
+        "Slant-stack: pico de semblanza 0.003 en v_app = 2,307 m/s (canal 0 \u2192 N); 28 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,267 m/s (R\u00b2=0.83, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,307 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 709.4 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 11.3s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 12,
+      "snr": 1.0,
+      "v_app_mps": 5636.079686297762,
+      "seed": 902279112,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": 6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5632.091690544414,
+      "explanations": [
+        "Coincidencia: 86.2% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 67.5% del arreglo).",
+        "Slant-stack: pico de semblanza 0.057 en v_app = 6,004 m/s (canal 0 \u2192 N); 688 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,632 m/s (R\u00b2=0.92, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,004 m/s -- diferencia relativa 6% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 5980.3 m/s (km\u2191), R\u00b2=0.96, duraci\u00f3n 4.7s.",
+        "Disparo masivo (86.2% de los canales disparados, 67.5% del arreglo) sin moveout resoluble por semblanza (pico 0.057 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 13,
+      "snr": 1.0,
+      "v_app_mps": 4514.091434897266,
+      "seed": 975137509,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": 5201.7258188310625,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4512.074303405574,
+      "explanations": [
+        "Coincidencia: 80.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 61.1% del arreglo).",
+        "Slant-stack: pico de semblanza 0.018 en v_app = 5,202 m/s (canal 0 \u2192 N); 341 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,512 m/s (R\u00b2=0.93, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 5,202 m/s -- diferencia relativa 14% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 4190.7 m/s (km\u2191), R\u00b2=0.98, duraci\u00f3n 5.2s.",
+        "Disparo masivo (80.4% de los canales disparados, 61.1% del arreglo) sin moveout resoluble por semblanza (pico 0.018 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 14,
+      "snr": 1.0,
+      "v_app_mps": -2242.095989766382,
+      "seed": 639429510,
+      "hit": false,
+      "detected": false,
+      "classified_as": null,
+      "measured_velocity_mps": null,
+      "boundary_pinned": null,
+      "onset_agrees": null,
+      "v_app_onset_mps": null,
+      "explanations": []
+    },
+    {
+      "trial_idx": 15,
+      "snr": 1.0,
+      "v_app_mps": -5259.2317254438785,
+      "seed": 2019833245,
+      "hit": false,
+      "detected": false,
+      "classified_as": null,
+      "measured_velocity_mps": null,
+      "boundary_pinned": null,
+      "onset_agrees": null,
+      "v_app_onset_mps": null,
+      "explanations": []
+    },
+    {
+      "trial_idx": 16,
+      "snr": 1.0,
+      "v_app_mps": -3708.4281036508037,
+      "seed": 1168908956,
+      "hit": false,
+      "detected": false,
+      "classified_as": null,
+      "measured_velocity_mps": null,
+      "boundary_pinned": null,
+      "onset_agrees": null,
+      "v_app_onset_mps": null,
+      "explanations": []
+    },
+    {
+      "trial_idx": 17,
+      "snr": 1.0,
+      "v_app_mps": -6447.836555337349,
+      "seed": 1577550060,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -6493.909626719057,
+      "explanations": [
+        "Coincidencia: 89.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 69.6% del arreglo).",
+        "Slant-stack: pico de semblanza 0.225 en v_app = 6,298 m/s (canal N \u2192 0); 1438 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -6,494 m/s (R\u00b2=0.85, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -6,298 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 18,
+      "snr": 1.0,
+      "v_app_mps": 2936.9307734627387,
+      "seed": 1115922226,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": 3382.24393678671,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2937.162162162162,
+      "explanations": [
+        "Coincidencia: 64.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 54.3% del arreglo).",
+        "Slant-stack: pico de semblanza 0.011 en v_app = 3,382 m/s (canal 0 \u2192 N); 189 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,937 m/s (R\u00b2=0.95, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,382 m/s -- diferencia relativa 14% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1831.4 m/s (km\u2191), R\u00b2=0.74, duraci\u00f3n 6.6s.",
+        "Disparo masivo (64.1% de los canales disparados, 54.3% del arreglo) sin moveout resoluble por semblanza (pico 0.011 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 19,
+      "snr": 1.0,
+      "v_app_mps": 2830.27921819236,
+      "seed": 1794277153,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": 2930.1560515835217,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2826.5402843601896,
+      "explanations": [
+        "Coincidencia: 51.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 55.1% del arreglo).",
+        "Slant-stack: pico de semblanza 0.035 en v_app = 2,930 m/s (canal 0 \u2192 N); 497 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,827 m/s (R\u00b2=0.94, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,930 m/s -- diferencia relativa 4% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 2568.2 m/s (km\u2191), R\u00b2=0.99, duraci\u00f3n 7.9s.",
+        "Disparo masivo (51.3% de los canales disparados, 55.1% del arreglo) sin moveout resoluble por semblanza (pico 0.035 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 0,
+      "snr": 2.0,
+      "v_app_mps": 2070.652105191492,
+      "seed": 1315537590,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2199.1882014460293,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2067.0980926430516,
+      "explanations": [
+        "Coincidencia: 23.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 84.8% del arreglo).",
+        "Slant-stack: pico de semblanza 0.032 en v_app = 2,199 m/s (canal 0 \u2192 N); 642 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,067 m/s (R\u00b2=0.97, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,199 m/s -- diferencia relativa 6% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1806.3 m/s (km\u2191), R\u00b2=0.92, duraci\u00f3n 16.8s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 1,
+      "snr": 2.0,
+      "v_app_mps": 2342.893854205164,
+      "seed": 1842304884,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2419.943249148751,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2337.8453038674033,
+      "explanations": [
+        "Coincidencia: 25.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 96.8% del arreglo).",
+        "Slant-stack: pico de semblanza 0.027 en v_app = 2,420 m/s (canal 0 \u2192 N); 1157 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,338 m/s (R\u00b2=0.96, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,420 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 210.9 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 17.1s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 2,
+      "snr": 2.0,
+      "v_app_mps": 2443.5296008443843,
+      "seed": 1353131591,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2538.4965268910973,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2438.297872340426,
+      "explanations": [
+        "Coincidencia: 27.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 85.9% del arreglo).",
+        "Slant-stack: pico de semblanza 0.055 en v_app = 2,538 m/s (canal 0 \u2192 N); 1057 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,438 m/s (R\u00b2=0.90, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,538 m/s -- diferencia relativa 4% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 2869.5 m/s (km\u2191), R\u00b2=0.88, duraci\u00f3n 14.4s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 3,
+      "snr": 2.0,
+      "v_app_mps": -2593.677746080963,
+      "seed": 387073205,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2538.4965268910973,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2603.1948881789135,
+      "explanations": [
+        "Coincidencia: 27.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 96.9% del arreglo).",
+        "Slant-stack: pico de semblanza 0.100 en v_app = 2,538 m/s (canal N \u2192 0); 1481 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,603 m/s (R\u00b2=0.89, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,538 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1811.1 m/s (km\u2193), R\u00b2=0.83, duraci\u00f3n 15.4s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 4,
+      "snr": 2.0,
+      "v_app_mps": 3140.6056163324633,
+      "seed": 1643154008,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3224.2858302529476,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3131.7919075144505,
+      "explanations": [
+        "Coincidencia: 34.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 91.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.084 en v_app = 3,224 m/s (canal 0 \u2192 N); 1142 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,132 m/s (R\u00b2=0.97, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,224 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 3108.0 m/s (km\u2191), R\u00b2=1.00, duraci\u00f3n 11.9s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 5,
+      "snr": 2.0,
+      "v_app_mps": -3622.1845321750307,
+      "seed": 453296720,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -3721.754407567086,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3645.505617977528,
+      "explanations": [
+        "Coincidencia: 39.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.019 en v_app = 3,722 m/s (canal N \u2192 0); 1696 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,646 m/s (R\u00b2=0.70, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,722 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 2.8 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 11.3s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 6,
+      "snr": 2.0,
+      "v_app_mps": 2905.3361882523272,
+      "seed": 134790464,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3073.7047089059615,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2896.1538461538466,
+      "explanations": [
+        "Coincidencia: 31.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 94.6% del arreglo).",
+        "Slant-stack: pico de semblanza 0.054 en v_app = 3,074 m/s (canal 0 \u2192 N); 1042 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,896 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,074 m/s -- diferencia relativa 6% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 2727.5 m/s (km\u2191), R\u00b2=0.98, duraci\u00f3n 13.4s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 7,
+      "snr": 2.0,
+      "v_app_mps": 5527.58454461299,
+      "seed": 2053705628,
+      "hit": false,
+      "detected": true,
+      "classified_as": "POSIBLE_REGIONAL_EMERGENTE",
+      "measured_velocity_mps": 6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5500.3558718861195,
+      "explanations": [
+        "Coincidencia: 59.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 98.8% del arreglo).",
+        "Slant-stack: pico de semblanza 0.050 en v_app = 6,004 m/s (canal 0 \u2192 N); 1091 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,500 m/s (R\u00b2=0.98, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,004 m/s -- diferencia relativa 9% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 2.2 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 7.3s.",
+        "Disparo masivo (59.9% de los canales disparados, 98.8% del arreglo) sin moveout resoluble por semblanza (pico 0.050 < umbral 0.12): consistente con evento regional/lejano cuya llegada emergente excede la resoluci\u00f3n de esta apertura (L=41.45 km, v_app_max_geom\u00e9trico\u22483,453,800 m/s con k=3 muestras). Escalar para verificaci\u00f3n externa (USGS/red regional)."
+      ]
+    },
+    {
+      "trial_idx": 8,
+      "snr": 2.0,
+      "v_app_mps": 3710.1724781955236,
+      "seed": 1909628558,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3904.083552733738,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3697.1428571428573,
+      "explanations": [
+        "Coincidencia: 40.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 94.3% del arreglo).",
+        "Slant-stack: pico de semblanza 0.075 en v_app = 3,904 m/s (canal 0 \u2192 N); 1197 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,697 m/s (R\u00b2=0.96, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,904 m/s -- diferencia relativa 5% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 3687.9 m/s (km\u2191), R\u00b2=0.98, duraci\u00f3n 10.4s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 9,
+      "snr": 2.0,
+      "v_app_mps": -3667.9253120686044,
+      "seed": 152367153,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -3721.754407567086,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3686.816720257234,
+      "explanations": [
+        "Coincidencia: 39.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 97.7% del arreglo).",
+        "Slant-stack: pico de semblanza 0.212 en v_app = 3,722 m/s (canal N \u2192 0); 1957 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,687 m/s (R\u00b2=0.80, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,722 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 10,
+      "snr": 2.0,
+      "v_app_mps": 3699.243967687007,
+      "seed": 836560127,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3904.083552733738,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3684.603658536585,
+      "explanations": [
+        "Coincidencia: 40.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 98.5% del arreglo).",
+        "Slant-stack: pico de semblanza 0.076 en v_app = 3,904 m/s (canal 0 \u2192 N); 1335 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,685 m/s (R\u00b2=0.94, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,904 m/s -- diferencia relativa 6% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 3642.3 m/s (km\u2191), R\u00b2=0.96, duraci\u00f3n 10.6s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 11,
+      "snr": 2.0,
+      "v_app_mps": 3611.875968221496,
+      "seed": 97362913,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 3721.754407567086,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3596.579247434436,
+      "explanations": [
+        "Coincidencia: 38.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 95.8% del arreglo).",
+        "Slant-stack: pico de semblanza 0.130 en v_app = 3,722 m/s (canal 0 \u2192 N); 1632 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,597 m/s (R\u00b2=0.98, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,722 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 12,
+      "snr": 2.0,
+      "v_app_mps": 3219.825863058275,
+      "seed": 186739536,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3382.24393678671,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3210.7614213197958,
+      "explanations": [
+        "Coincidencia: 35.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 96.8% del arreglo).",
+        "Slant-stack: pico de semblanza 0.065 en v_app = 3,382 m/s (canal 0 \u2192 N); 1201 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,211 m/s (R\u00b2=0.96, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,382 m/s -- diferencia relativa 5% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 3144.3 m/s (km\u2191), R\u00b2=0.95, duraci\u00f3n 12.3s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 13,
+      "snr": 2.0,
+      "v_app_mps": -2919.8841865887,
+      "seed": 1542036155,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -2930.1560515835217,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2930.2733185320167,
+      "explanations": [
+        "Coincidencia: 32.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 93.1% del arreglo).",
+        "Slant-stack: pico de semblanza 0.271 en v_app = 2,930 m/s (canal N \u2192 0); 2076 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,930 m/s (R\u00b2=0.82, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,930 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 14,
+      "snr": 2.0,
+      "v_app_mps": -3959.8582769512655,
+      "seed": 494870997,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -3904.083552733738,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3978.280542986425,
+      "explanations": [
+        "Coincidencia: 43.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 95.3% del arreglo).",
+        "Slant-stack: pico de semblanza 0.244 en v_app = 3,904 m/s (canal N \u2192 0); 2009 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,978 m/s (R\u00b2=0.91, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,904 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 15,
+      "snr": 2.0,
+      "v_app_mps": -3771.1305865059494,
+      "seed": 1725027748,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -3721.754407567086,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3793.548387096754,
+      "explanations": [
+        "Coincidencia: 40.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.219 en v_app = 3,722 m/s (canal N \u2192 0); 2036 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,794 m/s (R\u00b2=0.88, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,722 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 16,
+      "snr": 2.0,
+      "v_app_mps": -3819.701624587361,
+      "seed": 1485493253,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -3904.083552733738,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3840.437158469945,
+      "explanations": [
+        "Coincidencia: 42.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.155 en v_app = 3,904 m/s (canal N \u2192 0); 1872 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,840 m/s (R\u00b2=0.88, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,904 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 17,
+      "snr": 2.0,
+      "v_app_mps": 3954.8797623650426,
+      "seed": 215495067,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4095.3450221584408,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3940.4878048780492,
+      "explanations": [
+        "Coincidencia: 43.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 92.5% del arreglo).",
+        "Slant-stack: pico de semblanza 0.134 en v_app = 4,095 m/s (canal 0 \u2192 N); 1487 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,940 m/s (R\u00b2=0.98, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,095 m/s -- diferencia relativa 4% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 18,
+      "snr": 2.0,
+      "v_app_mps": -4927.228265390411,
+      "seed": 337881422,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4958.7939734624715,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4956.756756756758,
+      "explanations": [
+        "Coincidencia: 52.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.316 en v_app = 4,959 m/s (canal N \u2192 0); 2246 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,957 m/s (R\u00b2=0.93, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,959 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 19,
+      "snr": 2.0,
+      "v_app_mps": -6389.4872234345485,
+      "seed": 861882830,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -6435.041938490216,
+      "explanations": [
+        "Coincidencia: 66.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.347 en v_app = 6,298 m/s (canal N \u2192 0); 2238 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -6,435 m/s (R\u00b2=0.96, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -6,298 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 0,
+      "snr": 3.0,
+      "v_app_mps": -3607.3520195192614,
+      "seed": 817807212,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -3547.9404277979343,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3633.988122430334,
+      "explanations": [
+        "Coincidencia: 33.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.319 en v_app = 3,548 m/s (canal N \u2192 0); 2232 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,634 m/s (R\u00b2=0.89, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,548 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 1,
+      "snr": 3.0,
+      "v_app_mps": -3517.090340597915,
+      "seed": 836427526,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -3547.9404277979343,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3543.3070866141725,
+      "explanations": [
+        "Coincidencia: 33.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.419 en v_app = 3,548 m/s (canal N \u2192 0); 2345 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,543 m/s (R\u00b2=0.88, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,548 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 2,
+      "snr": 3.0,
+      "v_app_mps": -2538.4357056659537,
+      "seed": 402048455,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2538.4965268910973,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2552.7430221366703,
+      "explanations": [
+        "Coincidencia: 24.2% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.275 en v_app = 2,538 m/s (canal N \u2192 0); 2339 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,553 m/s (R\u00b2=0.89, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,538 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1.7 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 16.3s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 3,
+      "snr": 3.0,
+      "v_app_mps": 6179.83153849218,
+      "seed": 864791787,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6115.662650602409,
+      "explanations": [
+        "Coincidencia: 56.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.475 en v_app = 6,298 m/s (canal 0 \u2192 N); 2374 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,116 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,298 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 4,
+      "snr": 3.0,
+      "v_app_mps": 6453.887099637375,
+      "seed": 785879670,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6607.0016928714995,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6382.048574445617,
+      "explanations": [
+        "Coincidencia: 58.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.466 en v_app = 6,607 m/s (canal 0 \u2192 N); 2374 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,382 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,607 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 5,
+      "snr": 3.0,
+      "v_app_mps": -2012.7149783893826,
+      "seed": 68871586,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -1998.5711429723438,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2020.7237698516012,
+      "explanations": [
+        "Coincidencia: 19.2% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.281 en v_app = 1,999 m/s (canal N \u2192 0); 2203 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,021 m/s (R\u00b2=0.89, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -1,999 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 8.1 m/s (km\u2193), R\u00b2=0.01, duraci\u00f3n 20.6s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 6,
+      "snr": 3.0,
+      "v_app_mps": 2694.802995622712,
+      "seed": 309485084,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2793.311427006771,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2683.121597096189,
+      "explanations": [
+        "Coincidencia: 25.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.041 en v_app = 2,793 m/s (canal 0 \u2192 N); 891 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,683 m/s (R\u00b2=0.97, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,793 m/s -- diferencia relativa 4% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 2.2 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 15.3s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 7,
+      "snr": 3.0,
+      "v_app_mps": 3497.203060560646,
+      "seed": 1626451747,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 3547.9404277979343,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3478.731836195509,
+      "explanations": [
+        "Coincidencia: 32.2% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.250 en v_app = 3,548 m/s (canal 0 \u2192 N); 2169 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,479 m/s (R\u00b2=0.95, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,548 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 8,
+      "snr": 3.0,
+      "v_app_mps": 4674.987387503017,
+      "seed": 160971532,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4642.105263157894,
+      "explanations": [
+        "Coincidencia: 42.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.354 en v_app = 4,727 m/s (canal 0 \u2192 N); 2343 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,642 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,727 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 9,
+      "snr": 3.0,
+      "v_app_mps": 2601.810268609723,
+      "seed": 506828647,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2662.8577423478528,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2590.843373493973,
+      "explanations": [
+        "Coincidencia: 24.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.023 en v_app = 2,663 m/s (canal 0 \u2192 N); 996 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,591 m/s (R\u00b2=0.93, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,663 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 2.9 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 15.9s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 10,
+      "snr": 3.0,
+      "v_app_mps": 6170.804513112045,
+      "seed": 1536851558,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6108.219178082192,
+      "explanations": [
+        "Coincidencia: 57.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.413 en v_app = 6,298 m/s (canal 0 \u2192 N); 2347 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,108 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,298 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 11,
+      "snr": 3.0,
+      "v_app_mps": 4720.526265266253,
+      "seed": 869443687,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4686.870097623862,
+      "explanations": [
+        "Coincidencia: 42.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.211 en v_app = 4,727 m/s (canal 0 \u2192 N); 2095 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,687 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,727 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 12,
+      "snr": 3.0,
+      "v_app_mps": 5363.534867111803,
+      "seed": 647812840,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 5456.558921200861,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5317.270194986073,
+      "explanations": [
+        "Coincidencia: 49.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.399 en v_app = 5,457 m/s (canal 0 \u2192 N); 2342 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,317 m/s (R\u00b2=0.97, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 5,457 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 13,
+      "snr": 3.0,
+      "v_app_mps": 4536.145008901503,
+      "seed": 745939938,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4503.42205323194,
+      "explanations": [
+        "Coincidencia: 41.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.215 en v_app = 4,727 m/s (canal 0 \u2192 N); 2040 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,503 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,727 m/s -- diferencia relativa 5% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 14,
+      "snr": 3.0,
+      "v_app_mps": 5043.985349550048,
+      "seed": 1863575403,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 5201.7258188310625,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5000.995024875622,
+      "explanations": [
+        "Coincidencia: 45.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.296 en v_app = 5,202 m/s (canal 0 \u2192 N); 2169 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,001 m/s (R\u00b2=0.98, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 5,202 m/s -- diferencia relativa 4% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 15,
+      "snr": 3.0,
+      "v_app_mps": -2656.9349835274224,
+      "seed": 883335101,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2662.8577423478528,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2670.805369127517,
+      "explanations": [
+        "Coincidencia: 25.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.331 en v_app = 2,663 m/s (canal N \u2192 0); 2348 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,671 m/s (R\u00b2=0.87, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,663 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1.5 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 15.7s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 16,
+      "snr": 3.0,
+      "v_app_mps": 2080.830657330124,
+      "seed": 558893373,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2199.1882014460293,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2074.074074074074,
+      "explanations": [
+        "Coincidencia: 19.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.053 en v_app = 2,199 m/s (canal 0 \u2192 N); 1075 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,074 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,199 m/s -- diferencia relativa 6% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 18.0 m/s (km\u2191), R\u00b2=0.02, duraci\u00f3n 19.8s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 17,
+      "snr": 3.0,
+      "v_app_mps": 3930.718452223002,
+      "seed": 1366817829,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4095.3450221584408,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3904.347826086957,
+      "explanations": [
+        "Coincidencia: 35.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.192 en v_app = 4,095 m/s (canal 0 \u2192 N); 1959 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,904 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,095 m/s -- diferencia relativa 5% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 18,
+      "snr": 3.0,
+      "v_app_mps": 2260.7982435096455,
+      "seed": 1338362662,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2306.926665868879,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2251.841746248294,
+      "explanations": [
+        "Coincidencia: 21.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.126 en v_app = 2,307 m/s (canal 0 \u2192 N); 1627 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,252 m/s (R\u00b2=0.97, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,307 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 5.4 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 18.3s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 19,
+      "snr": 3.0,
+      "v_app_mps": 2211.2242694203715,
+      "seed": 293401639,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2306.926665868879,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2203.1578947368416,
+      "explanations": [
+        "Coincidencia: 20.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.086 en v_app = 2,307 m/s (canal 0 \u2192 N); 1485 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,203 m/s (R\u00b2=0.98, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,307 m/s -- diferencia relativa 5% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 3.7 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 18.7s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 0,
+      "snr": 5.0,
+      "v_app_mps": 3155.1761459846994,
+      "seed": 403205877,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3224.2858302529476,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3144.463971880492,
+      "explanations": [
+        "Coincidencia: 27.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.348 en v_app = 3,224 m/s (canal 0 \u2192 N); 2263 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,144 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,224 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1.3 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 13.3s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 1,
+      "snr": 5.0,
+      "v_app_mps": -5384.507877542346,
+      "seed": 1419039063,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -5456.558921200861,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5425.751072961373,
+      "explanations": [
+        "Coincidencia: 48.2% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.296 en v_app = 5,457 m/s (canal N \u2192 0); 2435 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,426 m/s (R\u00b2=0.87, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -5,457 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 2,
+      "snr": 5.0,
+      "v_app_mps": -4688.932648241703,
+      "seed": 731083318,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4716.923076923072,
+      "explanations": [
+        "Coincidencia: 41.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.714 en v_app = 4,727 m/s (canal N \u2192 0); 2458 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,717 m/s (R\u00b2=0.95, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,727 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 3,
+      "snr": 5.0,
+      "v_app_mps": 2976.656309595526,
+      "seed": 1517635584,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3073.7047089059615,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2966.883116883117,
+      "explanations": [
+        "Coincidencia: 25.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.251 en v_app = 3,074 m/s (canal 0 \u2192 N); 2184 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,967 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,074 m/s -- diferencia relativa 4% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.4 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 14.2s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 4,
+      "snr": 5.0,
+      "v_app_mps": 5883.00847026538,
+      "seed": 1518695056,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5848.2558139534885,
+      "explanations": [
+        "Coincidencia: 51.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.623 en v_app = 6,004 m/s (canal 0 \u2192 N); 2449 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,848 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,004 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 5,
+      "snr": 5.0,
+      "v_app_mps": -4410.1255276882075,
+      "seed": 246446464,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4506.436753703394,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4437.047756874095,
+      "explanations": [
+        "Coincidencia: 39.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.488 en v_app = 4,506 m/s (canal N \u2192 0); 2418 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,437 m/s (R\u00b2=0.89, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,506 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 6,
+      "snr": 5.0,
+      "v_app_mps": -2492.1988905825397,
+      "seed": 1782025640,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2538.4965268910973,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2500.8547008547016,
+      "explanations": [
+        "Coincidencia: 22.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.325 en v_app = 2,538 m/s (canal N \u2192 0); 2292 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,501 m/s (R\u00b2=0.92, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,538 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.7 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 16.8s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 7,
+      "snr": 5.0,
+      "v_app_mps": -2382.4477567376357,
+      "seed": 1527655155,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2419.943249148751,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2391.489361702128,
+      "explanations": [
+        "Coincidencia: 21.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.340 en v_app = 2,420 m/s (canal N \u2192 0); 2310 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,391 m/s (R\u00b2=0.86, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,420 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.3 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 17.6s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 8,
+      "snr": 5.0,
+      "v_app_mps": -5223.950777366037,
+      "seed": 1025233745,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -5201.7258188310625,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5259.259259259261,
+      "explanations": [
+        "Coincidencia: 46.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.759 en v_app = 5,202 m/s (canal N \u2192 0); 2459 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,259 m/s (R\u00b2=0.93, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -5,202 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 9,
+      "snr": 5.0,
+      "v_app_mps": 6048.68750350281,
+      "seed": 289997955,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6013.0151843817775,
+      "explanations": [
+        "Coincidencia: 52.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.550 en v_app = 6,004 m/s (canal 0 \u2192 N); 2341 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,013 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,004 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 10,
+      "snr": 5.0,
+      "v_app_mps": 4334.688406692226,
+      "seed": 761040841,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4506.436753703394,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4314.661274014155,
+      "explanations": [
+        "Coincidencia: 37.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.301 en v_app = 4,506 m/s (canal 0 \u2192 N); 2288 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,315 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,506 m/s -- diferencia relativa 4% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 11,
+      "snr": 5.0,
+      "v_app_mps": 6190.3846066914575,
+      "seed": 1214748785,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6149.5867768595035,
+      "explanations": [
+        "Coincidencia: 54.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.636 en v_app = 6,298 m/s (canal 0 \u2192 N); 2434 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,150 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,298 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 12,
+      "snr": 5.0,
+      "v_app_mps": -2831.971646840167,
+      "seed": 1273077705,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2793.311427006771,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2843.643448611788,
+      "explanations": [
+        "Coincidencia: 25.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.440 en v_app = 2,793 m/s (canal N \u2192 0); 2389 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,844 m/s (R\u00b2=0.89, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,793 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.9 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 14.8s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 13,
+      "snr": 5.0,
+      "v_app_mps": 3387.6015219225533,
+      "seed": 1368522356,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3547.9404277979343,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3375.460122699387,
+      "explanations": [
+        "Coincidencia: 29.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.198 en v_app = 3,548 m/s (canal 0 \u2192 N); 2088 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,375 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,548 m/s -- diferencia relativa 5% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.5 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 12.5s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 14,
+      "snr": 5.0,
+      "v_app_mps": 4662.780456722876,
+      "seed": 707841112,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4639.53488372093,
+      "explanations": [
+        "Coincidencia: 40.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.659 en v_app = 4,727 m/s (canal 0 \u2192 N); 2455 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,640 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,727 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 15,
+      "snr": 5.0,
+      "v_app_mps": 4035.222645917094,
+      "seed": 2106272838,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4295.976411358775,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4018.223234624148,
+      "explanations": [
+        "Coincidencia: 35.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.154 en v_app = 4,296 m/s (canal 0 \u2192 N); 1891 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,018 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,296 m/s -- diferencia relativa 7% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 16,
+      "snr": 5.0,
+      "v_app_mps": -6269.878742838014,
+      "seed": 1619543548,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -6319.033232628401,
+      "explanations": [
+        "Coincidencia: 55.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.787 en v_app = 6,298 m/s (canal N \u2192 0); 2460 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -6,319 m/s (R\u00b2=0.96, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -6,298 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 17,
+      "snr": 5.0,
+      "v_app_mps": -2993.0004012412833,
+      "seed": 548502473,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2930.1560515835217,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3005.8027079303693,
+      "explanations": [
+        "Coincidencia: 27.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.351 en v_app = 2,930 m/s (canal N \u2192 0); 2334 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,006 m/s (R\u00b2=0.87, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,930 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.5 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 14.1s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 18,
+      "snr": 5.0,
+      "v_app_mps": -2204.717710503205,
+      "seed": 2069501021,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2199.1882014460293,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2212.1769098219415,
+      "explanations": [
+        "Coincidencia: 20.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.611 en v_app = 2,199 m/s (canal N \u2192 0); 2446 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,212 m/s (R\u00b2=0.82, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,199 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1.2 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 19.0s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 19,
+      "snr": 5.0,
+      "v_app_mps": 6375.615048414201,
+      "seed": 66292700,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6330.791788856305,
+      "explanations": [
+        "Coincidencia: 55.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.575 en v_app = 6,298 m/s (canal 0 \u2192 N); 2335 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,331 m/s (R\u00b2=0.98, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,298 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 0,
+      "snr": 8.0,
+      "v_app_mps": 2585.680904574341,
+      "seed": 1890757,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2662.8577423478528,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2581.3813813813817,
+      "explanations": [
+        "Coincidencia: 22.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.296 en v_app = 2,663 m/s (canal 0 \u2192 N); 2281 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,581 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,663 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1.2 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 16.2s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 1,
+      "snr": 8.0,
+      "v_app_mps": -4793.032121860944,
+      "seed": 817449607,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4810.325047801147,
+      "explanations": [
+        "Coincidencia: 42.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.724 en v_app = 4,727 m/s (canal N \u2192 0); 2464 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,810 m/s (R\u00b2=0.94, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,727 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 2,
+      "snr": 8.0,
+      "v_app_mps": 4522.14500347299,
+      "seed": 269492747,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4506.436753703394,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4508.152173913044,
+      "explanations": [
+        "Coincidencia: 39.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.683 en v_app = 4,506 m/s (canal 0 \u2192 N); 2440 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,508 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,506 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 3,
+      "snr": 8.0,
+      "v_app_mps": 4887.876068982256,
+      "seed": 1771646080,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4958.7939734624715,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4871.473354231977,
+      "explanations": [
+        "Coincidencia: 42.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.735 en v_app = 4,959 m/s (canal 0 \u2192 N); 2459 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,871 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,959 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 4,
+      "snr": 8.0,
+      "v_app_mps": 4211.960967795425,
+      "seed": 86985538,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4295.976411358775,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4199.999999999999,
+      "explanations": [
+        "Coincidencia: 36.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.590 en v_app = 4,296 m/s (canal 0 \u2192 N); 2456 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,200 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,296 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 5,
+      "snr": 8.0,
+      "v_app_mps": -5508.091862657497,
+      "seed": 2072922867,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -5456.558921200861,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5532.530120481928,
+      "explanations": [
+        "Coincidencia: 49.2% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.809 en v_app = 5,457 m/s (canal N \u2192 0); 2465 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,533 m/s (R\u00b2=0.93, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -5,457 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 6,
+      "snr": 8.0,
+      "v_app_mps": -5467.086626078168,
+      "seed": 2140528798,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -5456.558921200861,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5491.560693641618,
+      "explanations": [
+        "Coincidencia: 48.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.870 en v_app = 5,457 m/s (canal N \u2192 0); 2467 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,492 m/s (R\u00b2=0.94, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -5,457 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 7,
+      "snr": 8.0,
+      "v_app_mps": 3753.932133528469,
+      "seed": 1079435247,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 3721.754407567086,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3744.1860465116292,
+      "explanations": [
+        "Coincidencia: 32.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.398 en v_app = 3,722 m/s (canal 0 \u2192 N); 2229 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,744 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,722 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 8,
+      "snr": 8.0,
+      "v_app_mps": -5542.292314968152,
+      "seed": 77019705,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -5456.558921200861,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5566.666666666668,
+      "explanations": [
+        "Coincidencia: 48.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.721 en v_app = 5,457 m/s (canal N \u2192 0); 2460 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,567 m/s (R\u00b2=0.95, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -5,457 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 9,
+      "snr": 8.0,
+      "v_app_mps": -2960.4218910667996,
+      "seed": 950008233,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2930.1560515835217,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2967.5109170305673,
+      "explanations": [
+        "Coincidencia: 27.2% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.634 en v_app = 2,930 m/s (canal N \u2192 0); 2458 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,968 m/s (R\u00b2=0.89, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,930 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.5 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 14.3s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 10,
+      "snr": 8.0,
+      "v_app_mps": -6211.615203009275,
+      "seed": 310619708,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -6242.038216560511,
+      "explanations": [
+        "Coincidencia: 54.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.780 en v_app = 6,298 m/s (canal N \u2192 0); 2464 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -6,242 m/s (R\u00b2=0.95, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -6,298 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 11,
+      "snr": 8.0,
+      "v_app_mps": 3514.051041207616,
+      "seed": 1312450445,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 3547.9404277979343,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3505.359877488516,
+      "explanations": [
+        "Coincidencia: 30.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.629 en v_app = 3,548 m/s (canal 0 \u2192 N); 2449 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,505 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,548 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 12,
+      "snr": 8.0,
+      "v_app_mps": -5896.9636509116535,
+      "seed": 69558136,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5923.966942148761,
+      "explanations": [
+        "Coincidencia: 52.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.719 en v_app = 6,004 m/s (canal N \u2192 0); 2466 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,924 m/s (R\u00b2=0.95, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -6,004 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 13,
+      "snr": 8.0,
+      "v_app_mps": 4380.9485507578665,
+      "seed": 208728173,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4506.436753703394,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4368.30200090904,
+      "explanations": [
+        "Coincidencia: 37.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.483 en v_app = 4,506 m/s (canal 0 \u2192 N); 2452 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,368 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,506 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 14,
+      "snr": 8.0,
+      "v_app_mps": 4693.262221981306,
+      "seed": 1130238278,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4677.938808373591,
+      "explanations": [
+        "Coincidencia: 40.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.814 en v_app = 4,727 m/s (canal 0 \u2192 N); 2466 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,678 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,727 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 15,
+      "snr": 8.0,
+      "v_app_mps": -4637.657347578279,
+      "seed": 1685047550,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4654.054054054055,
+      "explanations": [
+        "Coincidencia: 40.9% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.623 en v_app = 4,727 m/s (canal N \u2192 0); 2461 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,654 m/s (R\u00b2=0.97, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,727 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 16,
+      "snr": 8.0,
+      "v_app_mps": 5438.261822240576,
+      "seed": 1477442137,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 5456.558921200861,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5416.058394160585,
+      "explanations": [
+        "Coincidencia: 46.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.608 en v_app = 5,457 m/s (canal 0 \u2192 N); 2454 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,416 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 5,457 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 17,
+      "snr": 8.0,
+      "v_app_mps": -4666.139700335243,
+      "seed": 689963901,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4685.237483953787,
+      "explanations": [
+        "Coincidencia: 42.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.722 en v_app = 4,727 m/s (canal N \u2192 0); 2461 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,685 m/s (R\u00b2=0.90, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,727 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 18,
+      "snr": 8.0,
+      "v_app_mps": 6376.887212590785,
+      "seed": 1812574067,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6350.05675368899,
+      "explanations": [
+        "Coincidencia: 55.2% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.642 en v_app = 6,298 m/s (canal 0 \u2192 N); 2383 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,350 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,298 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 19,
+      "snr": 8.0,
+      "v_app_mps": 4569.862567293592,
+      "seed": 2114691150,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4555.824508320726,
+      "explanations": [
+        "Coincidencia: 39.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.439 en v_app = 4,727 m/s (canal 0 \u2192 N); 2439 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,556 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,727 m/s -- diferencia relativa 4% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 0,
+      "snr": 12.0,
+      "v_app_mps": 6187.529190748716,
+      "seed": 176564329,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6164.794520547946,
+      "explanations": [
+        "Coincidencia: 53.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.776 en v_app = 6,298 m/s (canal 0 \u2192 N); 2466 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,165 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,298 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 1,
+      "snr": 12.0,
+      "v_app_mps": -5756.567260448389,
+      "seed": 1371292966,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -5723.876324421022,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5779.069767441861,
+      "explanations": [
+        "Coincidencia: 51.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.886 en v_app = 5,724 m/s (canal N \u2192 0); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,779 m/s (R\u00b2=0.92, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -5,724 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 2,
+      "snr": 12.0,
+      "v_app_mps": -4235.620946504202,
+      "seed": 348396373,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4295.976411358775,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4247.115384615384,
+      "explanations": [
+        "Coincidencia: 37.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.718 en v_app = 4,296 m/s (canal N \u2192 0); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,247 m/s (R\u00b2=0.91, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,296 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 3,
+      "snr": 12.0,
+      "v_app_mps": 6250.664126001607,
+      "seed": 730152363,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6229.665071770336,
+      "explanations": [
+        "Coincidencia: 54.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.887 en v_app = 6,298 m/s (canal 0 \u2192 N); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,230 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,298 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 4,
+      "snr": 12.0,
+      "v_app_mps": 4232.856642173665,
+      "seed": 1434065324,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4295.976411358775,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4222.702702702703,
+      "explanations": [
+        "Coincidencia: 37.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.725 en v_app = 4,296 m/s (canal 0 \u2192 N); 2465 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,223 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,296 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 5,
+      "snr": 12.0,
+      "v_app_mps": 5348.843976879016,
+      "seed": 2048322630,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 5456.558921200861,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5333.493975903617,
+      "explanations": [
+        "Coincidencia: 46.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.638 en v_app = 5,457 m/s (canal 0 \u2192 N); 2452 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,333 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 5,457 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 6,
+      "snr": 12.0,
+      "v_app_mps": -5743.553724773237,
+      "seed": 1697619980,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -5723.876324421022,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5765.68047337278,
+      "explanations": [
+        "Coincidencia: 51.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.899 en v_app = 5,724 m/s (canal N \u2192 0); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,766 m/s (R\u00b2=0.91, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -5,724 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 7,
+      "snr": 12.0,
+      "v_app_mps": -5855.473185236455,
+      "seed": 48041411,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -5723.876324421022,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5877.272727272729,
+      "explanations": [
+        "Coincidencia: 51.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.676 en v_app = 5,724 m/s (canal N \u2192 0); 2466 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,877 m/s (R\u00b2=0.94, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -5,724 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 8,
+      "snr": 12.0,
+      "v_app_mps": -5896.776901028081,
+      "seed": 118896665,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5917.333333333333,
+      "explanations": [
+        "Coincidencia: 52.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.749 en v_app = 6,004 m/s (canal N \u2192 0); 2467 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,917 m/s (R\u00b2=0.96, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -6,004 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 9,
+      "snr": 12.0,
+      "v_app_mps": 6046.352863157201,
+      "seed": 925055495,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6024.137931034484,
+      "explanations": [
+        "Coincidencia: 52.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.863 en v_app = 6,004 m/s (canal 0 \u2192 N); 2466 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,024 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,004 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 10,
+      "snr": 12.0,
+      "v_app_mps": -4153.766801317013,
+      "seed": 2021661817,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4095.3450221584408,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4164.748201438851,
+      "explanations": [
+        "Coincidencia: 36.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.709 en v_app = 4,095 m/s (canal N \u2192 0); 2466 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,165 m/s (R\u00b2=0.93, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,095 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 11,
+      "snr": 12.0,
+      "v_app_mps": -4333.711658878243,
+      "seed": 812896697,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4295.976411358775,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4346.086956521739,
+      "explanations": [
+        "Coincidencia: 38.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.817 en v_app = 4,296 m/s (canal N \u2192 0); 2466 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,346 m/s (R\u00b2=0.91, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,296 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 12,
+      "snr": 12.0,
+      "v_app_mps": -3933.1063343121955,
+      "seed": 171994174,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -3904.083552733738,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3944.102850754612,
+      "explanations": [
+        "Coincidencia: 35.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.763 en v_app = 3,904 m/s (canal N \u2192 0); 2461 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,944 m/s (R\u00b2=0.84, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,904 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 13,
+      "snr": 12.0,
+      "v_app_mps": 2635.5075054214867,
+      "seed": 1767460773,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2662.8577423478528,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2631.8777292576424,
+      "explanations": [
+        "Coincidencia: 23.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.665 en v_app = 2,663 m/s (canal 0 \u2192 N); 2448 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,632 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,663 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.7 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 16.0s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 14,
+      "snr": 12.0,
+      "v_app_mps": -3441.060041364841,
+      "seed": 834319077,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -3382.24393678671,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3448.9411764705887,
+      "explanations": [
+        "Coincidencia: 31.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.584 en v_app = 3,382 m/s (canal N \u2192 0); 2465 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,449 m/s (R\u00b2=0.87, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,382 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 15,
+      "snr": 12.0,
+      "v_app_mps": 3291.6581899121093,
+      "seed": 819812042,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3382.24393678671,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3285.7486470234517,
+      "explanations": [
+        "Coincidencia: 29.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.434 en v_app = 3,382 m/s (canal 0 \u2192 N); 2443 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,286 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,382 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.4 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 12.9s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 16,
+      "snr": 12.0,
+      "v_app_mps": 5007.207273393888,
+      "seed": 420597101,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4958.7939734624715,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4993.133047210301,
+      "explanations": [
+        "Coincidencia: 43.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.797 en v_app = 4,959 m/s (canal 0 \u2192 N); 2464 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,993 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,959 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 17,
+      "snr": 12.0,
+      "v_app_mps": 4130.209156943471,
+      "seed": 259673004,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4095.3450221584408,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4120.581818181818,
+      "explanations": [
+        "Coincidencia: 36.2% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.527 en v_app = 4,095 m/s (canal 0 \u2192 N); 2124 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,121 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,095 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 18,
+      "snr": 12.0,
+      "v_app_mps": 4086.683476001545,
+      "seed": 82796730,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4095.3450221584408,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4077.2988505747126,
+      "explanations": [
+        "Coincidencia: 35.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.885 en v_app = 4,095 m/s (canal 0 \u2192 N); 2465 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,077 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,095 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 19,
+      "snr": 12.0,
+      "v_app_mps": -2919.5758499575354,
+      "seed": 1319456846,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2930.1560515835217,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2925.316455696203,
+      "explanations": [
+        "Coincidencia: 26.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.857 en v_app = 2,930 m/s (canal N \u2192 0); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,925 m/s (R\u00b2=0.88, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,930 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.5 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 14.5s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 0,
+      "snr": 20.0,
+      "v_app_mps": 4703.856247098447,
+      "seed": 723533268,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4694.1176470588225,
+      "explanations": [
+        "Coincidencia: 40.8% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.906 en v_app = 4,727 m/s (canal 0 \u2192 N); 2467 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,694 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,727 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 1,
+      "snr": 20.0,
+      "v_app_mps": 5598.964352745827,
+      "seed": 510182939,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 5723.876324421022,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5584.9756097560985,
+      "explanations": [
+        "Coincidencia: 48.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.709 en v_app = 5,724 m/s (canal 0 \u2192 N); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,585 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 5,724 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 2,
+      "snr": 20.0,
+      "v_app_mps": -3603.9605697687944,
+      "seed": 871391717,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -3547.9404277979343,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3611.1587982832607,
+      "explanations": [
+        "Coincidencia: 32.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.657 en v_app = 3,548 m/s (canal N \u2192 0); 2467 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,611 m/s (R\u00b2=0.88, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,548 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 3,
+      "snr": 20.0,
+      "v_app_mps": -5883.101439472424,
+      "seed": 1050002742,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5901.117318435753,
+      "explanations": [
+        "Coincidencia: 51.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.735 en v_app = 6,004 m/s (canal N \u2192 0); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,901 m/s (R\u00b2=0.96, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -6,004 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 4,
+      "snr": 20.0,
+      "v_app_mps": -4092.5441551472536,
+      "seed": 178282703,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4095.3450221584408,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4101.444043321299,
+      "explanations": [
+        "Coincidencia: 36.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.922 en v_app = 4,095 m/s (canal N \u2192 0); 2467 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,101 m/s (R\u00b2=0.92, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,095 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 5,
+      "snr": 20.0,
+      "v_app_mps": -3794.831820626513,
+      "seed": 42873670,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -3721.754407567086,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -3803.0487804878053,
+      "explanations": [
+        "Coincidencia: 34.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.598 en v_app = 3,722 m/s (canal N \u2192 0); 2467 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -3,803 m/s (R\u00b2=0.93, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -3,722 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 6,
+      "snr": 20.0,
+      "v_app_mps": 6369.7272569714505,
+      "seed": 1183090340,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6298.440425033787,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 6350.602409638554,
+      "explanations": [
+        "Coincidencia: 55.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.861 en v_app = 6,298 m/s (canal 0 \u2192 N); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 6,351 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,298 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 7,
+      "snr": 20.0,
+      "v_app_mps": 5918.341470306689,
+      "seed": 1697171496,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 6004.289635721046,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 5902.105263157894,
+      "explanations": [
+        "Coincidencia: 51.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.827 en v_app = 6,004 m/s (canal 0 \u2192 N); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 5,902 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 6,004 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 8,
+      "snr": 20.0,
+      "v_app_mps": 3160.997590569489,
+      "seed": 1074806057,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3224.2858302529476,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3156.4505119453925,
+      "explanations": [
+        "Coincidencia: 27.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.546 en v_app = 3,224 m/s (canal 0 \u2192 N); 2467 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,156 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,224 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.5 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 13.5s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 9,
+      "snr": 20.0,
+      "v_app_mps": -2389.7711497678365,
+      "seed": 367823762,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": -2419.943249148751,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -2393.1350114416477,
+      "explanations": [
+        "Coincidencia: 22.4% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.593 en v_app = 2,420 m/s (canal N \u2192 0); 2466 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -2,393 m/s (R\u00b2=0.84, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -2,420 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.5 m/s (km\u2193), R\u00b2=0.00, duraci\u00f3n 17.6s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 10,
+      "snr": 20.0,
+      "v_app_mps": -5366.822664411185,
+      "seed": 413075597,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -5456.558921200861,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5382.758620689654,
+      "explanations": [
+        "Coincidencia: 47.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.765 en v_app = 5,457 m/s (canal N \u2192 0); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,383 m/s (R\u00b2=0.90, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -5,457 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 11,
+      "snr": 20.0,
+      "v_app_mps": 2816.4402787823947,
+      "seed": 1087196780,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2930.1560515835217,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2814.3912624478,
+      "explanations": [
+        "Coincidencia: 25.1% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.282 en v_app = 2,930 m/s (canal 0 \u2192 N); 2302 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,814 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,930 m/s -- diferencia relativa 4% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.4 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 14.9s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 12,
+      "snr": 20.0,
+      "v_app_mps": 3135.8048869682507,
+      "seed": 663900183,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 3224.2858302529476,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3131.0769230769233,
+      "explanations": [
+        "Coincidencia: 27.6% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.424 en v_app = 3,224 m/s (canal 0 \u2192 N); 2465 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,131 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,224 m/s -- diferencia relativa 3% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1.0 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 13.6s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 13,
+      "snr": 20.0,
+      "v_app_mps": 3715.161719262932,
+      "seed": 281609824,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 3721.754407567086,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 3708.813559322036,
+      "explanations": [
+        "Coincidencia: 32.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.913 en v_app = 3,722 m/s (canal 0 \u2192 N); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,709 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 3,722 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 14,
+      "snr": 20.0,
+      "v_app_mps": 4427.804268605274,
+      "seed": 1638900386,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4506.436753703394,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4418.136850783183,
+      "explanations": [
+        "Coincidencia: 38.3% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.709 en v_app = 4,506 m/s (canal 0 \u2192 N); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,418 m/s (R\u00b2=1.00, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,506 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 15,
+      "snr": 20.0,
+      "v_app_mps": 3430.38678580212,
+      "seed": 606247724,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 1500.0,
+      "boundary_pinned": true,
+      "onset_agrees": false,
+      "v_app_onset_mps": 3424.7093023255807,
+      "explanations": [
+        "Coincidencia: 30.0% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.451 en v_app = 1,500 m/s (canal 0 \u2192 N); 18 canales coherentes con el beam.",
+        "M\u00e1ximo en borde de b\u00fasqueda: no-medici\u00f3n. El pico de semblanza no es interior a la grilla de velocidades -- el \u00f3ptimo real puede estar fuera del rango barrido (moveout a\u00fan m\u00e1s lento/r\u00e1pido, o esencialmente instant\u00e1neo). La velocidad aparente reportada NO sostiene SISMO_CONFIRMADO.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 3,425 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 1,500 m/s -- diferencia relativa 78% (DISCREPA, tolerancia 40%).",
+        "Trayectoria del centroide: 0.5 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 12.4s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    },
+    {
+      "trial_idx": 16,
+      "snr": 20.0,
+      "v_app_mps": -5047.198525883454,
+      "seed": 1695683228,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4958.7939734624715,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -5060.275862068966,
+      "explanations": [
+        "Coincidencia: 44.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.726 en v_app = 4,959 m/s (canal N \u2192 0); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -5,060 m/s (R\u00b2=0.97, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,959 m/s -- diferencia relativa 2% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 17,
+      "snr": 20.0,
+      "v_app_mps": 4307.53440326476,
+      "seed": 620691383,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": 4295.976411358775,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 4299.7150997151,
+      "explanations": [
+        "Coincidencia: 37.5% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.905 en v_app = 4,296 m/s (canal 0 \u2192 N); 2467 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 4,300 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 4,296 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 18,
+      "snr": 20.0,
+      "v_app_mps": -4766.0201736826175,
+      "seed": 1938297405,
+      "hit": true,
+      "detected": true,
+      "classified_as": "SISMO_CONFIRMADO",
+      "measured_velocity_mps": -4727.207570654601,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": -4778.260869565217,
+      "explanations": [
+        "Coincidencia: 42.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.863 en v_app = 4,727 m/s (canal N \u2192 0); 2468 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = -4,778 m/s (R\u00b2=0.91, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = -4,727 m/s -- diferencia relativa 1% (CONCUERDA, tolerancia 40%).",
+        "Veredicto: SISMO CONFIRMADO por f\u00edsica de propagaci\u00f3n (velocidad aparente en rango s\u00edsmico [1,500\u20138,000] m/s + disparo masivo cuasi-simult\u00e1neo)."
+      ]
+    },
+    {
+      "trial_idx": 19,
+      "snr": 20.0,
+      "v_app_mps": 2202.826316033943,
+      "seed": 1481181122,
+      "hit": false,
+      "detected": true,
+      "classified_as": "COHERENTE_DESCONOCIDO",
+      "measured_velocity_mps": 2199.1882014460293,
+      "boundary_pinned": false,
+      "onset_agrees": true,
+      "v_app_onset_mps": 2200.628436763551,
+      "explanations": [
+        "Coincidencia: 19.7% de los canales disparados dentro de 3.5s (extensi\u00f3n del evento: 100.0% del arreglo).",
+        "Slant-stack: pico de semblanza 0.515 en v_app = 2,199 m/s (canal 0 \u2192 N); 2301 canales coherentes con el beam.",
+        "Corroboraci\u00f3n cruzada: v_app_onset (Theil-Sen) = 2,201 m/s (R\u00b2=0.99, informativo -- no se exige un piso: Theil-Sen es robusto a picks ruidosos, un R\u00b2 bajo no invalida la pendiente) vs v_app_semblanza = 2,199 m/s -- diferencia relativa 0% (CONCUERDA, tolerancia 40%).",
+        "Trayectoria del centroide: 1.1 m/s (km\u2191), R\u00b2=0.00, duraci\u00f3n 19.1s.",
+        "Veredicto: coherente pero fuera de las bandas f\u00edsicas conocidas. Se env\u00eda al cat\u00e1logo de firmas para identificaci\u00f3n."
+      ]
+    }
+  ]
+}

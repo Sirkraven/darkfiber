@@ -12,8 +12,26 @@
 *.sqlite3
 
 # Regenerable outputs (root-anchored: docs/figures/ holds curated,
-# committed assets and must NOT be caught by this)
-/figures/
+# committed assets and must NOT be caught by this). The 8 snr_curve_<id>.json
+# below are NOT regenerable output -- they encode real measurement results
+# against external raw DAS data that isn't in the repo, and sustain the
+# whole provenance chain (docs/observaciones.md, docs/array_geometry_table.md).
+# `/figures/*` (not `/figures/`) so the negations below are actually
+# reachable -- git never descends into an excluded directory, so
+# `/figures/` + `!/figures/snr_curve_*.json` silently matched nothing.
+# Exact filenames, not a `snr_curve_*.json` glob: a glob also caught
+# snr_curve_fossa_smoketest.json (a pilot/smoke-test artifact, n=2/step,
+# not part of the frozen 8-array series) -- enumerate the 8 explicitly so
+# a future stray snr_curve_*.json can never slip in silently.
+/figures/*
+!/figures/snr_curve_arcata.json
+!/figures/snr_curve_foresee.json
+!/figures/snr_curve_fossa.json
+!/figures/snr_curve_monterey_bay.json
+!/figures/snr_curve_ridgecrest_north.json
+!/figures/snr_curve_stanford1_campus.json
+!/figures/snr_curve_stanford2_sandhill.json
+!/figures/snr_curve_valencia_submarine.json
 /scoreboard.md
 *.jsonl
 !validacion_real/*.jsonl

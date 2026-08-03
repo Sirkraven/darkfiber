@@ -1,0 +1,130 @@
+{
+  "array_id": "stanford2_sandhill",
+  "threshold": 4.0,
+  "threshold_source": "default global (sin propuesta aplicada)",
+  "snr_steps": [
+    1.0,
+    2.0,
+    3.0,
+    5.0,
+    8.0,
+    12.0,
+    20.0
+  ],
+  "n_per_step": 20,
+  "curve": [
+    {
+      "snr": 1.0,
+      "n": 20,
+      "hits": 0,
+      "recall": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.16112515805281938
+    },
+    {
+      "snr": 2.0,
+      "n": 20,
+      "hits": 13,
+      "recall": 0.65,
+      "ci_low": 0.4328542766852363,
+      "ci_high": 0.8188081758989179
+    },
+    {
+      "snr": 3.0,
+      "n": 20,
+      "hits": 19,
+      "recall": 0.95,
+      "ci_low": 0.763868806553258,
+      "ci_high": 0.9911185511992047
+    },
+    {
+      "snr": 5.0,
+      "n": 20,
+      "hits": 20,
+      "recall": 1.0,
+      "ci_low": 0.8388748419471806,
+      "ci_high": 1.0
+    },
+    {
+      "snr": 8.0,
+      "n": 20,
+      "hits": 20,
+      "recall": 1.0,
+      "ci_low": 0.8388748419471806,
+      "ci_high": 1.0
+    },
+    {
+      "snr": 12.0,
+      "n": 20,
+      "hits": 20,
+      "recall": 1.0,
+      "ci_low": 0.8388748419471806,
+      "ci_high": 1.0
+    },
+    {
+      "snr": 20.0,
+      "n": 20,
+      "hits": 20,
+      "recall": 1.0,
+      "ci_low": 0.8388748419471806,
+      "ci_high": 1.0
+    }
+  ],
+  "snr50": 1.7692307692307692,
+  "runtime_s": 109.32889000000432,
+  "format": "segy",
+  "hdf5_key": null,
+  "channel_range": [
+    399,
+    750
+  ],
+  "input_files": [
+    "cbt_processed_20200301_065859.550+0000.sgy",
+    "cbt_processed_20200301_065959.550+0000.sgy",
+    "cbt_processed_20200301_070059.550+0000.sgy",
+    "cbt_processed_20200301_070159.550+0000.sgy"
+  ],
+  "input_files_explicit_list": true,
+  "noise_exclusion": {
+    "margin_s": 5.0,
+    "manual_exclude_s": null,
+    "sources": [
+      {
+        "file": "cbt_processed_20200301_065859.550+0000.sgy",
+        "segment_s": [
+          0.0,
+          59.996
+        ],
+        "duration_s": 59.996,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "cbt_processed_20200301_065959.550+0000.sgy",
+        "segment_s": [
+          0.0,
+          59.996
+        ],
+        "duration_s": 59.996,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "cbt_processed_20200301_070059.550+0000.sgy",
+        "segment_s": [
+          0.0,
+          59.996
+        ],
+        "duration_s": 59.996,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      },
+      {
+        "file": "cbt_processed_20200301_070159.550+0000.sgy",
+        "segment_s": [
+          0.0,
+          59.996
+        ],
+        "duration_s": 59.996,
+        "exclusion_kind": "none (archivo completo, sin verdad-terreno)"
+      }
+    ]
+  }
+}
