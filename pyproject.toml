@@ -92,6 +92,7 @@ darkfiber-snr-curve = "darkfiber.snr_curve:main"
 darkfiber-replay = "darkfiber.replay:main"
 darkfiber-dashboard = "darkfiber.dashboard:main"
 darkfiber-pipeline = "darkfiber.pipeline_daemon:main"
+darkfiber-series-robustness = "darkfiber.series_robustness:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/darkfiber"]
