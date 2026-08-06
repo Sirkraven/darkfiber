@@ -1,7 +1,12 @@
-# Plan Fase 2 — Paper (technical note) · **Rev. 6**
+# Plan Fase 2 — Paper (technical note) · **Rev. 9**
 
-**2026-08-02.** Rev. 6 corrige un diagnóstico equivocado de la Rev. 5 y cierra los
-dos pendientes de QA contra el `QA_REPORT.md` vigente.
+**2026-08-05 (Rev. 9).** Cierra F2.B1: `fs` de stanford1_campus resuelto contra
+el header, objeción de Valencia **retirada**, smoketest limpio. Con eso **la capa
+de medición queda sin rojos**. Lo que sigue es trabajo de construcción, no de
+descubrimiento. Rev. 8 había cerrado el sourcing: **8/8 ambientes y 7/8 interrogadores**
+con fuente primaria. Trae tres hallazgos que reordenan §4.5 y §6, y una
+reclasificación de `ridgecrest_north`. Rev. 7 había llegado a 6/8. Rev. 6 corrigió un diagnóstico equivocado de la Rev. 5 y cerró los dos
+pendientes de QA contra el `QA_REPORT.md` vigente.
 **Al adoptar esta rev., borrar `docs/plan_fase2_paper (1).md` y commitear una sola
 copia canónica.**
 
@@ -43,8 +48,17 @@ verde.**
 | Spread puntual 5.33× | ✅ trivial desde la tabla | — |
 | **Cota del spread ≈3.50×** | ❌ **solo calculado en chat** | F2.A2 |
 | pytest | ✅ 132/132 última corrida | — |
-| Ambiente ×8 con fuente primaria | ❌ 1 de 8 | F2.B |
-| Interrogador ×8 | ❌ 2 de 8 | F2.B |
+| Ambiente ×8 con fuente primaria | ✅ **8 de 8** | cerrado |
+| Interrogador ×8 | ✅ **7 de 8** + un `—` explícito (ridgecrest) | cerrado |
+| Gauge length ×8 | ⚠️ 6 de 8 | menor |
+| Subgrupo urbano-telecom (5 arrays, 84.8%) | ✅ verificado | §4.5 |
+| QuantX compartido best/worst | ⚠️ **por verificar contra metadatos** | §6 |
+| `fs` de stanford1_campus | ✅ **header autoritativo: 100.0 Hz** | cerrado |
+| Rango de canales de Valencia | ✅ **cerrado — objeción retirada** | cerrado |
+| Consumidores por glob de `snr_curve_*.json` | ✅ ninguno | cerrado |
+| `noise_exclusion` de stanford1_campus | ⚠️ **verificar** — pool de ruido de ventanas alrededor del M4.1 | F2.C |
+| Metadatos sourceados volcados al repo | ❌ viven solo en el plan | F2.C |
+| Auditoría de 6 figuras heredadas | ❌ sin empezar | F2.C |
 | CI verde 3.10/3.11/3.12 | ✅ QA-06 cerrado, commit `e234cf9` | — |
 | ¿CI cubre commits en `dev`? | ⚠️ verificado vía PR draft cerrado | F2.A2 |
 | Párrafo de comparabilidad | ❌ no escrito | §3 |
@@ -59,6 +73,27 @@ verde.**
 - **V3.** `(n_ch−1)·dx` exacto en las 8 filas, incluida FOSSA (23,294.0 m).
 - **V4.** Valencia identificada por aritmética: canal 2977 × 16.8 m = 50.0 km
   (primeros 50 km del ISLALINK Valencia–Palma); subrango 510–2977 = 2,468 ch.
+- **V6.** **`fs` de stanford1_campus = 100.0 Hz**, leído del header binario real
+  de los tres SEG-Y (`sample_interval_us = 10000`) con `read_binary_header` /
+  `read_segy` del propio proyecto. Coincide con `array_profiles`. **PubDAS Tabla 1
+  declara 50 Hz para "Stanford-1"**; los SEG-Y de Pawnee (2016) sí dan 50 Hz
+  exacto, y `writeup.md` ya documentaba que la tasa varía por adquisición —
+  50 Hz en la grabación de Pawnee 2016, 100 Hz en la de East Foothills 2017.
+  Explicación consistente: son dos instantáneas temporales del mismo arreglo
+  físico. **El header es la fuente autoritativa. Ver la nota de cita obligatoria
+  en §5.1-nonies.**
+- **V7.** **Rango de canales de Valencia: cerrado, objeción retirada.** El 510 no
+  era una estimación del proyecto: es el número de canal tal cual figura en la
+  fila 1 de `DAS-1-geometry-Valencia-undersea.csv` (2.468 filas, 1-indexado,
+  provisto por el operador), y el código ya lo documentaba
+  (`snr_curve.py:212`). El CSV trae **profundidad por canal**: canal 510 →
+  0.221 m (recién sumergido); canal 547 → 7.20 m. **Ningún canal del subrango
+  cae en tierra.** La estimación de 9,189 m / 16.8 m ≈ canal 547 supone traza
+  recta y espaciado uniforme; el CSV del operador la domina.
+- **V8.** **Ningún consumidor levanta `snr_curve_*.json` por glob.**
+  `run_on_quakeflow.py`, `snr_curve.py` y `series_robustness.py` construyen
+  siempre el nombre exacto desde un `array_id` explícito. El único glob era el
+  `.gitignore`, ya corregido con enumeración.
 - **V5.** Umbral crítico 0.7381 verificado por enumeración con aritmética
   racional: Σd²=22 → ρ=0.7381, p=0.04583; Σd²=24 → ρ=0.7143, p=0.05759.
 
@@ -68,14 +103,35 @@ verde.**
 
 | Array | SNR50 | Envolvente | Bracket | Interrogador | Ambiente |
 |---|---|---|---|---|---|
-| monterey_bay | 1.50 | [1.0746, 1.9254] | 1→2 | `—` | `—` |
-| FORESEE | 1.75 | [1.4529, 2.0000] | 1→2 | `—` | `—` |
-| Stanford-2 | 1.769231 | [1.5153, 2.0000] | 1→2 | `—` | `—` |
-| Valencia | 2.333333 | [2.0000, 3.0000] | 2→3 | FEBUS A1-R | `—` |
-| ridgecrest_north | 2.666667 | [2.3595, 3.0000] | 2→3 | `—` | `—` |
-| FOSSA | 4.50 | [3.9057, 5.0000] | 3→5 | `—` | `—` |
-| stanford1_campus | 7.727273 | [6.7508, 8.0000] | 5→8 | `—` | `—` |
-| arcata | 8.00 | [6.2306, 8.0000] | **punto medido** | Luna QuantX | Urbano, fibra telecom |
+| monterey_bay | 1.50 | [1.0746, 1.9254] | 1→2 | OptaSense **QuantX** (GL 20.4 m) | Submarino — fibra oscura del cable MARS de MBARI, 52 km. **Profundidad muy variable ⇒ el ruido de fondo cambia a lo largo del cable** |
+| FORESEE | 1.75 | [1.4529, 2.0000] | 1→2 | Silixa **iDAS-v2** (GL 10 m) | Fibra oscura bajo campus Penn State; conducto de hormigón enterrado 1–10 m |
+| Stanford-2 | 1.769231 | [1.5153, 2.0000] | 1→2 | OptaSense **ODH-3** (GL 20 m) | Telecom, vía pública — Sand Hill Rd, Palo Alto |
+| Valencia | 2.333333 | [2.0000, 3.0000] | 2→3 | Febus Optics **A1-R** (GL 30.4 m) | Telecom IslaLink; 9,189 m en tierra, 40,811 m bajo lecho marino |
+| ridgecrest_north | 2.666667 | [2.3595, 3.0000] | 2→3 | `—` (no consta en la fuente) | **Telecom — fibra oscura subterránea en la ciudad de Ridgecrest** (reclasificado, ver §5.1-quinquies) |
+| FOSSA | 4.50 | [3.9057, 5.0000] | 3→5 | Silixa **iDAS-v2** (GL 10 m) | Telecom ESnet. **Cuatro ambientes**: urbano, cultivo, I-5, corredor ferroviario |
+| stanford1_campus | 7.727273 | [6.7508, 8.0000] | 5→8 | OptaSense **ODH-3** (GL 7.14 m) | Telecom, conductos bajo campus de Stanford; PVC con aire, **acoplamiento solo por gravedad y fricción** |
+| arcata | 8.00 | [6.2306, 8.0000] | **punto medido** | Luna **QuantX** | Telecom — Vero Communications, Arcata↔Eureka |
+
+**Fuentes:** Spica et al. 2023 (PubDAS) Tabla 1 y §§4.2–4.8 para FORESEE,
+Stanford-2, Valencia, FOSSA y stanford1_campus · Romanowicz et al. 2023
+(SRL 94(5):2348–2359, DOI 10.1785/0220230047) para monterey_bay/SeaFOAM ·
+Li et al. 2021 (AGU Advances 2(2), DOI 10.1029/2021AV000395) y Yang et al. 2022
+(GRL, DOI 10.1029/2021GL096503) para ridgecrest_north · McGuire et al. 2025
+(SRL 96(4):2489–2503) + fichas USGS para arcata · Biondi et al. arXiv:2203.05932
+como corroboración de stanford1_campus.
+
+**El `—` de ridgecrest_north es deliberado.** Li et al. 2021 documenta el arreglo
+(10 km de fibra, 1.250 canales, 8 m de espaciado, ciudad de Ridgecrest) pero no
+declara el modelo de interrogador en el texto accesible. **Prohibido rellenarlo
+por inferencia.** Nota de desambiguación: existen dos arreglos DAS de Ridgecrest
+en la literatura; el de esta serie es el de respuesta rápida de 2019
+(1.250 canales, 8 m), no el posterior de 80 km y 10 m.
+
+**Verificaciones que salieron del mismo pase, sin costo:** los 2,137 canales de
+FORESEE son exactamente los localizados por tap test; los 11,648 de FOSSA son
+exactamente las posiciones de calidad utilizable; los 626 de stanford1 coinciden;
+los 352 de Stanford-2 son los canales 399–750, la sección de mayor SNR entre el
+Stanford Hospital y SLAC. **Ninguno de los cuatro conteos era arbitrario.**
 
 `—` = pendiente de fuente primaria. **Prohibido rellenar desde documentación
 propia del proyecto.**
@@ -185,7 +241,12 @@ Neidell & Taner 1971; Taner et al. 1979. **Lior et al. 2021**, JGR 126(3)
 e2020JB020925. **Ugalde et al. 2021**, SRL 93(1):351–363.
 **Rodriguez, Seguí, Ugalde et al. 2025**, IEEE JSTARS 18:19869–19883 (CQI).
 Muñoz & Soto 2022. Williams et al. 2019. **SEAFOM MSP-02 / `pySEAFOM`**.
-PubDAS (Spica et al. 2023). **McGuire et al. 2025**, SRL 96(4):2489–2503.
+PubDAS (**Spica et al. 2023**, SRL 94(2A):983–998). **McGuire et al. 2025**,
+SRL 96(4):2489–2503. **Romanowicz et al. 2023**, SRL 94(5):2348–2359 (SeaFOAM).
+**Li et al. 2021**, AGU Advances 2(2) e2021AV000395 (Ridgecrest).
+**Yang et al. 2022**, GRL, DOI 10.1029/2021GL096503 (variabilidad de sitio
+sub-kilométrica sobre el arreglo de Ridgecrest).
+**Biondi et al.** arXiv:2203.05932 (Stanford DAS array).
 
 **Tabla de posicionamiento (va al manuscrito).** Cada celda verificable abriendo
 el paper citado:
@@ -250,7 +311,57 @@ el paper citado:
     interiores. **SNR50 no es un proxy validado de detectabilidad real.** Vía de
     falsificación: contrastar contra magnitud de completitud donde haya catálogo.
 
-### §6 Discussion · §7 Data & code · §8 References
+### §6 Discussion — la cadena de eliminación
+
+**Estructura del argumento (esto ordena la sección):** el resultado negativo no es
+una observación suelta, es una eliminación en cadena.
+
+1. **No lo explican las variables de catálogo** — medido. `n_ch`, `dx`, apertura y
+   `fs`, ninguno alcanza |ρ| ≥ 0.7381 con n=8, y la Cota A muestra que sigue sin
+   alcanzarlo aun liberando los 8 dentro de su precisión de medición.
+2. **No lo explica la categoría de ambiente** — medido, y **sin necesitar
+   estadístico**: cinco de las ocho instalaciones son fibra de telecom y cubren
+   el 84.8% del spread total.
+3. **Posiblemente tampoco el interrogador** — el mejor y el peor de la serie
+   comparten modelo. **Pendiente de verificación (§5.1-octies).**
+4. **Lo que queda es el despliegue mismo.** El acoplamiento es el candidato con
+   nombre.
+
+**Límite honesto que va escrito:** con n=8 una eliminación nunca es exhaustiva, y
+el paso 4 no está testeado.
+
+**[ADVERTENCIA DE REDACCIÓN — no colapsar dos cosas distintas.]** "Ambiente" en
+la Tabla 1 es una categoría gruesa (submarino / urbano / telecom). "Acoplamiento"
+es cómo está físicamente sujeto ese cable, y **no coincide con la categoría**:
+stanford1_campus y Stanford-2 son ambos telecom urbanos y tienen acoplamientos
+completamente distintos — uno flota en un conducto de PVC con aire, el otro va
+bajo una vía pública. Esa distinción es lo que permite que "el ambiente no
+predice" y "el acoplamiento podría explicar" convivan sin contradecirse. Si en la
+prosa quedan pegadas, un revisor va a decir que el paper se contradice.
+
+**Evidencia externa que apoya la escala del efecto:** Yang et al. 2022 (GRL)
+documentaron que **sobre el propio arreglo de Ridgecrest, en solo 8 km**, la
+amplificación de sitio varía sustancialmente y correlaciona con la estructura
+somera. Es literatura ajena mostrando que la variabilidad relevante ocurre a
+escala sub-kilométrica dentro de una misma instalación.
+
+**[POST-HOC, NO TESTEADA — etiquetar como tal.]** Con los ambientes sourceados
+aparece un patrón: los dos peores SNR50 de la serie son `stanford1_campus` (7.73)
+y `arcata` (8.00). Stanford-1 es el único de la serie cuyo acoplamiento está
+documentado como **exclusivamente por gravedad y fricción** dentro de un conducto
+de PVC lleno de aire. El mejor de la serie, `monterey_bay` (1.50), es submarino;
+Valencia, también submarino, es cuarto.
+
+Si el acoplamiento con el medio fuera el factor dominante, **explicaría el
+hallazgo negativo**: ninguna variable de catálogo predice SNR50 porque la variable
+que manda no figura en ningún catálogo. Converge con lo que dos interlocutores de
+la industria señalaron por separado (§8).
+
+**No está testeado y n=8 no alcanza para testearlo.** Va como hipótesis con vía de
+falsificación declarada: clasificar las instalaciones por tipo de acoplamiento
+documentado y repetir la prueba de rango con más instalaciones.
+
+### §7 Data & code · §8 References
 Complementariedad con SEAFOM. Trabajo futuro como hipótesis con vía de
 falsificación. **La veta de adquisición no puede insinuar evidencia fuerte
 (§5.3).** Zenodo DOI, repo AGPL, higiene de licencias, historia de
@@ -260,8 +371,89 @@ congelamiento. 20+ referencias formales.
 
 ## §5 Correcciones pendientes
 
-**5.1 Ambiente:** 1 de 8 con fuente primaria real. Ejecutar D3.
-**5.2 Interrogador:** 2 de 8 (arcata Luna QuantX; Valencia FEBUS A1-R).
+**5.1 Ambiente e interrogador: 6 de 8 cerrados.** Faltan `monterey_bay` (no está
+en PubDAS; candidato de fuente: Lindsey, Dawe & Ajo-Franklin 2019, *Science*,
+cable MARS de Monterey Bay) y `ridgecrest_north` (tampoco en PubDAS; proviene de
+`AI4EPS/quakeflow_das`).
+
+**5.1-bis FOSSA no tiene un ambiente, tiene cuatro.** La etiqueta "Urbano" de la
+tabla es incorrecta: PubDAS §4.3 documenta que la fibra atraviesa zona urbana,
+tierras de cultivo junto al río Sacramento, la Interestatal 5 y por tramos un
+corredor ferroviario muy usado. **Corregir en Tabla 1**, y usarlo para reforzar
+el caveat 8: SNR50 mide el sistema desplegado, no un sitio homogéneo.
+
+**5.1-ter Discrepancia de `fs` en stanford1_campus.** PubDAS Tabla 1 da **50 Hz**;
+la tabla del proyecto dice **100.0 Hz**. Impacto medido: ρ(fs, SNR50) pasa de
+−0.3805 a −0.3856; **ninguno cruza 0.7381 y la conclusión no se mueve**. Pero
+`fs` es un proxy publicado y la invariante de §3 dice que sale del header o de
+argumento explícito, nunca se asume. **Resolver leyendo el header** (F2.B1).
+
+**5.1-quater Rango de canales de Valencia.** PubDAS §4.8: los primeros 9,189 m
+están en tierra, o sea que el submarino empieza en el canal ~548
+(9,189 / 16.8 = 547.0). El subrango de la tabla es 510–2977. Si el indexado
+coincide, **38 canales (510–547) quedarían en tierra** dentro de un subrango
+declarado submarino. Verificar la convención de indexado antes de concluir nada.
+
+**5.1-quinquies `ridgecrest_north` estaba mal clasificado — corrección de Tabla 1.**
+La tabla decía "Desierto/rural". Las fuentes primarias dicen que se accedió a
+10 km de **fibra oscura subterránea de telecomunicaciones dentro de la ciudad de
+Ridgecrest** y se convirtió en un arreglo de 1.250 canales a 8 m (Li et al. 2021;
+Yang et al. 2022). La ciudad está en el desierto de Mojave, pero el cable es
+telecom urbano enterrado. **Corregir.**
+
+**5.1-sexies El subgrupo urbano-telecom pasa de 4 a 5 arrays — refuerza §4.5.**
+Con la reclasificación de ridgecrest, **cinco de las ocho instalaciones** son
+fibra de telecomunicaciones: Stanford-2 (1.77), ridgecrest_north (2.67),
+FOSSA (4.50), stanford1_campus (7.73), arcata (8.00). Extremos 1.77 y 8.00 →
+**4.52×, el 84.8% del spread total de 5.33×**. El cociente no cambia respecto del
+subgrupo de 4 (ridgecrest cae en el medio); lo que cambia es que ahora son cinco
+de ocho. **Es la forma directa del claim central y no necesita ningún
+estadístico.**
+
+**5.1-septies monterey_bay tampoco es un ambiente homogéneo.** Romanowicz et al.
+2023: la profundidad del agua varía significativamente a lo largo del cable de
+52 km, así que las características del ruido de fondo cambian con ella, con
+niveles mucho más altos en aguas someras. **Segundo array, después de FOSSA,
+donde una etiqueta única de ambiente es una simplificación.** Refuerza el caveat 8.
+
+**5.1-octies [POR VERIFICAR] El mejor y el peor comparten modelo de
+interrogador.** `monterey_bay` (1.50, el más sensible) usa un **QuantX de
+OptaSense**; `arcata` (8.00, el menos sensible) usa un **QuantX de Luna**. Mismo
+nombre de modelo, distinto prefijo corporativo. Si se sostiene, es evidencia
+directa de que el interrogador no determina la detectabilidad del sistema
+desplegado. **Hoy se apoya solo en el nombre del modelo en dos fuentes distintas
+— verificar contra los metadatos de ambos datasets antes de escribirlo.** Es un
+claim fuerte y no puede descansar en una coincidencia de nombre comercial.
+
+**5.1-nonies [NOTA DE CITA OBLIGATORIA] `fs` de stanford1_campus.** En Tabla 1
+del manuscrito, el valor **100.0 Hz** se cita explícitamente como **valor del
+header del archivo utilizado**, no como valor del repositorio. PubDAS Tabla 1
+declara 50 Hz para ese arreglo. Sin la nota, cualquiera que compare el paper
+contra PubDAS ve 50 vs 100 y asume un error de transcripción. *El ambiente y el
+interrogador sourceados siguen válidos: describen el arreglo físico, no la época
+de adquisición.*
+
+**5.1-decies [REGLA GENERAL, ganada en V7] La metadata del operador domina a la
+aritmética sobre un resumen de paper.** Donde exista archivo de geometría o
+metadata del instrumento, esa es la fuente autoritativa; una cifra derivada
+dividiendo longitud por espaciado supone traza recta y espaciado uniforme y no
+compite. Aplicar a las siete filas restantes antes de publicar cualquier
+geometría.
+
+**5.1-undecies [VERIFICAR] `noise_exclusion` de stanford1_campus.** Sus archivos
+son `eastfoothills_segy` — extractos alrededor del **M4.1 de East Foothills**, el
+evento cuya confirmación fue retractada. El pool de ruido proviene por tanto de
+ventanas alrededor de un terremoto real, que es coherente entre canales, que es
+exactamente lo que el detector busca. Si quedara energía del evento dentro de la
+ventana de ruido, podría producir hits contabilizados como detección de la
+inyección. `noise_exclusion` existe para esto y está en la provenance de las 8,
+así que probablemente esté cubierto. **Se verifica igual porque
+`stanford1_campus` es uno de los dos extremos que sostienen el 5.33×.**
+
+**5.2 Gauge length obtenido de regalo** en el mismo pase: FORESEE 10 m,
+FOSSA 10 m, Stanford-2 20 m, stanford1 7.14 m, Valencia 30.4 m. No estaba en la
+tabla y es relevante para el caveat 5 (respuesta espectral): el GL genera muescas
+de strain nulo a múltiplos de la longitud de calibre.
 **5.3 Veta de adquisición sobre número no reproducible:** el "pool mixto dio
 5.90" está superseded Y NO REPRODUCIBLE; la reconstrucción dio **7.33**.
 Comparación defendible **7.33 vs 8.00** — magnitud de 2.10 a **0.67**, dentro de
@@ -297,9 +489,11 @@ código"). Ejemplo de auto-corrección sobre el *método de decidir*.
 | Bloque | Contenido | Estado |
 |---|---|---|
 | **F2.A** | Envolventes + cotas al repo | ✅ commit `77f2ed6` |
-| **F2.A2** | Corrección Cota B + spread + umbral + erratas + tracking JSON | ▶ **siguiente** |
-| **F2.B** | Sourcing: 7 ambientes + 6 interrogadores | pendiente |
-| **F2.C** | Auditoría de 6 figuras heredadas (default: no sobrevive) | pendiente |
+| **F2.A2** | Corrección Cota B + spread + umbral + erratas | ✅ commit `d0fd074` |
+| **F2.A3** | Tracking de JSON congelados + push + consolidación de planes | ✅ commit `46e28d7` |
+| **F2.B** | Sourcing de ambientes e interrogadores | ✅ 8/8 y 7/8, en este plan |
+| **F2.B1** | Diagnóstico `fs` / Valencia / glob | ✅ V6, V7, V8 |
+| **F2.C** | Metadatos al repo + `noise_exclusion` + auditoría de 6 figuras | ▶ **siguiente** |
 | **F2.D** | Figuras nuevas, sidecar con `input_files` y hash | pendiente |
 | **F2.E** | Bibliografía 20+ | pendiente |
 | **F2.F** | Hoja de 13 caveats | pendiente |

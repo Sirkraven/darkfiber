@@ -43,16 +43,35 @@ pre-declarada. Los hashes (`sha256` completo del propio
 `figures/snr_curve_<id>.json`, calculados directo sobre el archivo — no
 de memoria) son la referencia de auditoría byte-a-byte de cada fila.
 
-| Array | Ambiente | n_ch | spacing (dx) | apertura | fs | SNR50 | IC95% (escalones que bracketan 50%) | sha256 de `snr_curve_<id>.json` |
-|---|---|---|---|---|---|---|---|---|
-| monterey_bay | Submarino (SeaFOAM) | 2,845 | 5.2 m | 14,788.8 m (14.79 km) | 199.995 Hz | **1.50** | [11.2,46.9]@SNR1 / [53.1,88.8]@SNR2 | `41908b46a149…78d7af` |
-| FORESEE (foresee) | Urbano, campus universitario | 2,137 | 2.0 m | 4,272.0 m (4.27 km) | 125.0 Hz | 1.75 | [0.9,23.6]@SNR1 / [43.3,81.9]@SNR2 | `ef8890b37bc8…89934b9580f5` |
-| Stanford-2 (stanford2_sandhill) | Urbano, vía pública | 352 | 8.16 m | 2,864.16 m (2.86 km) | 250.0 Hz | 1.77 | [0.0,16.1]@SNR1 / [43.3,81.9]@SNR2 | `c5756e8c796b…072f0a625` |
-| Valencia (valencia_submarine) | Submarino | 2,468 | 16.8 m | 41,445.6 m (41.45 km) | 250.0 Hz | 2.33 | [25.8,65.8]@SNR2 / [38.7,78.1]@SNR3 | `b1dff168b397…d21c8330` |
-| ridgecrest_north | Desierto/rural | 1,150 | 8.0 m | 9,192.0 m (9.19 km) | 100.0 Hz | **2.67** | [2.8,30.1]@SNR2 / [48.1,85.5]@SNR3 | `5f78e38755a0…881d24e` |
-| FOSSA | Urbano — fibra oscura de telecom | 11,648 | 2.0 m | 23,294.0 m (23.29 km) | 500.0 Hz | 4.50 | [0.9,23.6]@SNR3 / [43.3,81.9]@SNR5 | `1f566023c027…4a78532ed3` |
-| stanford1_campus | Urbano, campus universitario | 626 | 8.16 m | 5,100.0 m (5.10 km) | 100.0 Hz | 7.73 | [0.0,16.1]@SNR5 / [34.2,74.2]@SNR8 | `220904ff7f64…7821ad82` |
-| arcata | Urbano — fibra de telecom (ver nota "Ambiente de arcata, sourceado 2026-08-01" abajo) | 3,020 | 5.104762077331543 m | 15,411.28 m (15.41 km) | 100.0 Hz | **8.00** | [5.2,36.0]@SNR5 / [29.9,70.1]@SNR8 | `bfaa1254fdb0…6e878e25409` |
+| Array | Ambiente | Interrogador | GL | n_ch | spacing (dx) | apertura | fs | SNR50 | IC95% (escalones que bracketan 50%) | sha256 de `snr_curve_<id>.json` | Fuente primaria (ambiente/interrogador) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| monterey_bay | Submarino (SeaFOAM) — fibra oscura del cable científico MARS (MBARI), 52 km. Profundidad muy variable ⇒ el ruido de fondo cambia a lo largo del cable | OptaSense QuantX | 20.4 m | 2,845 | 5.2 m | 14,788.8 m (14.79 km) | 199.995 Hz | **1.50** | [11.2,46.9]@SNR1 / [53.1,88.8]@SNR2 | `41908b46a149…78d7af` | Romanowicz et al. 2023, *SRL* 94(5):2348–2359, DOI 10.1785/0220230047 |
+| FORESEE (foresee) | Telecom — fibra oscura bajo campus de Penn State; conducto de hormigón enterrado 1–10 m | Silixa iDAS-v2 | 10 m | 2,137 | 2.0 m | 4,272.0 m (4.27 km) | 125.0 Hz | 1.75 | [0.9,23.6]@SNR1 / [43.3,81.9]@SNR2 | `ef8890b37bc8…89934b9580f5` | Spica et al. 2023, *SRL* 94(2A):983–998, §4.2 + Tabla 1 |
+| Stanford-2 (stanford2_sandhill) | Telecom — vía pública, Sand Hill Rd, Palo Alto | OptaSense ODH-3 | 20 m | 352 | 8.16 m | 2,864.16 m (2.86 km) | 250.0 Hz | 1.77 | [0.0,16.1]@SNR1 / [43.3,81.9]@SNR2 | `c5756e8c796b…072f0a625` | Spica et al. 2023, §4.6 + Tabla 1 |
+| Valencia (valencia_submarine) | Telecom submarino — cable IslaLink; 9,189 m en tierra, 40,811 m enterrados ~1 m bajo el lecho mediterráneo | Febus Optics A1-R | 30.4 m | 2,468 | 16.8 m | 41,445.6 m (41.45 km) | 250.0 Hz | 2.33 | [25.8,65.8]@SNR2 / [38.7,78.1]@SNR3 | `b1dff168b397…d21c8330` | Spica et al. 2023, §4.8 + Tabla 1 |
+| ridgecrest_north | **Telecom — fibra oscura subterránea dentro de la ciudad de Ridgecrest** (fe de erratas 2026-08-05, ver nota abajo — no "Desierto/rural") | `—` | `—` | 1,150 | 8.0 m | 9,192.0 m (9.19 km) | 100.0 Hz | **2.67** | [2.8,30.1]@SNR2 / [48.1,85.5]@SNR3 | `5f78e38755a0…881d24e` | Li et al. 2021, *AGU Advances* 2(2) e2021AV000395; Yang et al. 2022, *GRL*, DOI 10.1029/2021GL096503 |
+| FOSSA | Telecom — fibra oscura de la red ESnet del DOE. **Cuatro entornos**: urbano, tierras de cultivo, Interestatal 5, corredor ferroviario. Conducto enterrado 1–1.5 m; tramos en sondeos horizontales 3–4 m | Silixa iDAS-v2 | 10 m | 11,648 | 2.0 m | 23,294.0 m (23.29 km) | 500.0 Hz | 4.50 | [0.9,23.6]@SNR3 / [43.3,81.9]@SNR5 | `1f566023c027…4a78532ed3` | Spica et al. 2023, §4.3 + Tabla 1 |
+| stanford1_campus | Telecom — conductos bajo campus de Stanford; PVC lleno de aire, **acoplamiento exclusivamente por gravedad y fricción** | OptaSense ODH-3 | 7.14 m | 626 | 8.16 m | 5,100.0 m (5.10 km) | 100.0 Hz | 7.73 | [0.0,16.1]@SNR5 / [34.2,74.2]@SNR8 | `220904ff7f64…7821ad82` | Spica et al. 2023, §4.5 + Tabla 1; corroborado por Biondi et al., arXiv:2203.05932 |
+| arcata | Telecom — fibra de Vero Communications, Arcata↔Eureka (ver nota "Ambiente de arcata, sourceado 2026-08-01" abajo) | Luna QuantX | `—` | 3,020 | 5.104762077331543 m | 15,411.28 m (15.41 km) | 100.0 Hz | **8.00** | [5.2,36.0]@SNR5 / [29.9,70.1]@SNR8 | `bfaa1254fdb0…6e878e25409` | McGuire et al. 2025, *SRL* 96(4):2489–2503 + fichas USGS |
+
+**Interrogador/GL con `—` deliberado (F2.C, 2026-08-05), no inferido**: Li et al.
+2021 documenta el arreglo de ridgecrest_north (10 km de fibra, 1,250 canales,
+8 m de espaciado — el de *respuesta rápida* de 2019, **no** el arreglo posterior
+de ~80 km/10 m con el que no debe confundirse) pero no declara el modelo de
+interrogador en el texto accesible; arcata (McGuire et al. 2025) da el modelo
+(Luna QuantX) pero no el gauge length. Ninguno de los dos se completó por
+inferencia.
+
+**Fe de erratas 2026-08-05 — `ridgecrest_north`**: la columna "Ambiente" decía
+"Desierto/rural" desde F1.6. Es una corrección de dato, no una
+reinterpretación — Ridgecrest, CA está en el desierto de Mojave, pero el
+arreglo en sí es fibra oscura de telecomunicaciones **enterrada dentro de la
+ciudad** (Li et al. 2021; Yang et al. 2022), el mismo tipo de instalación que
+FOSSA/Stanford-2/stanford1_campus/arcata, no una categoría geográfica
+separada. "Desierto/rural" describía el entorno regional, no el tipo de
+instalación — las demás filas de esta columna siempre describieron el tipo de
+instalación (submarino, telecom, campus), así que la comparación no era
+consistente entre filas. Corregido acá; el valor SNR50 (2.67) no cambia.
 
 **Actualización 2026-07-31 (QA gate, item 1/2 del cierre)**: `monterey_bay`
 y `ridgecrest_north` re-medidos con `--files` explícito + provenance
