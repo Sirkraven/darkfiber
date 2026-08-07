@@ -16,6 +16,49 @@ esto es más crudo, todavía sin decidir si es trabajo — aunque algunas
 entradas de F1, como las fe de erratas y los pendientes marcados
 "declarado", ya cruzan esa línea).
 
+## 2026-08-06 — F2.D: una verificación de bit-identidad dio "OK" sobre archivos que no existían
+
+**Modo de falla nuevo, no visto antes en este proyecto.** Al escribir
+`src/darkfiber/paper_figures.py` (Comanda F2.D), el criterio de
+aceptación pre-registrado era "generar dos veces produce archivos
+idénticos bit a bit, verificado con sha256, no asumido". La primera
+verificación se armó como un loop de bash: `sha256sum` sobre cada par de
+archivos (corrida 1 vs corrida 2) y comparar los dos strings. El script
+generador (`_write_sidecar`) reventaba a mitad de la Figura 1 con
+`ValueError: path is on mount 'C:', start on mount 'D:'`
+(`os.path.relpath()` de Python no soporta comparar rutas en unidades
+distintas en Windows — la carpeta de salida de la verificación estaba en
+`C:` mientras el repo vive en `D:`) — así que las figuras 2, 3 y 4 nunca
+se generaron en ninguna de las dos corridas. `sha256sum` sobre un
+archivo inexistente falla y no imprime hash; el loop de bash capturó esa
+salida vacía en ambos lados (`h1=""`, `h2=""`), los comparó con `==`, y
+como cadena vacía es igual a cadena vacía, **imprimió "OK" para las 6
+figuras que nunca existieron** — el mismo resultado que si hubieran sido
+genuinamente bit-idénticas.
+
+**Por qué importa más que un bug de Windows común:** es la versión, para
+una verificación, de "un test que pasa porque nunca ejercitó el código"
+(la misma familia de hallazgo que QA-15 encontró para `pytest.importorskip`
+faltante, y que el propio F2.D ya había citado como patrón). Acá no era
+un test que no corría — era una VERIFICACIÓN DE IGUALDAD que no fallaba
+cuando el objeto a comparar no existía. Genera confianza falsa de la
+peor clase: silenciosa, y en el punto exacto (reproducibilidad bit a
+bit) que sostiene el criterio de aceptación de todo el bloque.
+
+**Corregido**: `_safe_relpath()` en `paper_figures.py` cae a ruta
+absoluta en vez de reventar (`try/except ValueError`), y la verificación
+se rehizo en Python explícito que compara hashes calculados directo con
+`hashlib` y falla con `assert` si un archivo no existe — no más
+`sha256sum` de shell con salida vacía sin chequear. Las 8 imágenes (4
+figuras × PDF/PNG) SÍ son bit-idénticas, re-verificado con el script
+corregido antes de dar F2.D por cerrado.
+
+**Regla general que deja esto, aplicable más allá de esta figura**:
+**toda verificación de igualdad (hashes, diffs, conteos) debe fallar
+ruidosamente cuando el objeto comparado no existe, nunca tratar "ambos
+lados vacíos/ausentes" como un caso de éxito.** Vale para cualquier
+script de verificación futuro en este proyecto, no solo para figuras.
+
 ## 2026-08-01 — Fase 2, ambiente de arcata sourceado: el sub-grupo "urbano-telecom" (4/8 arrays) ya muestra 4.52× de spread por sí solo
 
 **Contexto**: con el ambiente de arcata recién sourceado (McGuire et al.

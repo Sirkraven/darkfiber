@@ -1,6 +1,16 @@
-# Plan Fase 2 — Paper (technical note) · **Rev. 9**
+# Plan Fase 2 — Paper (technical note) · **Rev. 11**
 
-**2026-08-05 (Rev. 9).** Cierra F2.B1: `fs` de stanford1_campus resuelto contra
+**2026-08-06 (Rev. 11).** Existe el **borrador completo del manuscrito**
+(`manuscrito_borrador_v1.md`). Cambia el estado de F2.G, se unifica la
+formulación del piso del spread, y se agrega el punto de control de auditoría
+para cuando Alex devuelva el texto reescrito.
+
+**Rev. 10:** F2.D cerrado. **CI verde con evidencia**, cuatro
+figuras generadas y bit-idénticas, **p-valores corregidos a enumeración exacta**.
+Con esto **la parte técnica del paper está terminada**: lo que queda es escritura.
+Ver `esqueleto_manuscrito_v1.md` para la guía de redacción.
+
+**Rev. 9:** Cierra F2.B1: `fs` de stanford1_campus resuelto contra
 el header, objeción de Valencia **retirada**, smoketest limpio. Con eso **la capa
 de medición queda sin rojos**. Lo que sigue es trabajo de construcción, no de
 descubrimiento. Rev. 8 había cerrado el sourcing: **8/8 ambientes y 7/8 interrogadores**
@@ -147,10 +157,13 @@ Orden de hechos: (1) rango 1.50–8.00; (2) cociente entre extremos 5.33×;
 (3) cota inferior bajo propagación conservadora.
 *Razón:* el cociente entre extremos usa 2 de 8 puntos, y son los peor
 restringidos (brackets de 3 pasos; stanford1 desde 0/20 exacto).
-**⚠ Precisión pendiente:** la cota inferior da **3.4974×** con envolventes a 2
-decimales y **3.5062×** con las de 4. Decir "al menos 3.50×" sobreafirma en el
-primer caso. **El valor autoritativo sale del módulo a precisión completa
-(F2.A2); hasta entonces, la formulación segura es "≥3.49×".**
+**✅ RESUELTO en F2.A2.** El módulo dio el valor exacto a precisión completa:
+**3.5061978766918225**, máximo alcanzable 7.444480411580644.
+**FORMULACIÓN ÚNICA Y VIGENTE: "al menos 3.51×".** Nada de "≥3.49×" ni "≥3.50×"
+— las dos son formulaciones de transición ya superadas. Redondear a 3.50 es
+correcto pero desperdicia precisión sin ganar seguridad. **Si aparece cualquiera
+de las dos versiones viejas en documentación, es un número muerto**: mismo patrón
+que costó el 5.00× frente al 5.33×.
 
 **D2 — SUPERSEDED 3× — el diagnóstico de Rev. 5 era incorrecto.**
 
@@ -450,6 +463,17 @@ inyección. `noise_exclusion` existe para esto y está en la provenance de las 8
 así que probablemente esté cubierto. **Se verifica igual porque
 `stanford1_campus` es uno de los dos extremos que sostienen el 5.33×.**
 
+**5.1-duodecies [MODO DE FALLA NUEVO, ocurrido en F2.D] Una verificación que
+pasa cuando no hay nada que verificar.** `os.path.relpath()` falla en Windows
+cuando la carpeta de salida está en otra unidad que el repo. El script de
+comparación de bit-identidad devolvió **"OK" sobre archivos que no existían**:
+dos cadenas vacías son iguales. Es la peor clase de bug —invisible y generador de
+confianza falsa— y es la versión de "aceptar un test que importa sin ejercitar"
+aplicada a una verificación. Detectado y corregido con fallback a ruta absoluta,
+y la verificación se rehizo de forma que **falla ruidosamente si algo falta**.
+**Regla que deja: toda verificación de igualdad debe fallar cuando el objeto
+comparado no existe.** Entrada obligatoria en `observaciones.md`.
+
 **5.2 Gauge length obtenido de regalo** en el mismo pase: FORESEE 10 m,
 FOSSA 10 m, Stanford-2 20 m, stanford1 7.14 m, Valencia 30.4 m. No estaba en la
 tabla y es relevante para el caveat 5 (respuesta espectral): el GL genera muescas
@@ -493,7 +517,12 @@ código"). Ejemplo de auto-corrección sobre el *método de decidir*.
 | **F2.A3** | Tracking de JSON congelados + push + consolidación de planes | ✅ commit `46e28d7` |
 | **F2.B** | Sourcing de ambientes e interrogadores | ✅ 8/8 y 7/8, en este plan |
 | **F2.B1** | Diagnóstico `fs` / Valencia / glob | ✅ V6, V7, V8 |
-| **F2.C** | Metadatos al repo + `noise_exclusion` + auditoría de 6 figuras | ▶ **siguiente** |
+| **F2.C** | Metadatos al repo + `noise_exclusion` + auditoría de 6 figuras | ✅ commit `5d2fc99` |
+| **F2.D** | CI en `dev` + las 4 figuras | ✅ commits `cd6d63b`, `52a41e4` |
+| **F2.E** | Bibliografía 20+ (13 verificadas, faltan 4 nombradas) | pendiente |
+| **F2.F** | Hoja de 13 caveats | pendiente |
+| **F2.G** | **Alex reescribe en su voz sobre `manuscrito_borrador_v1.md`** | ▶ **en curso** |
+| **F2.G2** | Auditoría del manuscrito devuelto — ver §7-bis | pendiente |
 | **F2.D** | Figuras nuevas, sidecar con `input_files` y hash | pendiente |
 | **F2.E** | Bibliografía 20+ | pendiente |
 | **F2.F** | Hoja de 13 caveats | pendiente |
@@ -505,9 +534,59 @@ código"). Ejemplo de auto-corrección sobre el *método de decidir*.
 3.10/3.11/3.12 verdes en las 5 etapas, commit `e234cf9`, PR draft #3 cerrado sin
 mergear). Conteo real de hallazgos del gate: **16** (14 + QA-15 + QA-16).
 
-**Flanco abierto:** la verificación de CI se hizo abriendo un PR draft que luego
-se cerró. Si el trigger de `dev` sigue sin disparar, el commit `77f2ed6` de F2.A
+**⚠ PENDIENTE OPERATIVO: el commit `52a41e4` (figuras) no está pusheado.**
+Después de F2.A3 no se deja trabajo viviendo en un solo disco.
+
+**Flanco cerrado 2026-08-06:** `ci.yml` ya dispara en `dev` (commit `cd6d63b`) y
+la corrida es real. Lo que sigue es histórico: la verificación de CI de QA-06 se
+había hecho abriendo un PR draft que luego se cerró. Si el trigger de `dev` sigue sin disparar, el commit `77f2ed6` de F2.A
 **no pasó por CI** — se verificó en venv local 3.10, que no es equivalente.
+
+---
+
+## §7-bis Auditoría del manuscrito reescrito — qué se verifica al recibirlo
+
+Alex reescribe a mano sobre el borrador y lo devuelve. **La transcripción manual
+es donde más fallan los números.** El control es este, y se corre entero:
+
+**Integridad numérica — lo que más falla.** Contrastar dígito a dígito contra
+`series_robustness.json` y la Tabla 3 del borrador: los 8 SNR50, las 8
+envolventes, los conteos por escalón, los 4 ρ, los 4 p exactos, el umbral 0.7381,
+las dos cotas (0.5952 y 0.9698 con sus conteos de ordenamientos 24 y 1,680), el
+spread 5.33× y su piso **3.51×**, el subgrupo telecom 4.52× / 84.8%, y el piso de
+contaminación 4.57×. **Un dígito movido invalida la celda.**
+
+**Presencia obligatoria — ausencia = no se envía.**
+- Las **trece limitaciones**, ninguna omitida ni fusionada.
+- El **párrafo de no-reclamo** de §1 (slant-stack y semblanza se citan, no se
+  reclaman). Su ausencia fue causal del rechazo anterior.
+- El **párrafo de comparabilidad** de §3.2, **con sus dos mitades**: comparable
+  como cociente adimensional Y no convertible a sensibilidad absoluta.
+- La **tabla de posicionamiento** de §2.
+- Las **cuatro notas al pie de la Tabla 2** (`fs` del header, los dos `—`
+  deliberados, la desambiguación de los dos arreglos de Ridgecrest, y que FOSSA y
+  monterey_bay no admiten etiqueta única).
+- La declaración de que **la serie es verificable a mano**.
+
+**Riesgos de redacción — leer específicamente estos tres párrafos.**
+1. **§4.6, la Cota B.** Verificar que el 0.9698 aparezca **después** de explicar
+   qué se hizo, y que la frase de cierre diga que el contrafáctico fue
+   **eliminado midiendo**. Si queda ambiguo, un lector apurado concluye
+   fragilidad. Es el párrafo más delicado del manuscrito.
+2. **§6.2, ambiente vs acoplamiento.** Verificar que la distinción quede
+   explícita. Si las dos afirmaciones quedan pegadas, un revisor dice que el
+   paper se contradice.
+3. **§6.4, la veta de adquisición.** Verificar que **no insinúe evidencia
+   fuerte**: la comparación defendible es 7.33 vs 8.00, diferencia de 0.67,
+   dentro de la resolución de la serie.
+
+**Ausencia obligatoria.** Ninguna afirmación de novedad sobre slant-stack,
+semblanza, Theil-Sen o STA/LTA. Ninguna formulación que lea SNR50 como
+sensibilidad absoluta.
+
+**Corchetes a completar por Alex:** afiliación · URL del repositorio · DOI de
+Zenodo · bibliografía hasta 20+ (faltan SEAFOM MSP-02, `pySEAFOM`, Wilson 1927 y
+Spearman 1904).
 
 ---
 
