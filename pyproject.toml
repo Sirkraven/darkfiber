@@ -93,6 +93,7 @@ darkfiber-replay = "darkfiber.replay:main"
 darkfiber-dashboard = "darkfiber.dashboard:main"
 darkfiber-pipeline = "darkfiber.pipeline_daemon:main"
 darkfiber-series-robustness = "darkfiber.series_robustness:main"
+darkfiber-paper-figures = "darkfiber.paper_figures:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/darkfiber"]
